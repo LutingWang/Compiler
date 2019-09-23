@@ -7,7 +7,11 @@
 
 #include <iostream>
 #include "compilerConfig.h"
+#include "compiler.h"
+#include "lexer.h"
 using namespace std;
+
+ifstream input(PROJECT_BASE_DIR "/test/testfile1.txt");
 
 int main() {
 	// print compiler version info
@@ -16,5 +20,8 @@ int main() {
 		<< "." 
 		<< COMPILER_VERSION_MINOR 
 		<< endl;
+
+	ofstream testoutput(PROJECT_BASE_DIR "/test/result.txt");
+	lexer::test(testoutput);
 	return 0;
 }
