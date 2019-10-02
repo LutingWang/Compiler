@@ -45,7 +45,7 @@ namespace lexer {
 
 	bool getsym();
 
-	void test(std::ofstream&);
+	void traceback(const Symbol&);
 }
 
 extern struct lexer::Symbol sym;

@@ -6,6 +6,4 @@
 #define COMPILER_VERSION_MAJOR @Compiler_VERSION_MAJOR@
 #define COMPILER_VERSION_MINOR @Compiler_VERSION_MINOR@
 
-#cmakedefine OUTPUT_LEX
-
 #endif /* ALGORITHM_CONFIG_H */
