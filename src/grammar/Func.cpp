@@ -6,121 +6,92 @@
  **********************************************/
 
 #include <cassert>
+#include <vector>
+#include "compiler.h"
 #include "basics.h"
 #include "Expr.h"
 #include "Func.h"
 #include "Stat.h"
-#include "lexer.h"
 #include "symtable.h"
+#include "error.h"
 using lexer::getsym;
-
-#include "debug.h" // <>
 
 // <args> ::= [<type id><iden>{,<type id><iden>}]
 void Func::args(void) {
 	bool isInt;
-	if (!basics::typeId(isInt)) { // empty is allowed
-		std::string s = v.back(); // <
-		v.pop_back();
-		v.push_back(print(ARGS));
-		v.push_back(s); // >
-		return; 
-	} 
-	assert(sym.id == lexer::IDENFR);
-	table.pushSym(sym.str, symtable::ARG, isInt);
-	for (getsym(); sym.id == lexer::DELIM && sym.num == lexer::COMMA; getsym()) {
+	if (!basics::typeId(isInt)) { return; } // empty is allowed 
+	assert(sym.is(symbol::IDENFR));
+	table.pushArg(sym.str, isInt);
+	for (getsym(); sym.is(symbol::DELIM, symbol::COMMA); getsym()) {
 		getsym();
 		assert(basics::typeId(isInt));
-		assert(sym.id == lexer::IDENFR);
-		table.pushSym(sym.str, symtable::ARG, isInt);
+		assert(sym.is(symbol::IDENFR));
+		table.pushArg(sym.str, isInt);
 	}
-	std::string s = v.back(); // <
-	v.pop_back();
-	v.push_back(print(ARGS));
-	v.push_back(s); // >
 }
 
-// <func def> ::= <iden>'('<args>')'<multi stat>
-// output : whether function is main
-bool Func::def(const unsigned int /* lexer::Reserved */ typeId) {
-	bool isMain = false;
-	if (sym.id == lexer::RESERVED && sym.num == lexer::MAINTK && typeId == lexer::VOIDTK) {
-		isMain = true;
-		table.pushFunc();
-	} else {
-		assert(sym.id == lexer::IDENFR);
-		switch (typeId) {
-		case lexer::VOIDTK:
-			table.pushFunc(sym.str, symtable::VOID);
-			break;
-		case lexer::INTTK:
-			table.pushFunc(sym.str, symtable::INT);
-			v.push_back(print(DEC_HEAD)); // <>
-			break;
-		case lexer::CHARTK:
-			table.pushFunc(sym.str, symtable::CHAR);
-			v.push_back(print(DEC_HEAD)); // <>
-			break;
-		default:
-			assert(0);
+// <func def> ::= '('<args>')'<block>
+void Func::def(void) {
+	assert(sym.is(symbol::DELIM, symbol::LPARENT));
+	getsym();
+	args();
+	error::assertSymIsRPARENT();
+	Stat::block();
+}
+
+// <func dec> ::= {(<type id>|void)<iden><func def>}void main<func def>
+void Func::dec(void) {
+	bool isInt;
+	while (true) {
+		assert(sym.is(symbol::RESERVED));
+		if (!basics::typeId(isInt)) {
+			assert(sym.numIs(symbol::VOIDTK));
+			getsym();
+			if (!sym.is(symbol::IDENFR)) { break; }
+			table.pushFunc(sym.str);
+		} else {
+			assert(sym.is(symbol::IDENFR));
+			table.pushFunc(sym.str, isInt);
+		}
+		getsym();
+		def();
+	}
+	assert(sym.is(symbol::RESERVED, symbol::MAINTK));
+	table.pushFunc();
+	getsym();
+	def();
+}
+
+// <arg values> ::= '('[<expr>{,<expr>}]')'
+// input : information on the corresponding function
+//
+// This function is obligated to check whether the arg values
+// match with the function declaration.
+void Func::argValues(const symtable::FuncTable* ft) { 
+	assert(sym.is(symbol::DELIM, symbol::LPARENT)); // ensured by outer function
+	getsym();
+
+	std::vector<bool> argv;
+	if (!sym.is(symbol::DELIM, symbol::RPARENT|symbol::SEMICN)) { // ')' might be missing
+		while (true) {
+			argv.push_back(Expr::expr());
+			if (!sym.is(symbol::DELIM, symbol::COMMA)) { break; }
+			getsym();
 		}
 	}
-	getsym();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::LPARENT);
-	getsym();
-	if (!isMain) args();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::RPARENT);
-	getsym();
-	Stat::block();
-	if (!isMain) { // <
-		std::string s = v.back(); 
-		v.pop_back();
-		if (typeId == lexer::VOIDTK) v.push_back(print(FUNC_DEF_WITHOUT_RET));
-		else v.push_back(print(FUNC_DEF_WITH_RET));
-		v.push_back(s); 
-	} // >
-	return isMain;
-}
+	error::assertSymIsRPARENT();
 
-// <func dec> ::= {(<type id>|void)<func def>}void<func def: main>
-void Func::dec(void) {
-	unsigned int typeId;
-	do {
-		assert(sym.id == lexer::RESERVED);
-		typeId = sym.num;
-		getsym();
-	} while (!def(typeId));
-	v.push_back(print(MAIN_FUNC)); // <>
-}
-
-// <func call> ::= <iden>'('[<expr>{,<expr>}]')'
-void Func::call(void) { 
-	assert(sym.id == lexer::IDENFR); // ensured by outer function
-	symtable::FuncTable* ft = table.findFunc(sym.str);
-	assert(ft != nullptr);
-	getsym(); 
-	assert(sym.id == lexer::DELIM && sym.num == lexer::LPARENT); // ensured by outer function
-	getsym();
-	if (sym.id == lexer::DELIM && sym.num == lexer::RPARENT) {
-		std::string s = v.back(); // <
-		v.pop_back();
-		v.push_back(print(VALUES));
-		v.push_back(s); 
-		v.push_back(print(ft->type != symtable::VOID ? FUNC_CALL_WITH_RET : FUNC_CALL_WITHOUT_RET)); // >
-		getsym();
-		return;
+	// error handling
+	if (ft == nullptr) { return; }
+	const std::vector<const symtable::Entry*>& al = ft->argList();
+	if (argv.size() != al.size()) {
+		err << error::MISMATCHED_ARG_NUM << std::endl;
+	} else for (int i = 0; i < argv.size(); i++) {
+		assert(!al[i]->isConst); // ensured by symtable
+		if (argv[i] != al[i]->isInt) {
+			err << error::MISMATCHED_ARG_TYPE << std::endl;
+			break;
+		}
 	}
-	Expr::expr();
-	while (sym.id == lexer::DELIM && sym.num == lexer::COMMA) {
-		getsym();
-		Expr::expr();
-	}
-	std::string s = v.back(); // <
-	v.pop_back();
-	v.push_back(print(VALUES));
-	v.push_back(s); 
-	v.push_back(print(ft->type != symtable::VOID ? FUNC_CALL_WITH_RET : FUNC_CALL_WITHOUT_RET)); // >
-	assert(sym.id == lexer::DELIM && sym.num == lexer::RPARENT);
-	getsym();
 }
 

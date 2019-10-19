@@ -7,24 +7,22 @@
 
 #include <cassert>
 #include <string>
+#include "compiler.h"
 #include "basics.h"
 #include "Var.h"
-#include "lexer.h"
 #include "symtable.h"
+#include "error.h"
 using lexer::getsym;
-
-#include "debug.h" // <>
 
 // <index> ::= '['<unsigned int>']'
 // output : identified length of array
 unsigned int Var::index(void) {
-	assert(sym.id == lexer::DELIM && sym.num == lexer::LBRACK); // ensured by outer function
+	assert(sym.is(symbol::DELIM, symbol::LBRACK)); // ensured by outer function
 	getsym();
-	assert(sym.id == lexer::INTCON);
+	assert(sym.is(symbol::INTCON));
 	unsigned int result = sym.num;
 	getsym();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::RBRACK);
-	getsym();
+	error::assertSymIsRBRACK();
 	return result;
 }
 
@@ -33,42 +31,34 @@ unsigned int Var::index(void) {
 // input : type of variable is int or char
 // output : returned normally or as a result of traceback
 bool Var::def(const bool isInt) {
-	if (sym.id != lexer::IDENFR) 
-		return false;
-	lexer::Symbol lastSymbol = sym;
+	if (!sym.is(symbol::IDENFR)) { return false; }
+	symbol::Symbol lastSymbol = sym;
 	getsym();
-	if (sym.id != lexer::DELIM) {
+	if (!sym.is(symbol::DELIM)) {
 		lexer::traceback(lastSymbol);
 		return false;
 	}
 
 	std::string idenName = lastSymbol.str;
-	if (sym.num == lexer::LBRACK) {
-		table.pushSym(idenName, symtable::VAR, isInt, index());
-	} else if (sym.num == lexer::COMMA || sym.num == lexer::SEMICN) {
-		table.pushSym(idenName, symtable::VAR, isInt);
+	if (sym.numIs(symbol::LBRACK)) {
+		table.pushSym(idenName, false, isInt, index()); 
+	} else if (sym.numIs(symbol::COMMA|symbol::SEMICN)) {
+		table.pushSym(idenName, false, isInt);
 	} else {
 		lexer::traceback(lastSymbol);
 		return false;
 	}
 
 	// traceback = false
-	while (sym.id == lexer::DELIM && sym.num == lexer::COMMA) {
+	while (sym.is(symbol::DELIM, symbol::COMMA)) {
 		getsym();
-		assert(sym.id == lexer::IDENFR);
+		assert(sym.is(symbol::IDENFR));
 		idenName = sym.str;
 		getsym();
-		assert(sym.id == lexer::DELIM);
-		if (sym.num == lexer::LBRACK) {
-			table.pushSym(idenName, symtable::VAR, isInt, index());
-		} else {
-			table.pushSym(idenName, symtable::VAR, isInt);
-		}
+		assert(sym.is(symbol::DELIM));
+		if (sym.numIs(symbol::LBRACK)) { table.pushSym(idenName, false, isInt, index()); } 
+		else { table.pushSym(idenName, false, isInt); }
 	}
-	std::string s = v.back(); // <
-	v.pop_back();
-	v.push_back(print(VAR_DEF));
-	v.push_back(s); // >
 	return true;
 }
 
@@ -76,28 +66,13 @@ bool Var::def(const bool isInt) {
 // traceback = true;
 void Var::dec(void) {
 	bool isInt;
-	bool flag = false; // <>
-	for (lexer::Symbol lastSymbol = sym; basics::typeId(isInt); lastSymbol = sym) {
+	for (symbol::Symbol lastSymbol = sym; basics::typeId(isInt); lastSymbol = sym) {
 		if (!def(isInt)) {
 			lexer::traceback(lastSymbol);
-			if (flag) { // <  
-				std::string s = v.back(); 
-				v.pop_back();
-				v.push_back(print(VAR_DEC));
-				v.push_back(s); 
-			} // >
 			return;
 		}
-		flag = true; // <>
-		assert(sym.id == lexer::DELIM && sym.num == lexer::SEMICN);
-		getsym();
+		error::assertSymIsSEMICN();
 	}
-	if (flag) { // < 
-		std::string s = v.back(); 
-		v.pop_back();
-		v.push_back(print(VAR_DEC));
-		v.push_back(s); 
-	} // >
 }
 
 

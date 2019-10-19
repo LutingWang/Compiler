@@ -5,20 +5,19 @@
     > Created Time: Thu Sep 26 21:58:02 2019
  **********************************************/
 
+#include "compiler.h"
 #include "Const.h"
 #include "Func.h"
-#include "grammar.h"
 #include "Var.h"
-#include "lexer.h"
-
-#include "debug.h" // <>
+#include "error.h"
 
 // <program> ::= <const dec><var dec><func dec>
-void grammar::parse(void) {
+void grammar::parse(void) try {
 	lexer::getsym();
 	Const::dec();
 	Var::dec();
 	Func::dec();
-	v.push_back(print(PROGRAM));
+} catch (error::Ueof& e) {
+	err << error::UNEXPECTED_EOF << std::endl;
 }
 

@@ -11,31 +11,30 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "lexer.h"
-
-#include <vector>
-
-enum Nonterminal {
-	PROGRAM, CONST_DEC, CONST_DEF, STR, INT, UNSIGNED_INT, VAR_DEC, VAR_DEF,
-	FUNC_DEF_WITH_RET, FUNC_DEF_WITHOUT_RET, FUNC_CALL_WITH_RET, FUNC_CALL_WITHOUT_RET, 
-	MAIN_FUNC, ARGS, VALUES, DEC_HEAD, 
-	BLOCK, STAT_SERIES, STAT, ASSIGN, READ, WRITE, RET,
-	COND, ITER, CONDITION, STEP, 
-	EXPR, ITEM, FACTOR 
-};
-
-extern std::vector<std::string> v;
-std::string print(Nonterminal);
-std::string print(void);
 
 class Debugger {
 	bool _isFile;
-	std::ofstream _output;
-	std::ostream& output(void) { return _isFile ? _output : std::cout; }
+	std::ostream _output;
 public:
-	Debugger() : _isFile(false) {}
-	Debugger(std::string path) : _isFile(true), _output(path) {}
-	~Debugger() { if (_isFile) { _output.close(); } }
+	Debugger() : _isFile(false), _output(std::cout.rdbuf()) {}
+
+	Debugger(const std::string& path) : 
+		_isFile(true), _output(std::ofstream(path).rdbuf()) {}
+
+	~Debugger() { 
+		if (_isFile) { 
+			((std::ofstream&) _output).close(); 
+		} 
+	}
+
+	template<typename T> std::ostream& operator << (const T& e) {
+		_output << e;
+		return _output;
+	}
+
+	std::ostream& operator << (std::ostream& (*op)(std::ostream&)) {
+		return (*op)(_output);
+	}
 };
 
 #endif /* DEBUG_H */

@@ -8,8 +8,20 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
-#include <fstream>
+#include "InputFile.h"
+#include "Symbol.h"
+#include "debug.h"
 
-extern std::ifstream input;
+extern InputFile input;
+extern Debugger log;
+
+namespace lexer {
+	void getsym(void);
+	void traceback(const symbol::Symbol&);
+}
+
+namespace grammar {
+	void parse(void);
+}
 
 #endif /* COMPILER_H */

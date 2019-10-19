@@ -7,63 +7,52 @@
 
 #include <cassert>
 #include <string>
+#include "compiler.h"
+#include "basics.h"
 #include "Const.h"
 #include "Expr.h"
-#include "lexer.h"
 #include "symtable.h"
+#include "error.h"
 using lexer::getsym;
-
-#include "debug.h" // <>
 
 // <const def> ::= int<iden>=<integer>{,<iden>=<integer>}|char<iden>=<char>{,<iden>=<char>}
 void Const::def(void) {
-	// identify type (int or char)
-	assert(sym.id == lexer::RESERVED);
-	bool isInt = false;
-	switch (sym.num) {
-	case lexer::INTTK: isInt = true;
-	case lexer::CHARTK: break;
-	default: assert(0);
-	}
+	// do not use `basics::typeId` or it will read a sym
+	assert(sym.is(symbol::RESERVED, symbol::INTTK|symbol::CHARTK));
+	bool isInt = sym.numIs(symbol::INTTK); 
 
 	// recursively identify identifier and its value
 	std::string idenName;
 	do {
 		getsym();
-		assert(sym.id == lexer::IDENFR);
+		assert(sym.is(symbol::IDENFR));
 		idenName = sym.str;
+
 		getsym();
-		assert(sym.id == lexer::DELIM && sym.num == lexer::ASSIGN);
+		assert(sym.is(symbol::DELIM, symbol::ASSIGN));
+
 		getsym();
-		if (isInt) {
-			table.pushSym(idenName, symtable::CONST, isInt, Expr::integer());
-		} else {
-			assert(sym.id == lexer::CHARCON);
-			table.pushSym(idenName, symtable::CONST, isInt, sym.ch);
-			getsym();
+		int num = sym.ch;
+		if (!isInt && sym.is(symbol::CHARCON)) { getsym(); }
+		// error happens if symbol is char or the value is not an integer
+		else if (!isInt || !Expr::integer(num)) {
+			err << error::EXPECTED_LITERAL << std::endl;
+			// jump to the next ',' or ';'
+			while (!sym.is(symbol::DELIM, symbol::COMMA|symbol::SEMICN)) {
+				getsym();
+			}
 		}
-	} while (sym.id == lexer::DELIM && sym.num == lexer::COMMA);
-	std::string s = v.back(); // <
-	v.pop_back();
-	v.push_back(print(CONST_DEF));
-	v.push_back(s); // >
+		table.pushSym(idenName, true, isInt, num); 
+	} while (sym.is(symbol::DELIM, symbol::COMMA));
 }
 
 // <const dec> ::= {const<const def>;}
 void Const::dec(void) {
-	if (sym.id != lexer::RESERVED || sym.num != lexer::CONSTTK) { // <
-		return;
-	} // >
-	while (sym.id == lexer::RESERVED && sym.num == lexer::CONSTTK) {
+	while (sym.is(symbol::RESERVED, symbol::CONSTTK)) {
 		getsym();
 		def();
-		assert(sym.id == lexer::DELIM && sym.num == lexer::SEMICN);
-		getsym();
+		error::assertSymIsSEMICN();
 	}
-	std::string s = v.back(); // <
-	v.pop_back();
-	v.push_back(print(CONST_DEC));
-	v.push_back(s); // >
 }
 
 

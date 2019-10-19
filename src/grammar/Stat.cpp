@@ -6,254 +6,222 @@
  **********************************************/
 
 #include <cassert>
+#include "compiler.h"
 #include "basics.h"
 #include "Const.h"
 #include "Expr.h"
 #include "Func.h"
 #include "Stat.h"
 #include "Var.h"
-#include "lexer.h"
+#include "symtable.h"
+#include "error.h"
 using lexer::getsym;
-
-#include "debug.h" // <>
 
 // <cond> ::= <expr>[<comp op><expr>]
 void Stat::Cond::cond(void) {
-	Expr::expr();
-	if (sym.id == lexer::COMP) {
+	if (!Expr::expr()) { err << error::MISMATCHED_COND_TYPE << std::endl; }
+	if (sym.is(symbol::COMP)) {
 		getsym();
-		Expr::expr();
+		if (!Expr::expr()) { err << error::MISMATCHED_COND_TYPE << std::endl; }
 	}
-	std::string s = v.back(); // <
-	v.pop_back();
-	v.push_back(print(CONDITION));
-	v.push_back(s); // >
 }
 
 // <if stat> ::= if'('<cond>')'<stat>[else<stat>]
-void Stat::Cond::_if(void) {
-	assert(sym.id == lexer::RESERVED && sym.num == lexer::IFTK); // ensured by outer function
+bool Stat::Cond::_if(void) {
+	assert(sym.is(symbol::RESERVED, symbol::IFTK)); // ensured by outer function
 	getsym();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::LPARENT);
+	assert(sym.is(symbol::DELIM, symbol::LPARENT));
 	getsym();
 	cond();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::RPARENT);
-	getsym();
-	stat();
-	if (sym.id == lexer::RESERVED && sym.num == lexer::ELSETK) {
+	error::assertSymIsRPARENT();
+
+	bool hasRet = stat();
+	if (sym.is(symbol::RESERVED, symbol::ELSETK)) {
 		getsym();
-		stat();
+		hasRet = stat() && hasRet; // ensures that stat() is executed
 	}
-	std::string s = v.back(); // <
-	v.pop_back();
-	v.push_back(print(COND));
-	v.push_back(s); // >
+	return hasRet;
 }
 
 // <while stat> ::= while'('<cond>')'<stat>
-void Stat::Cond::_while(void) {
-	assert(sym.id == lexer::RESERVED && sym.num == lexer::WHILETK); // ensured by outer function
+bool Stat::Cond::_while(void) {
+	assert(sym.is(symbol::RESERVED, symbol::WHILETK)); // ensured by outer function
 	getsym();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::LPARENT);
+	assert(sym.is(symbol::DELIM, symbol::LPARENT));
 	getsym();
 	cond();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::RPARENT);
-	getsym();
-	stat();
-	std::string s = v.back(); // <
-	v.pop_back();
-	v.push_back(print(ITER));
-	v.push_back(s); // >
+	error::assertSymIsRPARENT();
+	return stat();
 }
 
 // <do stat> ::= do<stat>while'('<cond>')'
-void Stat::Cond::_do(void) {
-	assert(sym.id == lexer::RESERVED && sym.num == lexer::DOTK); // ensured by outer function
+bool Stat::Cond::_do(void) {
+	assert(sym.is(symbol::RESERVED, symbol::DOTK)); // ensured by outer function
 	getsym();
-	stat();
-	assert(sym.id == lexer::RESERVED && sym.num == lexer::WHILETK); 
-	getsym();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::LPARENT);
+	bool hasRet = stat();
+	if (!sym.is(symbol::RESERVED, symbol::WHILETK)) {
+		err << error::MISSING_WHILE << std::endl;
+	} else { getsym(); }
+	assert(sym.is(symbol::DELIM, symbol::LPARENT));
 	getsym();
 	cond();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::RPARENT);
-	v.push_back(print(ITER)); // <>
-	getsym();
+	error::assertSymIsRPARENT();
+	return hasRet;
 }
 
 // <for stat> ::= for'('<iden>=<expr>;<cond>;<iden>=<iden><add op><unsigned int>')'<stat>
-void Stat::Cond::_for(void) {
-	assert(sym.id == lexer::RESERVED && sym.num == lexer::FORTK); // ensured by outer function
+bool Stat::Cond::_for(void) {
+	assert(sym.is(symbol::RESERVED, symbol::FORTK)); // ensured by outer function
 	getsym();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::LPARENT);
+	assert(sym.is(symbol::DELIM, symbol::LPARENT));
 	getsym();
-	assert(sym.id == lexer::IDENFR);
+	assert(sym.is(symbol::IDENFR));
 	getsym();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::ASSIGN);
+	assert(sym.is(symbol::DELIM, symbol::ASSIGN));
 	getsym();
 	Expr::expr();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::SEMICN);
-	getsym();
+	error::assertSymIsSEMICN();
 	cond();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::SEMICN);
+	error::assertSymIsSEMICN();
+	assert(sym.is(symbol::IDENFR));
 	getsym();
-	assert(sym.id == lexer::IDENFR);
+	assert(sym.is(symbol::DELIM, symbol::ASSIGN));
 	getsym();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::ASSIGN);
-	getsym();
-	assert(sym.id == lexer::IDENFR);
+	assert(sym.is(symbol::IDENFR));
 	getsym();
 	bool minus;
 	assert(basics::add(minus));
-	assert(sym.id == lexer::INTCON);
-	v.push_back(print(STEP)); // <>
+	assert(sym.is(symbol::INTCON));
 	getsym();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::RPARENT);
-	getsym();
-	stat();
-	std::string s = v.back(); // <
-	v.pop_back();
-	v.push_back(print(ITER));
-	v.push_back(s); // >
+	error::assertSymIsRPARENT();
+	return stat();
 }
 
 // <read stat> ::= scanf'('<iden>{,<iden>}')'
 void Stat::read(void) {
-	assert(sym.id == lexer::RESERVED && sym.num == lexer::SCANFTK); // ensured by outer function
+	assert(sym.is(symbol::RESERVED, symbol::SCANFTK)); // ensured by outer function
 	getsym();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::LPARENT);
-	getsym();
-	assert(sym.id == lexer::IDENFR);
-	for (getsym(); sym.id == lexer::DELIM && sym.num == lexer::COMMA; getsym()) {
+	assert(sym.is(symbol::DELIM, symbol::LPARENT));
+	const symtable::Entry* entry;
+	do {
 		getsym();
-		assert(sym.id == lexer::IDENFR);
-	}
-	assert(sym.id == lexer::DELIM && sym.num == lexer::RPARENT);
-	v.push_back(print(READ)); // <>
-	getsym();
+		assert(sym.is(symbol::IDENFR));
+		entry = table.findSym(sym.str);
+		if (entry == nullptr) { err << error::NODEF << std::endl; }
+		getsym();
+	} while (sym.is(symbol::DELIM, symbol::COMMA));
+	error::assertSymIsRPARENT();
 }
 
 // <write stat> ::= printf'('<string>[,<expr>]')'|printf'('<expr>')'
 void Stat::write(void) {
-	assert(sym.id == lexer::RESERVED && sym.num == lexer::PRINTFTK); // ensured by outer function
+	assert(sym.is(symbol::RESERVED, symbol::PRINTFTK)); // ensured by outer function
 	getsym();
-	assert(sym.id == lexer::DELIM && sym.num == lexer::LPARENT);
+	assert(sym.is(symbol::DELIM, symbol::LPARENT));
 	getsym();
-	if (sym.id == lexer::STRCON) {
+	if (sym.is(symbol::STRCON)) {
 		getsym();
-		if (sym.id == lexer::DELIM && sym.num == lexer::COMMA) {
+		if (sym.is(symbol::DELIM, symbol::COMMA)) {
 			getsym();
 			Expr::expr();
 		}
 	} else {
 		Expr::expr();
 	}
-	assert(sym.id == lexer::DELIM && sym.num == lexer::RPARENT);
-	v.push_back(print(WRITE)); // <>
-	getsym();
+	error::assertSymIsRPARENT();
 }
 
 // <ret stat> ::= return['('<expr>')']
 void Stat::ret(void) {
-	assert(sym.id == lexer::RESERVED && sym.num == lexer::RETURNTK); // ensured by outer function
+	assert(sym.is(symbol::RESERVED, symbol::RETURNTK)); // ensured by outer function
 	getsym();
-	if (sym.id == lexer::DELIM && sym.num == lexer::LPARENT) {
+	if (sym.is(symbol::DELIM, symbol::LPARENT)) {
+		if (table.curFunc()->isVoid) {
+			err << error::ILLEGAL_RET_WITH_VAL << std::endl;
+		}
 		getsym();
 		Expr::expr();
-		assert(sym.id == lexer::DELIM && sym.num == lexer::RPARENT);
-		getsym();
+		error::assertSymIsRPARENT();
+	} else if (!table.curFunc()->isVoid) {
+		err << error::ILLEGAL_RET_WITHOUT_VAL << std::endl;
 	}
-	std::string s = v.back(); // <
-	v.pop_back();
-	v.push_back(print(RET));
-	v.push_back(s); // >
 }
 
 // <assign> ::= <iden>['['<expr>']']=<expr>
-void Stat::assign(void) {
-	assert(sym.id == lexer::IDENFR); // ensured by outer function
-	getsym();
-	assert(sym.id == lexer::DELIM);
+//
+// The non-terminal <iden> is provided by outer function
+// in the form of `Entry*`.
+void Stat::assign(const symtable::Entry* entry) {
+	assert(sym.is(symbol::DELIM));
 	switch (sym.num) {
-	case lexer::LBRACK:
+	case symbol::LBRACK:
 		getsym();
-		Expr::expr();
-		assert(sym.id == lexer::DELIM && sym.num == lexer::RBRACK);
-		getsym();
-		assert(sym.id == lexer::DELIM && sym.num == lexer::ASSIGN);
-	case lexer::ASSIGN:
+		if (!Expr::expr()) { err << error::ILLEGAL_IND << std::endl; }
+		error::assertSymIsRBRACK();
+		assert(sym.is(symbol::DELIM, symbol::ASSIGN));
+	case symbol::ASSIGN:
 		getsym();
 		Expr::expr();
 		break;
 	default: assert(0);
 	}
-	std::string s = v.back(); // <
-	v.pop_back();
-	v.push_back(print(ASSIGN));
-	v.push_back(s); // >
+	if (entry == nullptr) { err << error::NODEF << std::endl; }
+	else if (entry->isConst) { err << error::ILLEGAL_ASSIGN << std::endl; }
 }
 
 // <stat> ::= <if stat>|<while stat>|<do stat>|<for stat>|'{'{<stat>}'}'|<read stat>;|<write stat>;|<ret stat>;|<assign>;|<func call>;|;
-void Stat::stat(void) {
+bool Stat::stat(void) {
+	bool hasRet = false;
 	switch (sym.id) {
-	case lexer::RESERVED:
+	case symbol::RESERVED:
 		switch (sym.num) {
-		case lexer::IFTK: 
-			Cond::_if();
+		case symbol::IFTK: 
+			hasRet = Cond::_if();
 			break;
-		case lexer::WHILETK:
-			Cond::_while();
+		case symbol::WHILETK:
+			hasRet = Cond::_while();
 			break;
-		case lexer::DOTK:
-			Cond::_do();
+		case symbol::DOTK:
+			hasRet = Cond::_do();
 			break;
-		case lexer::FORTK:
-			Cond::_for();
+		case symbol::FORTK:
+			hasRet = Cond::_for();
 			break;
-		case lexer::SCANFTK:
+		case symbol::SCANFTK:
 			read();
-			assert(sym.id == lexer::DELIM && sym.num == lexer::SEMICN);
-			getsym();
+			error::assertSymIsSEMICN();
 			break;
-		case lexer::PRINTFTK:
+		case symbol::PRINTFTK:
 			write();
-			assert(sym.id == lexer::DELIM && sym.num == lexer::SEMICN);
-			getsym();
+			error::assertSymIsSEMICN();
 			break;
-		case lexer::RETURNTK:
+		case symbol::RETURNTK:
+			hasRet = true; // recursion exit
 			ret();
-			assert(sym.id == lexer::DELIM && sym.num == lexer::SEMICN);
-			getsym();
+			error::assertSymIsSEMICN();
 			break;
 		default: assert(0);
 		}
 		break;
-	case lexer::IDENFR: {
-			lexer::Symbol lastSymbol = sym;
+	case symbol::IDENFR: {
+			std::string name = sym.str;
 			getsym();
-			assert(sym.id == lexer::DELIM);
-			bool isFuncCall = sym.num == lexer::LPARENT;
-			lexer::traceback(lastSymbol);
-			if (isFuncCall) { Func::call(); }
-			else { assign(); }
-			assert(sym.id == lexer::DELIM && sym.num == lexer::SEMICN);
-			getsym();
+			assert(sym.is(symbol::DELIM));
+			if (sym.numIs(symbol::LPARENT)) {
+				Func::argValues(table.findFunc(name));
+			} else { assign(table.findSym(name)); }
+			error::assertSymIsSEMICN();
 		}
 		break;
-	case lexer::DELIM:
+	case symbol::DELIM:
 		switch (sym.num) {
-		case lexer::LBRACE:
-			for (getsym(); sym.id != lexer::DELIM || sym.num != lexer::RBRACE;) {
-				stat();
+		case symbol::LBRACE:
+			getsym();
+			while (!sym.is(symbol::DELIM, symbol::RBRACE)) {
+				hasRet = stat() || hasRet;
 			}
-			{ // <
-				std::string s = v.back(); 
-				v.pop_back();
-				v.push_back(print(STAT_SERIES));
-				v.push_back(s); 
-			} // >
 			// fallthrough
-		case lexer::SEMICN:
+		case symbol::SEMICN:
 			getsym();
 			break;
 		default: assert(0);
@@ -261,26 +229,29 @@ void Stat::stat(void) {
 		break;
 	default: assert(0);
 	}
-	std::string s = v.back(); // <
-	v.pop_back();
-	v.push_back(print(STAT));
-	v.push_back(s); // >
+	return hasRet;
 }
 
 // <block> ::= '{'<const dec><var dec>{<stat>}'}'
 void Stat::block(void) {
-	assert(sym.id == lexer::DELIM && sym.num == lexer::LBRACE);
+	assert(sym.is(symbol::DELIM, symbol::LBRACE));
 	getsym();
 	Const::dec();
 	Var::dec();
-	while (sym.id != lexer::DELIM || sym.num != lexer::RBRACE) {
-		stat();
+
+	bool hasRet = false;
+	while (!sym.is(symbol::DELIM, symbol::RBRACE)) { 
+		hasRet = stat() || hasRet;
 	}
-	std::string s = v.back(); // <
-	v.pop_back();
-	v.push_back(print(STAT_SERIES));
-	v.push_back(print(BLOCK));
-	v.push_back(s); // >
-	getsym();
+
+	if (!table.isMain()) {
+		// for non-void functions, the default <ret> will not fit
+		if (!table.curFunc()->isVoid && !hasRet) {
+			err << error::ILLEGAL_RET_WITHOUT_VAL << std::endl;
+		}
+		// function main does not have subsequent symbols
+		getsym();
+	}
+
 }
 

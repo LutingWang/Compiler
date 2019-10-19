@@ -8,12 +8,14 @@
 #ifndef FUNC_H
 #define FUNC_H
 
+#include "symtable.h"
+
 class Func {
 	static void args(void);
-	static bool def(const unsigned int /* lexer::Reserved */);
+	static void def(void);
 public:
 	static void dec(void);
-	static void call(void);
+	static void argValues(const symtable::FuncTable*);
 };
 
 #endif /* FUNC_H */

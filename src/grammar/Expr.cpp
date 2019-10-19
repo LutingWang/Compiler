@@ -6,86 +6,93 @@
  **********************************************/
 
 #include <cassert>
+#include "compiler.h"
 #include "basics.h"
 #include "Expr.h"
 #include "Func.h"
-#include "lexer.h"
+#include "symtable.h"
+#include "error.h"
 using lexer::getsym;
 
-#include "debug.h" // <>
-
 // <integer> ::= [<add op>]<unsigned int>
-// output : identified integer
-int Expr::integer(void) {
+// input : inout parameter for the identified integer
+// output : identified an integer
+bool Expr::integer(int& result) {
 	bool neg;
 	basics::add(neg);
-	assert(sym.id == lexer::INTCON);
-	int result = neg ? -sym.num : sym.num;
-	v.push_back(print(INT)); // <>
+	if (!sym.is(symbol::INTCON)) { return false; }
+	result = neg ? -((int) sym.num) : sym.num;
 	getsym();
-	return result;
+	return true;
 }
 
 // <factor> ::= <iden>['['<expr>']']|'('<expr>')'|<integer>|<char>|<func call>
-void Expr::factor(void) {
+bool Expr::factor(void) {
+	bool isInt = true;
 	switch (sym.id) {
-	case lexer::DELIM: 
-		assert(sym.num == lexer::LPARENT);
+	case symbol::DELIM: 
+		assert(sym.numIs(symbol::LPARENT));
 		getsym();
 		expr();
-		assert(sym.id == lexer::DELIM && sym.num == lexer::RPARENT);
+		error::assertSymIsRPARENT();
+		break;
+	case symbol::OPER: case symbol::INTCON:
+		int num;
+		assert(integer(num));
+		break;
+	case symbol::CHARCON:
+		isInt = false;
 		getsym();
 		break;
-	case lexer::OPER: case lexer::INTCON:
-		integer();
-		break;
-	case lexer::CHARCON:
-		getsym();
-		break;
-	case lexer::IDENFR: {
-			lexer::Symbol lastSymbol = sym;
+	case symbol::IDENFR: {
+			std::string name = sym.str;
 			getsym();
-			if (sym.id == lexer::DELIM) {
-				switch (sym.num) {
-				case lexer::LPARENT:
-					lexer::traceback(lastSymbol);
-					Func::call(); 
-					break;
-				case lexer::LBRACK:
+			if (sym.is(symbol::DELIM, symbol::LPARENT)) {
+				const symtable::FuncTable* ft = table.findFunc(name);
+				if (ft == nullptr) { err << error::NODEF << std::endl; }
+				else {
+					assert(!ft->isVoid);
+					isInt = ft->isInt;
+				}
+				Func::argValues(ft);
+			} else {
+				const symtable::Entry* entry = table.findSym(name);
+				if (entry == nullptr) { err << error::NODEF << std::endl; }
+				else { isInt = entry->isInt; }
+				if (sym.is(symbol::DELIM, symbol::LBRACK)) {
 					getsym();
-					expr();
-					assert(sym.id == lexer::DELIM && sym.num == lexer::RBRACK);
-					getsym();
-					break;
+					if (!expr()) { err << error::ILLEGAL_IND << std::endl; }
+					error::assertSymIsRBRACK();
+				} else {
+					// TODO: check and use the symbol
 				}
 			}
 		}
 		break;
 	default: assert(0);
 	}
-	std::string s = v.back(); // <
-	v.pop_back();
-	v.push_back(print(FACTOR)); 
-	v.push_back(s); // >
+	return isInt;
 }
 
 // <item> ::= <factor>{<mult op><factor>}
-void Expr::item(void) {
+bool Expr::item(void) {
 	bool isMult;
-	do { factor(); } while (basics::mult(isMult));
-	std::string s = v.back(); // <
-	v.pop_back();
-	v.push_back(print(ITEM)); 
-	v.push_back(s); // >
+	bool isInt = factor();
+	if (basics::mult(isMult)) { 
+		isInt = true; 
+		do { factor(); } while (basics::mult(isMult));
+	} 
+	return isInt;
 }
 
 // <expr> ::= [<add op>]<item>{<add op><item>}
-void Expr::expr(void) {
+bool Expr::expr(void) {
 	bool neg;
-	basics::add(neg);
-	do { item(); } while (basics::add(neg));
-	std::string s = v.back(); // <
-	v.pop_back();
-	v.push_back(print(EXPR)); 
-	v.push_back(s); // >
+	bool isInt = !basics::add(neg);
+	isInt = item() && isInt;
+	if (basics::add(neg)) {
+		isInt = true;
+		do { item(); } while (basics::add(neg));
+	}
+	return isInt;
 }

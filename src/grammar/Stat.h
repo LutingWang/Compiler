@@ -8,20 +8,30 @@
 #ifndef STAT_H
 #define STAT_H
 
+#include "symtable.h"
+
+// The return values indicate whether the current
+// <stat> has <ret> covering all the paths. All 
+// non-terminals with <stat> inside (except for 
+// <block>) should return. 
+//
+// Since <block> can only show up in <func def>, it 
+// is obligated to check whether <ret> has covered 
+// all paths.
 class Stat {
 	class Cond {
 		static void cond(void);
 	public:
-		static void _if(void);
-		static void _while(void);
-		static void _do(void);
-		static void _for(void);
+		static bool _if(void);
+		static bool _while(void);
+		static bool _do(void);
+		static bool _for(void);
 	};
 	static void read(void);
 	static void write(void);
 	static void ret(void);
-	static void assign(void);
-	static void stat(void);
+	static void assign(const symtable::Entry*);
+	static bool stat(void);
 public:
 	static void block(void);
 };

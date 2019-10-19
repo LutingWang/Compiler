@@ -8,15 +8,19 @@
 #ifndef EXPR_H
 #define EXPR_H
 
-#include "Stat.h"
-
+// For `factor`, `item`, and `expr`, the return
+// value indicates whether the non-terminal is 
+// integral.
+//
+// Note that the return value in `integer` has
+// different meanings. Check the source code for 
+// further information.
 class Expr {
-	static void factor(void);
-	static void item(void);
+	static bool factor(void);
+	static bool item(void);
 public:
-	static int integer(void);
-	static void expr(void);
-	friend class Stat;
+	static bool integer(int&);
+	static bool expr(void);
 };
 
 #endif /* EXPR_H */
