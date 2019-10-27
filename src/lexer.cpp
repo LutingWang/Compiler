@@ -45,15 +45,15 @@ namespace {
 	string buf;
 	int counter = 0;
 	
-	// parse for identifiers or reserved words
 	// <iden> ::= <alpha>{<alpha>|<digit>}
+	// parse for identifiers or reserved words
 	void parseToken(void) {
 		assert(CType::isalpha(buf[counter])); // ensured by outer function
 		int i; // end index of token (not included)
 		for (i = counter + 1; i < buf.size() && CType::isalnum(buf[i]); i++);
 		string token = buf.substr(counter, i - counter); 
 		vector<string>::iterator it = find(reserved.begin(), reserved.end(), token);
-		if (it == reserved.end()) {
+		if (it == reserved.end()) { // not in the list of reserved words
 			sym.id = symbol::IDENFR;
 			sym.str = token;
 		} else {
@@ -79,11 +79,14 @@ namespace {
 		assert(buf[counter] == '\''); // ensured by outer function
 		sym.id = symbol::CHARCON;
 		counter++;
-		assert(counter < buf.size());
+		if (counter >= buf.size()) {
+			err << error::LEX << endl;
+			return;
+		}
 		sym.ch = buf[counter];
 		counter++;
-		assert (counter < buf.size());
-		counter++;
+		if (counter >= buf.size() || buf[counter] == '\'') { counter++; } 
+		else { err << error::LEX << endl; }
 
 		if (sym.ch != '+' && sym.ch != '-' && sym.ch != '*' && 
 				sym.ch != '/' && !CType::isalnum(sym.ch)) {
@@ -106,7 +109,7 @@ namespace {
 			counter = buf.size();
 			for (char c = input.get(); c != '"'; c = input.get()) {
 				if (c == '\n') {
-					err << error::LEX << endl;
+					err << input.line() - 1 << (char) (error::LEX + 'a') << endl; // <>
 					return;
 				}
 				sym.str += c;
@@ -128,11 +131,13 @@ void lexer::getsym(void) {
 	if (!tracebackStack.empty()) {
 		sym = tracebackStack.back();
 		tracebackStack.pop_back();
-		log << "lexer: retracting " << sym << endl;
+		logger << "lexer: retracting " << sym << endl;
 		return;
 	}
 
 start:
+	sym.lastLine = input.line();
+
 	// check if buffer requires update
 	assert(counter <= buf.size());
 	if (counter >= buf.size()) { 
@@ -171,8 +176,8 @@ start:
 	case '!':
 		sym.set(symbol::COMP, symbol::NEQ);
 		counter++;
-		assert(buf[counter == '=']);
-		counter++;
+		if (buf[counter] == '=') { counter++; } 
+		else { err << error::LEX << endl; }
 		break;
 	case '=':
 		if (buf[counter + 1] == '=') {
@@ -196,12 +201,12 @@ start:
 		}
 		counter++;
 	}
-	log << sym << endl;
+	logger << sym << endl;
 }
 
 void lexer::traceback(const symbol::Symbol& lastSymbol) {
 	tracebackStack.push_back(sym);
 	sym = lastSymbol;
-	log << "lexer: tracing back to " << sym << endl;
+	logger << "lexer: tracing back to " << sym << endl;
 }
 

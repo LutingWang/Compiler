@@ -70,6 +70,9 @@ namespace symbol {
 	class Symbol {
 		friend std::ostream& operator << (std::ostream&, const symbol::Symbol&);
 	public:
+		// line number of the previous symbol
+		int lastLine;
+
 		// type identifier for the symbol
 		Type id;
 

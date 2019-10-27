@@ -49,8 +49,7 @@ bool Expr::factor(void) {
 			getsym();
 			if (sym.is(symbol::DELIM, symbol::LPARENT)) {
 				const symtable::FuncTable* ft = table.findFunc(name);
-				if (ft == nullptr) { err << error::NODEF << std::endl; }
-				else {
+				if (ft != nullptr) {
 					assert(!ft->isVoid);
 					isInt = ft->isInt;
 				}
@@ -88,8 +87,8 @@ bool Expr::item(void) {
 // <expr> ::= [<add op>]<item>{<add op><item>}
 bool Expr::expr(void) {
 	bool neg;
-	bool isInt = !basics::add(neg);
-	isInt = item() && isInt;
+	bool isInt = basics::add(neg);
+	isInt = item() || isInt;
 	if (basics::add(neg)) {
 		isInt = true;
 		do { item(); } while (basics::add(neg));

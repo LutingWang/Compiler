@@ -68,6 +68,7 @@ void Func::dec(void) {
 // This function is obligated to check whether the arg values
 // match with the function declaration.
 void Func::argValues(const symtable::FuncTable* ft) { 
+	if (ft == nullptr) { err << error::NODEF << std::endl; }
 	assert(sym.is(symbol::DELIM, symbol::LPARENT)); // ensured by outer function
 	getsym();
 

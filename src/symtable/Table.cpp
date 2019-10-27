@@ -35,7 +35,7 @@ const symtable::Entry* symtable::Table::push(const string& symName, const bool i
 	if (entry != nullptr) { err << error::REDEF << endl; } 
 	else {
 		entry = new Entry(isConst, isInt, value);
-		log << "symtable: insert " << *entry << ' ' << symName << endl;
+		logger << "symtable: insert " << *entry << ' ' << symName << endl;
 	}
 	return entry;
 }

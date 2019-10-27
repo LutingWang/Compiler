@@ -1,0 +1,36 @@
+const int PI=3;
+const char PLUS='+';
+
+int queue[5];
+int counter;
+
+int subPi(int x1,int x2){
+	return(x1+x2-PI);
+}
+
+char shiftPlus(int s1,int s2){
+	return(PLUS);
+}
+
+void printShift(int key,int s1,int s2){
+	if(key >= 1) printf(shiftPlus(s1,s2));
+	else{printf(shiftPlus(s2,s1));}
+}
+
+void printDefault(){
+	char c;
+	printShift(1,2,0);
+	printf("abc", c);
+	return;
+}
+
+void main(){
+	int a;
+	char c;
+	printDefault();
+	for(a=0;a>-5;a=a-1)
+		queue[-a]=1;
+	for(a=0;a<5;a=a+1)
+		queue[a]=1;
+	scanf(c);
+}

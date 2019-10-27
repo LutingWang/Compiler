@@ -59,9 +59,8 @@ bool Stat::Cond::_do(void) {
 	assert(sym.is(symbol::RESERVED, symbol::DOTK)); // ensured by outer function
 	getsym();
 	bool hasRet = stat();
-	if (!sym.is(symbol::RESERVED, symbol::WHILETK)) {
-		err << error::MISSING_WHILE << std::endl;
-	} else { getsym(); }
+	if (sym.is(symbol::RESERVED, symbol::WHILETK)) { getsym(); } 
+	else { err << error::MISSING_WHILE << std::endl; }
 	assert(sym.is(symbol::DELIM, symbol::LPARENT));
 	getsym();
 	cond();
@@ -75,7 +74,11 @@ bool Stat::Cond::_for(void) {
 	getsym();
 	assert(sym.is(symbol::DELIM, symbol::LPARENT));
 	getsym();
+	const symtable::Entry* entry;
 	assert(sym.is(symbol::IDENFR));
+	entry = table.findSym(sym.str);
+	if (entry == nullptr) { err << error::NODEF << std::endl; }
+	else if (entry->isConst) { err << error::ILLEGAL_ASSIGN << std::endl; }
 	getsym();
 	assert(sym.is(symbol::DELIM, symbol::ASSIGN));
 	getsym();
@@ -84,10 +87,15 @@ bool Stat::Cond::_for(void) {
 	cond();
 	error::assertSymIsSEMICN();
 	assert(sym.is(symbol::IDENFR));
+	entry = table.findSym(sym.str);
+	if (entry == nullptr) { err << error::NODEF << std::endl; }
+	else if (entry->isConst) { err << error::ILLEGAL_ASSIGN << std::endl; }
 	getsym();
 	assert(sym.is(symbol::DELIM, symbol::ASSIGN));
 	getsym();
 	assert(sym.is(symbol::IDENFR));
+	entry = table.findSym(sym.str);
+	if (entry == nullptr) { err << error::NODEF << std::endl; }
 	getsym();
 	bool minus;
 	assert(basics::add(minus));
@@ -108,6 +116,7 @@ void Stat::read(void) {
 		assert(sym.is(symbol::IDENFR));
 		entry = table.findSym(sym.str);
 		if (entry == nullptr) { err << error::NODEF << std::endl; }
+		else if (entry->isConst) { err << error::ILLEGAL_ASSIGN << std::endl; }
 		getsym();
 	} while (sym.is(symbol::DELIM, symbol::COMMA));
 	error::assertSymIsRPARENT();
@@ -135,23 +144,30 @@ void Stat::write(void) {
 void Stat::ret(void) {
 	assert(sym.is(symbol::RESERVED, symbol::RETURNTK)); // ensured by outer function
 	getsym();
-	if (sym.is(symbol::DELIM, symbol::LPARENT)) {
-		if (table.curFunc()->isVoid) {
+	if (table.isMain() || table.curFunc()->isVoid) {
+		if (sym.is(symbol::DELIM, symbol::LPARENT)) {
 			err << error::ILLEGAL_RET_WITH_VAL << std::endl;
+			getsym();
+			Expr::expr();
+			error::assertSymIsRPARENT();
 		}
+	} else if (sym.is(symbol::DELIM, symbol::LPARENT)) {
 		getsym();
-		Expr::expr();
+		bool isInt = Expr::expr();
+		if (table.curFunc()->isInt != isInt) {
+			err << error::ILLEGAL_RET_WITHOUT_VAL << std::endl;
+		}
 		error::assertSymIsRPARENT();
-	} else if (!table.curFunc()->isVoid) {
+	} else {
 		err << error::ILLEGAL_RET_WITHOUT_VAL << std::endl;
 	}
 }
 
 // <assign> ::= <iden>['['<expr>']']=<expr>
-//
-// The non-terminal <iden> is provided by outer function
-// in the form of `Entry*`.
+// <iden> is provided by outer function in the form of `Entry*`.
 void Stat::assign(const symtable::Entry* entry) {
+	if (entry == nullptr) { err << error::NODEF << std::endl; }
+	else if (entry->isConst) { err << error::ILLEGAL_ASSIGN << std::endl; }
 	assert(sym.is(symbol::DELIM));
 	switch (sym.num) {
 	case symbol::LBRACK:
@@ -165,8 +181,6 @@ void Stat::assign(const symtable::Entry* entry) {
 		break;
 	default: assert(0);
 	}
-	if (entry == nullptr) { err << error::NODEF << std::endl; }
-	else if (entry->isConst) { err << error::ILLEGAL_ASSIGN << std::endl; }
 }
 
 // <stat> ::= <if stat>|<while stat>|<do stat>|<for stat>|'{'{<stat>}'}'|<read stat>;|<write stat>;|<ret stat>;|<assign>;|<func call>;|;
@@ -244,12 +258,12 @@ void Stat::block(void) {
 		hasRet = stat() || hasRet;
 	}
 
+	// function main does not have subsequent symbols
 	if (!table.isMain()) {
 		// for non-void functions, the default <ret> will not fit
 		if (!table.curFunc()->isVoid && !hasRet) {
 			err << error::ILLEGAL_RET_WITHOUT_VAL << std::endl;
 		}
-		// function main does not have subsequent symbols
 		getsym();
 	}
 

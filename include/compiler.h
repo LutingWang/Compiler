@@ -8,12 +8,14 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
+#include <fstream>
 #include "InputFile.h"
 #include "Symbol.h"
-#include "debug.h"
+
+#define debug 0
 
 extern InputFile input;
-extern Debugger log;
+extern std::ofstream logger, err;
 
 namespace lexer {
 	void getsym(void);

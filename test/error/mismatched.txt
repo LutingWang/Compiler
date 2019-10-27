@@ -1,0 +1,163 @@
+int f1() { return(0); }
+char f2() { return ('c'); }
+void f3() {}
+
+int f4(int arg1) { return (0); }
+int f5(char arg1) { return (0); }
+char f6(int arg1) { return ('c'); }
+char f7(char arg1) { return ('c'); }
+void f8(int arg1) { return; }
+void f9(char arg1) { return; }
+
+int f10(int arg1, int arg2) { return (0); }
+int f11(int arg1, char arg2) { return (0); }
+int f12(char arg1, int arg2) { return (0); }
+int f13(char arg1, char arg2) { return (0); }
+char f14(int arg1, int arg2) { return ('c'); }
+char f15(int arg1, char arg2) { return ('c'); }
+char f16(char arg1, int arg2) { return ('c'); }
+char f17(char arg1, char arg2) { return ('c'); }
+void f18(int arg1, int arg2) { return; }
+void f19(int arg1, char arg2) { return; }
+void f20(char arg1, int arg2) { return; }
+void f21(char arg1, char arg2) { return; }
+
+void main() {
+	int a;
+	char b;
+	f1(a);
+	f1(b);
+	f1(a, a);
+	f1(a, b);
+	f1(b, a);
+	f1(b, b);
+	f2(a);
+	f2(b);
+	f2(a, a);
+	f2(a, b);
+	f2(b, a);
+	f2(b, b);
+	f3(a);
+	f3(b);
+	f3(a, a);
+	f3(a, b);
+	f3(b, a);
+	f3(b, b);
+	f4();
+	f4(b);
+	f4(a, a);
+	f4(a, b);
+	f4(b, a);
+	f4(b, b);
+	f5();
+	f5(a);
+	f5(a, a);
+	f5(a, b);
+	f5(b, a);
+	f5(b, b);
+	f6();
+	f6(b);
+	f6(a, a);
+	f6(a, b);
+	f6(b, a);
+	f6(b, b);
+	f7();
+	f7(a);
+	f7(a, a);
+	f7(a, b);
+	f7(b, a);
+	f7(b, b);
+	f8();
+	f8(b);
+	f8(a, a);
+	f8(a, b);
+	f8(b, a);
+	f8(b, b);
+	f9();
+	f9(a);
+	f9(a, a);
+	f9(a, b);
+	f9(b, a);
+	f9(b, b);
+	f10();
+	f10(a);
+	f10(b);
+	f10(a, b);
+	f10(b, a);
+	f10(b, b);
+	f11();
+	f11(a);
+	f11(b);
+	f11(a, a);
+	f11(b, a);
+	f11(b, b);
+	f12();
+	f12(a);
+	f12(b);
+	f12(a, a);
+	f12(a, b);
+	f12(b, b);
+	f13();
+	f13(a);
+	f13(b);
+	f13(a, a);
+	f13(a, b);
+	f13(b, a);
+	f14();
+	f14(a);
+	f14(b);
+	f14(a, b);
+	f14(b, a);
+	f14(b, b);
+	f15();
+	f15(a);
+	f15(b);
+	f15(a, a);
+	f15(b, a);
+	f15(b, b);
+	f16();
+	f16(a);
+	f16(b);
+	f16(a, a);
+	f16(a, b);
+	f16(b, b);
+	f17();
+	f17(a);
+	f17(b);
+	f17(a, a);
+	f17(a, b);
+	f17(b, a);
+	f18();
+	f18(a);
+	f18(b);
+	f18(a, b);
+	f18(b, a);
+	f18(b, b);
+	f19();
+	f19(a);
+	f19(b);
+	f19(a, a);
+	f19(b, a);
+	f19(b, b);
+	f20();
+	f20(a);
+	f20(b);
+	f20(a, a);
+	f20(a, b);
+	f20(b, b);
+	f21();
+	f21(a);
+	f21(b);
+	f21(a, a);
+	f21(a, b);
+	f21(b, a);
+	
+	if (b) {}
+	if (b > a) {}
+	if (a > b) {}
+	if (b > b) {}
+	if (f2()) {}
+	if (f2() > a) {}
+	if (a > f2()) {}
+	if (f2() > f2()) {}
+}

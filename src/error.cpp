@@ -8,6 +8,16 @@
 #include "error.h"
 
 std::ostream& error::operator << (std::ostream& output, Code c) {
-	output << input.line() << ' ' << (char) (c + 'a');
+	switch (c) {
+	case MISSING_SEMICN: 
+	case MISSING_RPARENT:
+	case MISSING_RBRACK:
+	case MISSING_WHILE:
+		output << sym.lastLine;
+		break;
+	default:
+		output << input.line();
+	}
+	output << ' ' << (char) (c + 'a');
 	return output;
 }

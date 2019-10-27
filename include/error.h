@@ -9,10 +9,10 @@
 #define ERROR_H
 
 #include <exception>
+#include <cassert>
 #include <string>
 #include "compiler.h"
-
-extern Debugger err;
+#include "symtable.h"
 
 namespace error {
 	enum Code {

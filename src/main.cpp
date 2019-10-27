@@ -10,8 +10,15 @@
 #include "compiler.h"
 using namespace std;
 
-InputFile input(PROJECT_BASE_DIR "/test/error/illegal.txt");
-Debugger log, err;
+#if debug
+	InputFile input(PROJECT_BASE_DIR "/test/error/def.txt");
+	ofstream logger(PROJECT_BASE_DIR "/log.txt");
+	ofstream err(PROJECT_BASE_DIR "/test/error/def.out");
+#else
+	InputFile input("testfile.txt");
+	ofstream logger("log.txt");
+	ofstream err("error.txt");
+#endif /* debug */
 
 int main() {
 	// print compiler version info

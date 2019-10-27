@@ -1,5 +1,8 @@
-tags
 build/
 Xcode/
+judge/
 include/compilerConfig.h
-test/
+log.txt
+test/**/*.out
+.DS_Store
+**/.DS_Store

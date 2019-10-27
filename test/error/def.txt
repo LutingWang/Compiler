@@ -1,0 +1,71 @@
+const int a = 1, normal_ci = 0, a = 2;
+const int b = 1;
+const int b = 2;
+const char c = 'c', normal_cc = 'n', c = 'd';
+const char d = 'c';
+const char d = 'd';
+int e, normal_i, e;
+int f;
+int f;
+char g, normal_c, g;
+char h;
+char h;
+
+int f1() { return(0); }
+int f1() { return(0); }
+
+char f2() { return('c'); }
+char f2() { return('c'); }
+
+int f3() { return(0); }
+char f3() { return('c');}
+
+char f4() { return('c');}
+int f4() { return(0); }
+
+void f5() {}
+void f5() {}
+
+void f6() {}
+int f6() { return(0); }
+
+int f7() { return(0); }
+void f7() {}
+
+void f8() {}
+char f8() { return('c');}
+
+char f9() { return('c');}
+void f9() {}
+
+void f10(int arg1, int arg1) {}
+void f11(char arg2, char arg2) {}
+void f12(int arg3, char arg3) {}
+void f13(char arg4, int arg4) {}
+
+void f14(int arg5) { const int arg5 = 1; }
+void f15(int arg6) { const char arg6 = 'c'; }
+void f16(int arg7) { int arg7; }
+void f17(int arg8) { char arg8; }
+void f18(char arg9) { const int arg9 = 1; }
+void f19(char arg10) { const char arg10 = 'c'; }
+void f20(char arg11) { int arg11; }
+void f21(char arg12) { char arg12; }
+
+void const_def() {
+	const int a = 'c';
+	const int b = printf;
+	const char c = 1;
+	const char d = printf;
+}
+
+void main() {
+	var1 = 1;
+	var2[0] = 1;
+	normal_i = var3;
+	scanf(var4);
+	printf("abc", var5);
+	func1();
+	func2(normal_i);
+	func3(normal_i, normal_c);
+}

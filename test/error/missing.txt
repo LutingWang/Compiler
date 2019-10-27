@@ -1,0 +1,44 @@
+int a[2, normal_i, b[5;
+char c[2, normal_c, d[5;
+
+int f1( { return(0); }
+int f2(int arg1 { return(0); }
+int f3(int arg1, int arg2 { return(0); }
+
+void f4( {}
+void f5(int arg1 {}
+void f6(int arg1, int arg2 {}
+
+int f7() { return (0; }
+
+int f8() { return (0) }
+void f9() { return }
+
+void main( {
+	a[0 = 1;
+	a[1] = (a[0];
+	if (a[0] {}
+	while (a[0] {}
+	do {} while (a[0]
+	for (a = a[0]; a[0]; a = a + 1 {}
+	f1(;
+	f2(a[0];
+	f3(a[0], a[1];
+	f4(;
+	f5(a[0];
+	f6(a[0], a[1];
+	scanf(a;
+	printf("abc";
+	printf(a;
+	printf("abc", a;
+
+	f1()
+	f4()
+	a[0] = 1
+	scanf(a)
+	printf("abc")
+	printf(a)
+	printf("abc", a)
+
+	do {} (a[0]);
+}

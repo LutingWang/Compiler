@@ -21,7 +21,7 @@ void symtable::Database::pushFunc(const string& funcName, FuncTable* ft) {
 	}
 	ftp = ft;
 	_cur = ftp;
-	log << "symtable: insert " << *ft << ' ' << funcName << endl;
+	logger << "symtable: insert " << *ft << ' ' << funcName << endl;
 }
 
 symtable::Database::~Database(void) {
@@ -29,7 +29,7 @@ symtable::Database::~Database(void) {
 			it != _func.end(); it++) {
 		delete it->second;
 	}
-	log << "symtable: deconstruction succeeded" << endl;
+	logger << "symtable: deconstruction succeeded" << endl;
 }
 
 symtable::FuncTable* symtable::Database::curFunc(void) const {
