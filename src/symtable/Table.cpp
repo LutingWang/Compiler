@@ -11,7 +11,7 @@
 using namespace std;
 
 ostream& symtable::operator << (ostream& output, const Entry& e) {
-	output << typeid(e).name() << '<';
+	output << typeid(e).name() << ':' << e._name << '<';
 	if (e.isConst) {
 		output << "const ";
 		if (e.isInt) { output << "int("  << e.value << ')'; } 
@@ -30,18 +30,18 @@ symtable::Table::~Table(void) {
 	}
 }
 
-const symtable::Entry* symtable::Table::push(const string& symName, const bool isConst, const bool isInt, const int value) {
+symtable::Entry* symtable::Table::push(const string& symName, const bool isConst, const bool isInt, const int value) {
 	Entry*& entry = _syms[symName];
-	if (entry != nullptr) { err << error::REDEF << endl; } 
+	if (entry != nullptr) { err << error::Code::REDEF << endl; } 
 	else {
-		entry = new Entry(isConst, isInt, value);
-		logger << "symtable: insert " << *entry << ' ' << symName << endl;
+		entry = new Entry(_name + '_' + symName, isConst, isInt, value);
+		logger << "symtable: insert " << *entry << endl;
 	}
 	return entry;
 }
 
 ostream& symtable::operator << (ostream& output, const FuncTable& ft) {
-	output << typeid(ft).name() << '<';
+	output << typeid(ft).name() << ':' << ft._name << '<';
 	if (ft.isVoid) { output << "void"; }
 	else if (ft.isInt) { output << "int"; }
 	else { output << "char"; }

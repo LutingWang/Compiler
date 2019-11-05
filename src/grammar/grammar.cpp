@@ -18,6 +18,6 @@ void grammar::parse(void) try {
 	Var::dec();
 	Func::dec();
 } catch (error::Ueof& e) {
-	err << error::UNEXPECTED_EOF << std::endl;
+	err << error::Code::UNEXPECTED_EOF << std::endl;
 }
 

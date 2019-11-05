@@ -12,6 +12,7 @@
 #include "Expr.h"
 #include "Func.h"
 #include "Stat.h"
+#include "MidCode.h"
 #include "symtable.h"
 #include "error.h"
 using lexer::getsym;
@@ -20,19 +21,19 @@ using lexer::getsym;
 void Func::args(void) {
 	bool isInt;
 	if (!basics::typeId(isInt)) { return; } // empty is allowed 
-	assert(sym.is(symbol::IDENFR));
+	assert(sym.is(symbol::Type::IDENFR));
 	table.pushArg(sym.str, isInt);
-	for (getsym(); sym.is(symbol::DELIM, symbol::COMMA); getsym()) {
+	for (getsym(); sym.is(symbol::Type::DELIM, symbol::COMMA); getsym()) {
 		getsym();
 		assert(basics::typeId(isInt));
-		assert(sym.is(symbol::IDENFR));
+		assert(sym.is(symbol::Type::IDENFR));
 		table.pushArg(sym.str, isInt);
 	}
 }
 
 // <func def> ::= '('<args>')'<block>
 void Func::def(void) {
-	assert(sym.is(symbol::DELIM, symbol::LPARENT));
+	assert(sym.is(symbol::Type::DELIM, symbol::LPARENT));
 	getsym();
 	args();
 	error::assertSymIsRPARENT();
@@ -43,20 +44,20 @@ void Func::def(void) {
 void Func::dec(void) {
 	bool isInt;
 	while (true) {
-		assert(sym.is(symbol::RESERVED));
+		assert(sym.is(symbol::Type::RESERVED));
 		if (!basics::typeId(isInt)) {
 			assert(sym.numIs(symbol::VOIDTK));
 			getsym();
-			if (!sym.is(symbol::IDENFR)) { break; }
+			if (!sym.is(symbol::Type::IDENFR)) { break; }
 			table.pushFunc(sym.str);
 		} else {
-			assert(sym.is(symbol::IDENFR));
+			assert(sym.is(symbol::Type::IDENFR));
 			table.pushFunc(sym.str, isInt);
 		}
 		getsym();
 		def();
 	}
-	assert(sym.is(symbol::RESERVED, symbol::MAINTK));
+	assert(sym.is(symbol::Type::RESERVED, symbol::MAINTK));
 	table.pushFunc();
 	getsym();
 	def();
@@ -64,35 +65,46 @@ void Func::dec(void) {
 
 // <arg values> ::= '('[<expr>{,<expr>}]')'
 // input : information on the corresponding function
+// output : mid code target t0
+// 
+// Output is set to null only when function is void. Otherwise, 
+// the `isInt` field of return value indicates whether the 
+// original function was int.
 //
 // This function is obligated to check whether the arg values
 // match with the function declaration.
-void Func::argValues(const symtable::FuncTable* ft) { 
-	if (ft == nullptr) { err << error::NODEF << std::endl; }
-	assert(sym.is(symbol::DELIM, symbol::LPARENT)); // ensured by outer function
+symtable::Entry* Func::argValues(const symtable::FuncTable* ft) { 
+	if (ft == nullptr) { err << error::Code::NODEF << std::endl; }
+	assert(sym.is(symbol::Type::DELIM, symbol::LPARENT)); // ensured by outer function
 	getsym();
 
-	std::vector<bool> argv;
-	if (!sym.is(symbol::DELIM, symbol::RPARENT|symbol::SEMICN)) { // ')' might be missing
+	std::vector<symtable::Entry*> argv;
+	if (!sym.is(symbol::Type::DELIM, symbol::RPARENT|symbol::SEMICN)) { // ')' might be missing
 		while (true) {
 			argv.push_back(Expr::expr());
-			if (!sym.is(symbol::DELIM, symbol::COMMA)) { break; }
+			MidCode(MidCode::Instr::PUSH_ARG, nullptr, argv.back(), nullptr);
+			if (!sym.is(symbol::Type::DELIM, symbol::COMMA)) { break; }
 			getsym();
 		}
 	}
 	error::assertSymIsRPARENT();
 
 	// error handling
-	if (ft == nullptr) { return; }
-	const std::vector<const symtable::Entry*>& al = ft->argList();
+	if (ft == nullptr) { return nullptr; }
+	const std::vector<symtable::Entry*>& al = ft->argList();
 	if (argv.size() != al.size()) {
-		err << error::MISMATCHED_ARG_NUM << std::endl;
+		err << error::Code::MISMATCHED_ARG_NUM << std::endl;
 	} else for (int i = 0; i < argv.size(); i++) {
 		assert(!al[i]->isConst); // ensured by symtable
-		if (argv[i] != al[i]->isInt) {
-			err << error::MISMATCHED_ARG_TYPE << std::endl;
+		if (argv[i]->isInt != al[i]->isInt) {
+			err << error::Code::MISMATCHED_ARG_TYPE << std::endl;
 			break;
 		}
 	}
+
+	// generate mid code
+	symtable::Entry* t0 = ft->isVoid ? nullptr : MidCode::genVar(ft->isInt);
+	MidCode(MidCode::Instr::CALL, t0, nullptr, nullptr, ft->name());
+	return t0;
 }
 

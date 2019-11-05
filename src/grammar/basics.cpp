@@ -7,6 +7,7 @@
 
 #include "compiler.h"
 #include "basics.h"
+#include "Symbol.h"
 using lexer::getsym;
 
 namespace {
@@ -32,15 +33,15 @@ namespace {
 
 // <add op> ::= +|-
 bool basics::add(bool& isNeg) {
-	return _template<symbol::OPER>(isNeg, symbol::MINU, symbol::PLUS);
+	return _template<symbol::Type::OPER>(isNeg, symbol::MINU, symbol::PLUS);
 }
 
 // <mult op> ::= *|/
 bool basics::mult(bool& isMult) {
-	return _template<symbol::OPER>(isMult, symbol::MULT, symbol::DIV);
+	return _template<symbol::Type::OPER>(isMult, symbol::MULT, symbol::DIV);
 }
 
 // <type id> ::= int|char
 bool basics::typeId(bool& isInt) {
-	return _template<symbol::RESERVED>(isInt, symbol::INTTK, symbol::CHARTK);
+	return _template<symbol::Type::RESERVED>(isInt, symbol::INTTK, symbol::CHARTK);
 }

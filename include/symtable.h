@@ -13,60 +13,80 @@
 #include <string>
 #include <vector>
 
+class MidCode;
+
 namespace symtable {
 	// One record in the database. A record represents 
 	// a variable (argument) or constant in the scope.
-	// It is necessary for the record to save whether
-	// the symbol is 
-	//		const or not	- isConst
-	//		int or char		- isInt
-	// and also an extra field `value`.
-	//
-	// For a constant, value represents the magnitude of 
-	// a int or the ASCII of a char. For a variable,
-	// value is used to distinguish array, where value 
-	// is the length of this array, from single values
-	// where value takes -1.
-	struct Entry {
-		bool isConst, isInt;
-		int value; 
+	class Entry {
+		friend std::ostream& operator << (std::ostream&, const Entry&);
 
-		Entry(bool isConst, bool isInt, int value) : 
-			isConst(isConst), isInt(isInt), value(value) {}
+		const std::string _name;
+	public:
+		const bool isConst; 
+		const bool isInt; // int or char
+		
+		// For a constant, value represents the magnitude of 
+		// an int or the ASCII of a char. For a variable,
+		// value is used to distinguish array, where value 
+		// is the length of this array, from single values
+		// where value takes -1.
+		const int value; 
+
+		Entry(const std::string& name, const bool isConst, const bool isInt, const int value) : 
+			_name(name), isConst(isConst), isInt(isInt), value(value) {}
+
+		bool isArray(void) const { return !isConst && value > -1; }
+
+		std::string name(void) const { return _name; }
 	};
-	
-	std::ostream& operator << (std::ostream&, const Entry&);
 
 	// One table in the database. A table represents a
 	// scope in the program. In this scenario where scopes
 	// cannot be nested, scope has the same meaning as 
 	// functions, except for the global scope which is 
 	// seen as a sepcial outer function.
-	//
-	// Inside each table, the primary key is set as the
-	// name of a symbol. Thus, the integrity constraints
-	// helps to ensure that no symbol is redefined. 
 	class Table {
 		friend class Database;
+		friend class ::MidCode;
 	protected:
+		const std::string _name;
+
+		Table(const std::string& name) : _name(name) {}
+
+		// The primary key is set as the name of a symbol. 
+		// Thus, the integrity constraints helps to ensure 
+		// that no symbol is redefined. 
 		std::map<std::string, Entry*> _syms;
+
+		std::vector<MidCode*> _midcode;
+
+		// If a top level return has been detected, no 
+		// more mid code should be generated.
+		bool _hasRet = false;
 
 		~Table(void);
 
-		const Entry* find(const std::string& symName) { return _syms[symName]; }
+		Entry* find(const std::string& symName) { return _syms[symName]; }
 
-		const Entry* push(const std::string&, const bool isConst, const bool isInt, const int = -1);
+		Entry* push(const std::string&, const bool isConst, const bool isInt, const int = -1);
+	public:
+		std::string name(void) const { return _name; }
+
+		bool hasRet(void) const { return _hasRet; }
 	};
 	
 	class FuncTable : public Table {
 		friend class Database;
 		friend std::ostream& operator << (std::ostream&, const FuncTable&);
 	protected:
-		std::vector<const Entry*> _argList; // arg is int or not
+		std::vector<Entry*> _argList; // arg is int or not
 
-		FuncTable(void) : isVoid(true), isInt(false) {}
+		FuncTable(void) : Table("unknown"), isVoid(true), isInt(false) {}
 
-		FuncTable(const bool isInt) : isVoid(false), isInt(isInt) {}
+		FuncTable(const std::string& name) : Table(name), isVoid(true), isInt(false) {}
+
+		FuncTable(const std::string& name, const bool isInt) : Table(name), isVoid(false), isInt(isInt) {}
 
 		void pushArg(const std::string& symName, const bool isInt) {
 			_argList.push_back(push(symName, false, isInt));
@@ -74,10 +94,13 @@ namespace symtable {
 	public:
 		const bool isVoid, isInt;
 
-		const std::vector<const Entry*>& argList(void) const { return _argList; }
+		const std::vector<Entry*>& argList(void) const { return _argList; }
 	};
 	
+	// public interface
 	class Database {
+		friend class ::MidCode;
+
 		Table _global;
 		std::map<std::string, FuncTable*> _func;
 		Table _main;
@@ -85,6 +108,8 @@ namespace symtable {
 
 		void pushFunc(const std::string&, FuncTable*);
 	public:
+		Database(void) : _global("global"), _main("main") {}
+
 		~Database(void);
 
 		bool isMain(void) const { return _cur == &_main; }
@@ -95,15 +120,15 @@ namespace symtable {
 		// if the symbol is not defined, return nullptr
 		// the caller is obligated to check
 		const FuncTable* findFunc(const std::string& funcName) { return _func[funcName]; }
-		const Entry* findSym(const std::string&);
+		Entry* findSym(const std::string&);
 
 		// automatically check for re-definition
 		void pushFunc(const std::string& funcName) { 
-			pushFunc(funcName, new FuncTable()); 
+			pushFunc(funcName, new FuncTable(funcName)); 
 		}
 
 		void pushFunc(const std::string& funcName, const bool isInt) {
-			pushFunc(funcName, new FuncTable(isInt));
+			pushFunc(funcName, new FuncTable(funcName, isInt));
 		}
 
 		void pushFunc(void) { _cur = &_main; }
@@ -113,6 +138,9 @@ namespace symtable {
 		}
 
 		void pushSym(const std::string&, const bool isConst, const bool isInt, const int = -1);
+		
+		// This function can only be called by `Stat::block`
+		void setHasRet(void) { _cur->_hasRet = true; }
 	};
 }
 

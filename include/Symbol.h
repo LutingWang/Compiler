@@ -21,7 +21,7 @@ namespace symbol {
 		EXPR, EXPR_ITEM, EXPR_FACTOR 
 	};
 
-	enum Type { IDENFR, INTCON, CHARCON, STRCON, RESERVED, DELIM, OPER, COMP };
+	enum class Type { IDENFR, INTCON, CHARCON, STRCON, RESERVED, DELIM, OPER, COMP };
 
 	enum Reserved {
 		CONSTTK		= 0x0001, 

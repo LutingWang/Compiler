@@ -8,14 +8,17 @@
 #ifndef FUNC_H
 #define FUNC_H
 
-#include "symtable.h"
+namespace symtable {
+	class Entry;
+	class FuncTable;
+}
 
 class Func {
 	static void args(void);
 	static void def(void);
 public:
 	static void dec(void);
-	static void argValues(const symtable::FuncTable*);
+	static symtable::Entry* argValues(const symtable::FuncTable*);
 };
 
 #endif /* FUNC_H */

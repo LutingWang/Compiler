@@ -17,9 +17,9 @@ std::ostream& symbol::operator << (std::ostream& output, const Symbol& s) {
 	#error macro conflict
 #endif
 #define CASE(id, info) case id: output << #id << ' ' << info; break
-	CASE(IDENFR, sym.str); CASE(INTCON, sym.num);
-	CASE(CHARCON, sym.ch); CASE(STRCON, sym.str);
-	case RESERVED:
+	CASE(Type::IDENFR, sym.str); CASE(Type::INTCON, sym.num);
+	CASE(Type::CHARCON, sym.ch); CASE(Type::STRCON, sym.str);
+	case Type::RESERVED:
 		switch (sym.num) {
 		CASE(CONSTTK, "const"); CASE(INTTK, "int"); CASE(CHARTK, "char"); 
 		CASE(VOIDTK, "void"); CASE(MAINTK, "main"); CASE(IFTK, "if");
@@ -28,19 +28,19 @@ std::ostream& symbol::operator << (std::ostream& output, const Symbol& s) {
 		CASE(RETURNTK, "return");
 		}
 		break;
-	case DELIM:
+	case Type::DELIM:
 		switch (sym.num) {
 		CASE(ASSIGN, "="); CASE(SEMICN, ";"); CASE(COMMA, ","); 
 		CASE(LPARENT, "("); CASE(RPARENT, ")"); CASE(LBRACK, "["); 
 		CASE(RBRACK, "]"); CASE(LBRACE, "{"); CASE(RBRACE, "}");
 		}
 		break;
-	case OPER:
+	case Type::OPER:
 		switch (sym.num) {
 		CASE(PLUS, "+"); CASE(MINU, "-"); CASE(MULT, "*"); CASE(DIV, "/");
 		}
 		break;
-	case COMP:
+	case Type::COMP:
 		switch (sym.num) {
 		CASE(LSS, "<"); CASE(LEQ, "<="); CASE(GRE, ">"); 
 		CASE(GEQ, ">="); CASE(EQL, "=="); CASE(NEQ, "!=");

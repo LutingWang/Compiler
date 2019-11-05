@@ -8,19 +8,19 @@
 #ifndef STAT_H
 #define STAT_H
 
-#include "symtable.h"
+#include <string>
+
+namespace symtable {
+	class Entry;
+}
 
 // The return values indicate whether the current
 // <stat> has <ret> covering all the paths. All 
 // non-terminals with <stat> inside (except for 
 // <block>) should return. 
-//
-// Since <block> can only show up in <func def>, it 
-// is obligated to check whether <ret> has covered 
-// all paths.
 class Stat {
 	class Cond {
-		static void cond(void);
+		static void cond(const bool, const std::string&);
 	public:
 		static bool _if(void);
 		static bool _while(void);
@@ -30,9 +30,12 @@ class Stat {
 	static void read(void);
 	static void write(void);
 	static void ret(void);
-	static void assign(const symtable::Entry*);
+	static void assign(symtable::Entry* const);
 	static bool stat(void);
 public:
+	// Since <block> can only show up in <func def>, it 
+	// is obligated to check whether <ret> has covered 
+	// all paths. Thus, it does not have a return value.
 	static void block(void);
 };
 

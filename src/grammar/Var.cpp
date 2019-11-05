@@ -17,9 +17,9 @@ using lexer::getsym;
 // <index> ::= '['<unsigned int>']'
 // output : identified length of array
 unsigned int Var::index(void) {
-	assert(sym.is(symbol::DELIM, symbol::LBRACK)); // ensured by outer function
+	assert(sym.is(symbol::Type::DELIM, symbol::LBRACK)); // ensured by outer function
 	getsym();
-	assert(sym.is(symbol::INTCON));
+	assert(sym.is(symbol::Type::INTCON));
 	unsigned int result = sym.num;
 	getsym();
 	error::assertSymIsRBRACK();
@@ -31,10 +31,10 @@ unsigned int Var::index(void) {
 // input : type of variable is int or char
 // output : returned normally or as a result of traceback
 bool Var::def(const bool isInt) {
-	if (!sym.is(symbol::IDENFR)) { return false; }
+	if (!sym.is(symbol::Type::IDENFR)) { return false; }
 	symbol::Symbol lastSymbol = sym;
 	getsym();
-	if (!sym.is(symbol::DELIM)) {
+	if (!sym.is(symbol::Type::DELIM)) {
 		lexer::traceback(lastSymbol);
 		return false;
 	}
@@ -50,12 +50,12 @@ bool Var::def(const bool isInt) {
 	}
 
 	// traceback = false
-	while (sym.is(symbol::DELIM, symbol::COMMA)) {
+	while (sym.is(symbol::Type::DELIM, symbol::COMMA)) {
 		getsym();
-		assert(sym.is(symbol::IDENFR));
+		assert(sym.is(symbol::Type::IDENFR));
 		idenName = sym.str;
 		getsym();
-		assert(sym.is(symbol::DELIM));
+		assert(sym.is(symbol::Type::DELIM));
 		if (sym.numIs(symbol::LBRACK)) { table.pushSym(idenName, false, isInt, index()); } 
 		else { table.pushSym(idenName, false, isInt); }
 	}

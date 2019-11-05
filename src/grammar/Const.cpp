@@ -18,37 +18,37 @@ using lexer::getsym;
 // <const def> ::= int<iden>=<integer>{,<iden>=<integer>}|char<iden>=<char>{,<iden>=<char>}
 void Const::def(void) {
 	// do not use `basics::typeId` or it will read a sym
-	assert(sym.is(symbol::RESERVED, symbol::INTTK|symbol::CHARTK));
+	assert(sym.is(symbol::Type::RESERVED, symbol::INTTK|symbol::CHARTK));
 	bool isInt = sym.numIs(symbol::INTTK); 
 
 	// recursively identify identifier and its value
 	std::string idenName;
 	do {
 		getsym();
-		assert(sym.is(symbol::IDENFR));
+		assert(sym.is(symbol::Type::IDENFR));
 		idenName = sym.str;
 
 		getsym();
-		assert(sym.is(symbol::DELIM, symbol::ASSIGN));
+		assert(sym.is(symbol::Type::DELIM, symbol::ASSIGN));
 
 		getsym();
 		int num = sym.ch;
-		if (!isInt && sym.is(symbol::CHARCON)) { getsym(); }
+		if (!isInt && sym.is(symbol::Type::CHARCON)) { getsym(); }
 		// error happens if symbol is char or the value is not an integer
 		else if (!isInt || !Expr::integer(num)) {
-			err << error::EXPECTED_LITERAL << std::endl;
+			err << error::Code::EXPECTED_LITERAL << std::endl;
 			// jump to the next ',' or ';'
-			while (!sym.is(symbol::DELIM, symbol::COMMA|symbol::SEMICN)) {
+			while (!sym.is(symbol::Type::DELIM, symbol::COMMA|symbol::SEMICN)) {
 				getsym();
 			}
 		}
 		table.pushSym(idenName, true, isInt, num); 
-	} while (sym.is(symbol::DELIM, symbol::COMMA));
+	} while (sym.is(symbol::Type::DELIM, symbol::COMMA));
 }
 
 // <const dec> ::= {const<const def>;}
 void Const::dec(void) {
-	while (sym.is(symbol::RESERVED, symbol::CONSTTK)) {
+	while (sym.is(symbol::Type::RESERVED, symbol::CONSTTK)) {
 		getsym();
 		def();
 		error::assertSymIsSEMICN();

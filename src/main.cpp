@@ -8,17 +8,18 @@
 #include <iostream>
 #include "compilerConfig.h"
 #include "compiler.h"
+#include "InputFile.h"
 using namespace std;
 
-#if debug
-	InputFile input(PROJECT_BASE_DIR "/test/error/def.txt");
+#if judge
+	InputFile input(PROJECT_BASE_DIR "/test/testfile1.txt");
 	ofstream logger(PROJECT_BASE_DIR "/log.txt");
-	ofstream err(PROJECT_BASE_DIR "/test/error/def.out");
+	ofstream err(PROJECT_BASE_DIR "/test/testfile1.out");
 #else
 	InputFile input("testfile.txt");
 	ofstream logger("log.txt");
 	ofstream err("error.txt");
-#endif /* debug */
+#endif /* judge */
 
 int main() {
 	// print compiler version info

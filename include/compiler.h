@@ -9,13 +9,16 @@
 #define COMPILER_H
 
 #include <fstream>
-#include "InputFile.h"
-#include "Symbol.h"
 
-#define debug 0
+#define judge 1
 
+class InputFile;
 extern InputFile input;
 extern std::ofstream logger, err;
+
+namespace symbol { 
+	class Symbol; 
+}
 
 namespace lexer {
 	void getsym(void);

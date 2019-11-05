@@ -10,6 +10,7 @@
 #include <vector>
 #include "compiler.h"
 #include "error.h"
+#include "InputFile.h"
 using namespace std;
 
 namespace {
@@ -54,10 +55,10 @@ namespace {
 		string token = buf.substr(counter, i - counter); 
 		vector<string>::iterator it = find(reserved.begin(), reserved.end(), token);
 		if (it == reserved.end()) { // not in the list of reserved words
-			sym.id = symbol::IDENFR;
+			sym.id = symbol::Type::IDENFR;
 			sym.str = token;
 		} else {
-			sym.set(symbol::RESERVED, 1 << (it - reserved.begin()));
+			sym.set(symbol::Type::RESERVED, 1 << (it - reserved.begin()));
 		}
 		counter = i;
 	}
@@ -65,7 +66,7 @@ namespace {
 	// <unsigned int> ::= <non-zero digit>{<digit>}|0
 	void parseInt(void) {
 		assert(CType::isdigit(buf[counter])); // ensured by outer function
-		sym.set(symbol::INTCON, buf[counter] - '0');
+		sym.set(symbol::Type::INTCON, buf[counter] - '0');
 		counter++;
 		if (sym.num == 0) return;
 		while (counter < buf.size() && CType::isdigit(buf[counter])) {
@@ -77,20 +78,20 @@ namespace {
 	// <char> ::= '(+|-|*|/|<alpha>|<digit>)'
 	void parseChar(void) {
 		assert(buf[counter] == '\''); // ensured by outer function
-		sym.id = symbol::CHARCON;
+		sym.id = symbol::Type::CHARCON;
 		counter++;
 		if (counter >= buf.size()) {
-			err << error::LEX << endl;
+			err << error::Code::LEX << endl;
 			return;
 		}
 		sym.ch = buf[counter];
 		counter++;
 		if (counter >= buf.size() || buf[counter] == '\'') { counter++; } 
-		else { err << error::LEX << endl; }
+		else { err << error::Code::LEX << endl; }
 
 		if (sym.ch != '+' && sym.ch != '-' && sym.ch != '*' && 
 				sym.ch != '/' && !CType::isalnum(sym.ch)) {
-			err << error::LEX << endl;
+			err << error::Code::LEX << endl;
 		}
 	}
 	
@@ -100,7 +101,7 @@ namespace {
 	// ending '"' till the end of line
 	void parseStr(void) {
 		assert(buf[counter] == '"'); // ensured by outer function
-		sym.id = symbol::STRCON;
+		sym.id = symbol::Type::STRCON;
 		counter++;
 		int i;
 		for (i = counter; i < buf.size() && buf[i] != '"'; i++);
@@ -109,7 +110,7 @@ namespace {
 			counter = buf.size();
 			for (char c = input.get(); c != '"'; c = input.get()) {
 				if (c == '\n') {
-					err << input.line() - 1 << (char) (error::LEX + 'a') << endl; // <>
+					err << error::Code::LEX << endl;
 					return;
 				}
 				sym.str += c;
@@ -119,7 +120,7 @@ namespace {
 		// non-structural error
 		for (char c : sym.str) {
 			if (c < 32 || c > 126) {
-				err << error::LEX << endl;
+				err << error::Code::LEX << endl;
 				break;
 			}
 		}
@@ -157,45 +158,45 @@ start:
 		break;
 	case '<':
 		if (buf[counter + 1] == '=') {
-			sym.set(symbol::COMP, symbol::LEQ);
+			sym.set(symbol::Type::COMP, symbol::LEQ);
 			counter += 2;
 		} else {
-			sym.set(symbol::COMP, symbol::LSS);
+			sym.set(symbol::Type::COMP, symbol::LSS);
 			counter++;
 		}
 		break;
 	case '>':
 		if (buf[counter + 1] == '=') {
-			sym.set(symbol::COMP, symbol::GEQ);
+			sym.set(symbol::Type::COMP, symbol::GEQ);
 			counter += 2;
 		} else {
-			sym.set(symbol::COMP, symbol::GRE);
+			sym.set(symbol::Type::COMP, symbol::GRE);
 			counter++;
 		}
 		break;
 	case '!':
-		sym.set(symbol::COMP, symbol::NEQ);
+		sym.set(symbol::Type::COMP, symbol::NEQ);
 		counter++;
 		if (buf[counter] == '=') { counter++; } 
-		else { err << error::LEX << endl; }
+		else { err << error::Code::LEX << endl; }
 		break;
 	case '=':
 		if (buf[counter + 1] == '=') {
-			sym.set(symbol::COMP, symbol::EQL);
+			sym.set(symbol::Type::COMP, symbol::EQL);
 			counter += 2;
 		} else {
-			sym.set(symbol::DELIM, symbol::ASSIGN);
+			sym.set(symbol::Type::DELIM, symbol::ASSIGN);
 			counter++;
 		}
 		break;
 	default:
 		int pos;
 		if ((pos = delim.find(buf[counter])) != delim.npos) {
-			sym.set(symbol::DELIM, 1 << pos);
+			sym.set(symbol::Type::DELIM, 1 << pos);
 		} else if ((pos = oper.find(buf[counter])) != oper.npos) {
-			sym.set(symbol::OPER, 1 << pos);
+			sym.set(symbol::Type::OPER, 1 << pos);
 		} else {
-			err << error::LEX << endl;
+			err << error::Code::LEX << endl;
 			counter++;
 			goto start;
 		}

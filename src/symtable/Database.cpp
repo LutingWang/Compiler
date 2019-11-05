@@ -6,6 +6,7 @@
  **********************************************/
 
 #include <cassert>
+#include <string>
 #include "symtable.h"
 #include "compiler.h"
 #include "error.h"
@@ -16,12 +17,12 @@ symtable::Database table;
 void symtable::Database::pushFunc(const string& funcName, FuncTable* ft) {
 	FuncTable*& ftp = _func[funcName];
 	if (ftp != nullptr) { 
-		err << error::REDEF << endl; 
+		err << error::Code::REDEF << endl; 
 		return; 
 	}
 	ftp = ft;
 	_cur = ftp;
-	logger << "symtable: insert " << *ft << ' ' << funcName << endl;
+	logger << "symtable: insert " << *ft << endl;
 }
 
 symtable::Database::~Database(void) {
@@ -37,11 +38,12 @@ symtable::FuncTable* symtable::Database::curFunc(void) const {
 	return (FuncTable*) _cur;
 }
 
-const symtable::Entry* symtable::Database::findSym(const string& symName) {
-	const Entry* result = _cur->find(symName);
+symtable::Entry* symtable::Database::findSym(const string& symName) {
+	Entry* result = _cur->find(symName);
 	return result == nullptr ? _global.find(symName) : result;
 }
 
 void symtable::Database::pushSym(const string& symName, const bool isConst, const bool isInt, const int value) {
 	_cur->push(symName, isConst, isInt, value);
 }
+
