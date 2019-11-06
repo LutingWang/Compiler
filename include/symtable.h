@@ -19,7 +19,7 @@ namespace symtable {
 	// One record in the database. A record represents 
 	// a variable (argument) or constant in the scope.
 	class Entry {
-		friend std::ostream& operator << (std::ostream&, const Entry&);
+		friend class Printer;
 
 		const std::string _name;
 	public:
@@ -47,6 +47,7 @@ namespace symtable {
 	// functions, except for the global scope which is 
 	// seen as a sepcial outer function.
 	class Table {
+		friend class Printer;
 		friend class Database;
 		friend class ::MidCode;
 	protected:
@@ -77,16 +78,19 @@ namespace symtable {
 	};
 	
 	class FuncTable : public Table {
+		friend class Printer;
 		friend class Database;
-		friend std::ostream& operator << (std::ostream&, const FuncTable&);
 	protected:
-		std::vector<Entry*> _argList; // arg is int or not
+		std::vector<Entry*> _argList;
 
-		FuncTable(void) : Table("unknown"), isVoid(true), isInt(false) {}
+		FuncTable(void) : 
+			Table("unknown"), isVoid(true), isInt(false) {}
 
-		FuncTable(const std::string& name) : Table(name), isVoid(true), isInt(false) {}
+		FuncTable(const std::string& name) : 
+			Table(name), isVoid(true), isInt(false) {}
 
-		FuncTable(const std::string& name, const bool isInt) : Table(name), isVoid(false), isInt(isInt) {}
+		FuncTable(const std::string& name, const bool isInt) : 
+			Table(name), isVoid(false), isInt(isInt) {}
 
 		void pushArg(const std::string& symName, const bool isInt) {
 			_argList.push_back(push(symName, false, isInt));
@@ -106,7 +110,7 @@ namespace symtable {
 		Table _main;
 		Table* _cur = &_global;
 
-		void pushFunc(const std::string&, FuncTable*);
+		void pushFunc(const std::string&, FuncTable* const);
 	public:
 		Database(void) : _global("global"), _main("main") {}
 
@@ -131,7 +135,7 @@ namespace symtable {
 			pushFunc(funcName, new FuncTable(funcName, isInt));
 		}
 
-		void pushFunc(void) { _cur = &_main; }
+		void pushFunc(void); // push main
 
 		void pushArg(const std::string& symName, const bool isInt) {
 			curFunc()->pushArg(symName, isInt);

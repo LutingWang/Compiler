@@ -8,13 +8,15 @@
 #include <cassert>
 #include <vector>
 #include "compiler.h"
+#include "error.h"
+#include "symtable.h"
+#include "MidCode.h"
+
 #include "basics.h"
 #include "Expr.h"
-#include "Func.h"
 #include "Stat.h"
-#include "MidCode.h"
-#include "symtable.h"
-#include "error.h"
+
+#include "Func.h"
 using lexer::getsym;
 
 // <args> ::= [<type id><iden>{,<type id><iden>}]
@@ -73,8 +75,8 @@ void Func::dec(void) {
 //
 // This function is obligated to check whether the arg values
 // match with the function declaration.
-symtable::Entry* Func::argValues(const symtable::FuncTable* ft) { 
-	if (ft == nullptr) { err << error::Code::NODEF << std::endl; }
+symtable::Entry* Func::argValues(const symtable::FuncTable* const ft) { 
+	if (ft == nullptr) { error::raise(error::Code::NODEF); }
 	assert(sym.is(symbol::Type::DELIM, symbol::LPARENT)); // ensured by outer function
 	getsym();
 
@@ -93,11 +95,11 @@ symtable::Entry* Func::argValues(const symtable::FuncTable* ft) {
 	if (ft == nullptr) { return nullptr; }
 	const std::vector<symtable::Entry*>& al = ft->argList();
 	if (argv.size() != al.size()) {
-		err << error::Code::MISMATCHED_ARG_NUM << std::endl;
+		error::raise(error::Code::MISMATCHED_ARG_NUM);
 	} else for (int i = 0; i < argv.size(); i++) {
 		assert(!al[i]->isConst); // ensured by symtable
 		if (argv[i]->isInt != al[i]->isInt) {
-			err << error::Code::MISMATCHED_ARG_TYPE << std::endl;
+			error::raise(error::Code::MISMATCHED_ARG_TYPE);
 			break;
 		}
 	}

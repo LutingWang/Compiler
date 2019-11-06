@@ -6,8 +6,9 @@
  **********************************************/
 
 #include "compiler.h"
-#include "basics.h"
 #include "Symbol.h"
+
+#include "basics.h"
 using lexer::getsym;
 
 namespace {

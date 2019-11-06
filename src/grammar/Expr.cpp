@@ -7,12 +7,14 @@
 
 #include <cassert>
 #include "compiler.h"
-#include "basics.h"
-#include "Expr.h"
-#include "Func.h"
-#include "MidCode.h"
-#include "symtable.h"
 #include "error.h"
+#include "symtable.h"
+#include "MidCode.h"
+
+#include "basics.h"
+#include "Func.h"
+
+#include "Expr.h"
 using lexer::getsym;
 
 // <integer> ::= [<add op>]<unsigned int>
@@ -54,18 +56,18 @@ symtable::Entry* Expr::factor(void) {
 				t0 = Func::argValues(table.findFunc(name));
 			} else if (sym.is(symbol::Type::DELIM, symbol::LBRACK)) {
 				symtable::Entry* t1 = table.findSym(name);
-				if (t1 == nullptr) { err << error::Code::NODEF << std::endl; }
+				if (t1 == nullptr) { error::raise(error::Code::NODEF); }
 				else { assert(t1->isArray()); }
 				getsym();
 				symtable::Entry* t2 = expr();
-				if (!t2->isInt) { err << error::Code::ILLEGAL_IND << std::endl; }
+				if (!t2->isInt) { error::raise(error::Code::ILLEGAL_IND); }
 				error::assertSymIsRBRACK();
 				t0 = MidCode::genVar(t1 == nullptr || t1->isInt);
 				MidCode::gen(MidCode::Instr::LOAD_IND, t0, t1, t2); // t0 = t1[t2];
 			} else {
 				t0 = table.findSym(name);
 				if (t0 == nullptr) { 
-					err << error::Code::NODEF << std::endl; 
+					error::raise(error::Code::NODEF); 
 					t0 = MidCode::genConst(true, 0);
 				} else { assert(!t0->isArray()); }
 			}
@@ -86,8 +88,8 @@ symtable::Entry* Expr::item(void) {
 		t0 = MidCode::genVar(true);
 		do { 
 			t2 = factor(); 
-			MidCode::gen(isMult ? MidCode::Instr::MULT : 
-					MidCode::Instr::DIV, t0, t0, t2); // t0 = t0 [*/] t2
+			MidCode::gen(isMult ? MidCode::Instr::MULT : MidCode::Instr::DIV, 
+					t0, t0, t2); // t0 = t0 [*/] t2
 		} while (basics::mult(isMult));
 	} 
 	assert(t2 != nullptr);
@@ -106,13 +108,15 @@ symtable::Entry* Expr::expr(void) {
 		assert(t1 != nullptr);
 		if (basics::add(neg)) {
 			t0 = MidCode::genVar(true);
-			MidCode::gen(neg ? MidCode::Instr::SUB : MidCode::Instr::ADD, t0, t1, item()); // t0 = t1 [+-] t2
+			MidCode::gen(neg ? MidCode::Instr::SUB : MidCode::Instr::ADD, 
+					t0, t1, item()); // t0 = t1 [+-] t2
 		} else { return t1; }
 	}
 
 	assert(t0 != nullptr);
 	while (basics::add(neg)) { 
-		MidCode::gen(neg ? MidCode::Instr::SUB : MidCode::Instr::ADD, t0, t0, item()); // t0 = t0 [+-] t2
+		MidCode::gen(neg ? MidCode::Instr::SUB : MidCode::Instr::ADD, 
+				t0, t0, item()); // t0 = t0 [+-] t2
 	}
 	return t0;
 }

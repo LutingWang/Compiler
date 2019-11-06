@@ -6,28 +6,36 @@
  **********************************************/
 
 #include <cassert>
+#include <fstream>
 #include <string>
-#include "symtable.h"
 #include "compiler.h"
 #include "error.h"
+
+#include "Printer.h"
+
+#include "symtable.h"
 using namespace std;
 
 symtable::Database table;
 
-void symtable::Database::pushFunc(const string& funcName, FuncTable* ft) {
+void symtable::Database::pushFunc(void) { 
+	_cur = &_main; 
+	Printer::print(_main);
+}
+
+void symtable::Database::pushFunc(const string& funcName, FuncTable* const ft) {
 	FuncTable*& ftp = _func[funcName];
 	if (ftp != nullptr) { 
-		err << error::Code::REDEF << endl; 
+		error::raise(error::Code::REDEF); 
 		return; 
 	}
 	ftp = ft;
 	_cur = ftp;
-	logger << "symtable: insert " << *ft << endl;
+	Printer::print(*ft);
 }
 
 symtable::Database::~Database(void) {
 	for (auto& e : _func) { delete e.second; }
-	logger << "symtable: deconstruction succeeded" << endl;
 }
 
 symtable::FuncTable* symtable::Database::curFunc(void) const {

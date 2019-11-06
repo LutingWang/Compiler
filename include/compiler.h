@@ -8,14 +8,6 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
-#include <fstream>
-
-#define judge 1
-
-class InputFile;
-extern InputFile input;
-extern std::ofstream logger, err;
-
 namespace symbol { 
 	class Symbol; 
 }

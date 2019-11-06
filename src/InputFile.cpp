@@ -7,8 +7,9 @@
 
 #include <cassert>
 #include <string>
-#include "InputFile.h"
 #include "error.h"
+
+#include "InputFile.h"
 using namespace std;
 
 InputFile::InputFile(string path) : _input(path) {
@@ -26,10 +27,6 @@ void InputFile::updateBuf(void) {
 	getline(_input, line);
 	if (!_input) { throw error::Ueof(); }
 	_buf.str(line);
-}
-
-int InputFile::line(void) const noexcept {
-	return _nline;
 }
 
 void InputFile::operator >> (string& s) {

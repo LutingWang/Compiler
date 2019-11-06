@@ -6,10 +6,11 @@
  **********************************************/
 
 #include "compiler.h"
+#include "error.h"
+
 #include "Const.h"
 #include "Func.h"
 #include "Var.h"
-#include "error.h"
 
 // <program> ::= <const dec><var dec><func dec>
 void grammar::parse(void) try {
@@ -18,6 +19,6 @@ void grammar::parse(void) try {
 	Var::dec();
 	Func::dec();
 } catch (error::Ueof& e) {
-	err << error::Code::UNEXPECTED_EOF << std::endl;
+	error::raise(error::Code::UNEXPECTED_EOF);
 }
 

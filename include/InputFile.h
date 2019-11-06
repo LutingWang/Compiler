@@ -15,13 +15,20 @@ class InputFile {
 	std::ifstream _input;
 	std::stringstream _buf;
 	int _nline = 0;
+
 	void updateBuf(void);
 public:
 	InputFile(std::string);
+
 	~InputFile(void) { _input.close(); }
-	int line(void) const noexcept;
+
+	int line(void) const { return _nline; }
+
 	void operator >> (std::string&);
+
 	char get(void);
 };
+
+extern InputFile input;
 
 #endif /* INPUT_FILE_H */

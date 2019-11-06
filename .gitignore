@@ -1,8 +1,13 @@
 build/
 Xcode/
 judge/
+
 include/compilerConfig.h
-log.txt
-test/**/*.out
+test/**/*.error
+test/**/*.lexer
+test/**/*.grammar
+test/**/*.midcode
+test/**/*.symtable
+
 .DS_Store
 **/.DS_Store

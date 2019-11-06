@@ -9,18 +9,15 @@
 #define ERROR_H
 
 #include <exception>
-#include <cassert>
-#include <fstream>
-#include <string>
 #include "Symbol.h"
-
-extern std::ofstream err;
 
 namespace lexer {
 	void getsym(void);
 }
 
 namespace error {
+	extern bool happened;
+
 	enum class Code {
 		LEX, REDEF, NODEF,
 		MISMATCHED_ARG_NUM, MISMATCHED_ARG_TYPE, MISMATCHED_COND_TYPE,
@@ -29,8 +26,7 @@ namespace error {
 		EXPECTED_LITERAL, UNEXPECTED_EOF
 	};
 
-	// TODO: change to raise and hide `err`
-	std::ostream& operator << (std::ostream&, Code);
+	void raise(Code);
 
 	class Ueof : public std::exception {};
 
@@ -38,9 +34,9 @@ namespace error {
 #ifdef ASSERT_DELIM
 	#error macro conflict
 #endif
-#define ASSERT_DELIM(s) inline void assertSymIs##s(void) { \
-	if (sym.is(symbol::Type::DELIM, symbol::s)) { lexer::getsym(); } \
-	else { err << Code::MISSING_##s << std::endl; } \
+#define ASSERT_DELIM(s) inline void assertSymIs##s(void) {				\
+	if (sym.is(symbol::Type::DELIM, symbol::s)) { lexer::getsym(); }	\
+	else { raise(Code::MISSING_##s); }									\
 }
 		ASSERT_DELIM(SEMICN)
 		ASSERT_DELIM(RPARENT)

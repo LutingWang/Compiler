@@ -13,12 +13,12 @@
 
 namespace symtable {
 	class Entry;
+	class FuncTable;
 	class Database;
 }
 
 class MidCode {
 	friend class symtable::Database;
-	friend std::ostream& operator << (std::ostream&, MidCode&);
 public:
 	enum class Instr {
 		ADD,		// t0 = t1 + t2
@@ -63,7 +63,12 @@ public:
 	static symtable::Entry* genConst(const bool, const int);
 	static std::string genLabel(void);
 
-	static void print(std::ostream&);
+private:
+	void print(void) const;
+	static void print(symtable::Entry* const);
+	static void print(const symtable::FuncTable* const);
+public:
+	static void printAll(void);
 };
 
 #endif /* MIDCODE_H */

@@ -8,10 +8,12 @@
 #include <cassert>
 #include <string>
 #include "compiler.h"
-#include "basics.h"
-#include "Var.h"
-#include "symtable.h"
 #include "error.h"
+#include "symtable.h"
+
+#include "basics.h"
+
+#include "Var.h"
 using lexer::getsym;
 
 // <index> ::= '['<unsigned int>']'

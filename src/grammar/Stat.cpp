@@ -8,15 +8,17 @@
 #include <cassert>
 #include <map>
 #include "compiler.h"
+#include "error.h"
+#include "symtable.h"
+#include "MidCode.h"
+
 #include "basics.h"
 #include "Const.h"
 #include "Expr.h"
 #include "Func.h"
-#include "Stat.h"
 #include "Var.h"
-#include "MidCode.h"
-#include "symtable.h"
-#include "error.h"
+
+#include "Stat.h"
 using lexer::getsym;
 
 // <cond> ::= <expr>[<comp op><expr>]
@@ -27,12 +29,12 @@ void Stat::Cond::cond(const bool branchIfNot, const std::string& labelName) {
 		{ symbol::EQL, MidCode::Instr::BEQ }, { symbol::NEQ, MidCode::Instr::BNE }
 	};
 	symtable::Entry* t1 = Expr::expr();
-	if (!t1->isInt) { err << error::Code::MISMATCHED_COND_TYPE << std::endl; }
+	if (!t1->isInt) { error::raise(error::Code::MISMATCHED_COND_TYPE); }
 	if (sym.is(symbol::Type::COMP)) {
 		MidCode::Instr comp = translator[symbol::Comp(sym.num)];
 		getsym();
 		symtable::Entry* t2 = Expr::expr();
-		if (!t2->isInt) { err << error::Code::MISMATCHED_COND_TYPE << std::endl; }
+		if (!t2->isInt) { error::raise(error::Code::MISMATCHED_COND_TYPE); }
 		if (branchIfNot) { std::swap(t1, t2); }
 		MidCode::gen(comp, nullptr, t1, t2, labelName);
 	} else {
@@ -89,7 +91,7 @@ bool Stat::Cond::_do(void) {
 	MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelBegin);
 	bool hasRet = stat();
 	if (sym.is(symbol::Type::RESERVED, symbol::WHILETK)) { getsym(); } 
-	else { err << error::Code::MISSING_WHILE << std::endl; }
+	else { error::raise(error::Code::MISSING_WHILE); }
 	assert(sym.is(symbol::Type::DELIM, symbol::LPARENT));
 	getsym();
 	cond(false, labelBegin);
@@ -111,8 +113,8 @@ bool Stat::Cond::_for(void) {
 	// <iden>=<expr>;
 	assert(sym.is(symbol::Type::IDENFR));
 	t0 = table.findSym(sym.str);
-	if (t0 == nullptr) { err << error::Code::NODEF << std::endl; }
-	else if (t0->isConst) { err << error::Code::ILLEGAL_ASSIGN << std::endl; }
+	if (t0 == nullptr) { error::raise(error::Code::NODEF); }
+	else if (t0->isConst) { error::raise(error::Code::ILLEGAL_ASSIGN); }
 	getsym();
 	assert(sym.is(symbol::Type::DELIM, symbol::ASSIGN));
 	getsym();
@@ -130,14 +132,14 @@ bool Stat::Cond::_for(void) {
 	// <iden>=<iden><add op><unsigned int>')'
 	assert(sym.is(symbol::Type::IDENFR));
 	t0 = table.findSym(sym.str);
-	if (t0 == nullptr) { err << error::Code::NODEF << std::endl; }
-	else if (t0->isConst) { err << error::Code::ILLEGAL_ASSIGN << std::endl; }
+	if (t0 == nullptr) { error::raise(error::Code::NODEF); }
+	else if (t0->isConst) { error::raise(error::Code::ILLEGAL_ASSIGN); }
 	getsym();
 	assert(sym.is(symbol::Type::DELIM, symbol::ASSIGN));
 	getsym();
 	assert(sym.is(symbol::Type::IDENFR));
 	t1 = table.findSym(sym.str);
-	if (t1 == nullptr) { err << error::Code::NODEF << std::endl; }
+	if (t1 == nullptr) { error::raise(error::Code::NODEF); }
 	getsym();
 	bool minus;
 	assert(basics::add(minus));
@@ -164,8 +166,8 @@ void Stat::read(void) {
 		getsym();
 		assert(sym.is(symbol::Type::IDENFR));
 		symtable::Entry* t0 = table.findSym(sym.str);
-		if (t0 == nullptr) { err << error::Code::NODEF << std::endl; }
-		else if (t0->isConst) { err << error::Code::ILLEGAL_ASSIGN << std::endl; }
+		if (t0 == nullptr) { error::raise(error::Code::NODEF); }
+		else if (t0->isConst) { error::raise(error::Code::ILLEGAL_ASSIGN); }
 		MidCode::gen(MidCode::Instr::INPUT, t0, nullptr, nullptr);
 		getsym();
 	} while (sym.is(symbol::Type::DELIM, symbol::COMMA));
@@ -202,7 +204,7 @@ void Stat::ret(void) {
 	getsym();
 	if (table.isMain() || table.curFunc()->isVoid) {
 		if (sym.is(symbol::Type::DELIM, symbol::LPARENT)) {
-			err << error::Code::ILLEGAL_RET_WITH_VAL << std::endl;
+			error::raise(error::Code::ILLEGAL_RET_WITH_VAL);
 			getsym();
 			Expr::expr();
 			error::assertSymIsRPARENT();
@@ -211,11 +213,11 @@ void Stat::ret(void) {
 		getsym();
 		t1 = Expr::expr();
 		if (table.curFunc()->isInt != t1->isInt) {
-			err << error::Code::ILLEGAL_RET_WITHOUT_VAL << std::endl;
+			error::raise(error::Code::ILLEGAL_RET_WITHOUT_VAL);
 		}
 		error::assertSymIsRPARENT();
 	} else {
-		err << error::Code::ILLEGAL_RET_WITHOUT_VAL << std::endl;
+		error::raise(error::Code::ILLEGAL_RET_WITHOUT_VAL);
 	}
 	MidCode::gen(MidCode::Instr::RET, nullptr, t1, nullptr);
 }
@@ -224,14 +226,14 @@ void Stat::ret(void) {
 // <iden> is provided by outer function as t0.
 void Stat::assign(symtable::Entry* const t0) {
 	symtable::Entry* t2 = nullptr;
-	if (t0 == nullptr) { err << error::Code::NODEF << std::endl; }
-	else if (t0->isConst) { err << error::Code::ILLEGAL_ASSIGN << std::endl; }
+	if (t0 == nullptr) { error::raise(error::Code::NODEF); }
+	else if (t0->isConst) { error::raise(error::Code::ILLEGAL_ASSIGN); }
 	assert(sym.is(symbol::Type::DELIM));
 	if (sym.numIs(symbol::LBRACK)) {
 		assert(t0 == nullptr || t0->isArray());
 		getsym();
 		t2 = Expr::expr();
-		if (!t2->isInt) { err << error::Code::ILLEGAL_IND << std::endl; }
+		if (!t2->isInt) { error::raise(error::Code::ILLEGAL_IND); }
 		error::assertSymIsRBRACK();
 	} else { assert(t0 == nullptr || !t0->isArray()); }
 
@@ -325,7 +327,7 @@ void Stat::block(void) {
 		MidCode::gen(MidCode::Instr::RET, nullptr, nullptr, nullptr);
 	} else {
 		// for non-void functions, the default <ret> will not fit
-		err << error::Code::ILLEGAL_RET_WITHOUT_VAL << std::endl;
+		error::raise(error::Code::ILLEGAL_RET_WITHOUT_VAL);
 	}
 }
 

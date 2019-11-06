@@ -8,11 +8,13 @@
 #include <cassert>
 #include <string>
 #include "compiler.h"
-#include "basics.h"
-#include "Const.h"
-#include "Expr.h"
-#include "symtable.h"
 #include "error.h"
+#include "symtable.h"
+
+#include "basics.h"
+#include "Expr.h"
+
+#include "Const.h"
 using lexer::getsym;
 
 // <const def> ::= int<iden>=<integer>{,<iden>=<integer>}|char<iden>=<char>{,<iden>=<char>}
@@ -36,7 +38,7 @@ void Const::def(void) {
 		if (!isInt && sym.is(symbol::Type::CHARCON)) { getsym(); }
 		// error happens if symbol is char or the value is not an integer
 		else if (!isInt || !Expr::integer(num)) {
-			err << error::Code::EXPECTED_LITERAL << std::endl;
+			error::raise(error::Code::EXPECTED_LITERAL);
 			// jump to the next ',' or ';'
 			while (!sym.is(symbol::Type::DELIM, symbol::COMMA|symbol::SEMICN)) {
 				getsym();

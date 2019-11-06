@@ -11,10 +11,11 @@
 #include "compiler.h"
 #include "error.h"
 #include "InputFile.h"
-using namespace std;
+
+extern std::ofstream lexer_output;
 
 namespace {
-	vector<symbol::Symbol> tracebackStack;
+	std::vector<symbol::Symbol> tracebackStack;
 
 	// tool class as overloading of cctype
 	class CType {
@@ -31,19 +32,19 @@ namespace {
 	};
 
 	// dependent on enum Reserved
-	vector<string> reserved = {
+	std::vector<std::string> reserved = {
 		"const", "int", "char", "void", "main", "if", "else",
 		"do", "while", "for", "scanf", "printf", "return"
 	};
 	
 	// dependent on enum Delim
-	string delim = "=;,()[]{}";
+	std::string delim = "=;,()[]{}";
 	
 	// dependent on enum Oper
-	string oper = "+-*/";
+	std::string oper = "+-*/";
 	
 	// input file buffer
-	string buf;
+	std::string buf;
 	int counter = 0;
 	
 	// <iden> ::= <alpha>{<alpha>|<digit>}
@@ -52,7 +53,7 @@ namespace {
 		assert(CType::isalpha(buf[counter])); // ensured by outer function
 		int i; // end index of token (not included)
 		for (i = counter + 1; i < buf.size() && CType::isalnum(buf[i]); i++);
-		string token = buf.substr(counter, i - counter); 
+		std::string token = buf.substr(counter, i - counter); 
 		auto it = find(reserved.begin(), reserved.end(), token);
 		if (it == reserved.end()) { // not in the list of reserved words
 			sym.id = symbol::Type::IDENFR;
@@ -81,17 +82,17 @@ namespace {
 		sym.id = symbol::Type::CHARCON;
 		counter++;
 		if (counter >= buf.size()) {
-			err << error::Code::LEX << endl;
+			error::raise(error::Code::LEX);
 			return;
 		}
 		sym.ch = buf[counter];
 		counter++;
 		if (counter >= buf.size() || buf[counter] == '\'') { counter++; } 
-		else { err << error::Code::LEX << endl; }
+		else { error::raise(error::Code::LEX); }
 
 		if (sym.ch != '+' && sym.ch != '-' && sym.ch != '*' && 
 				sym.ch != '/' && !CType::isalnum(sym.ch)) {
-			err << error::Code::LEX << endl;
+			error::raise(error::Code::LEX);
 		}
 	}
 	
@@ -110,7 +111,7 @@ namespace {
 			counter = buf.size();
 			for (char c = input.get(); c != '"'; c = input.get()) {
 				if (c == '\n') {
-					err << error::Code::LEX << endl;
+					error::raise(error::Code::LEX);
 					return;
 				}
 				sym.str += c;
@@ -120,7 +121,7 @@ namespace {
 		// non-structural error
 		for (char c : sym.str) {
 			if (c < 32 || c > 126) {
-				err << error::Code::LEX << endl;
+				error::raise(error::Code::LEX);
 				break;
 			}
 		}
@@ -132,7 +133,7 @@ void lexer::getsym(void) {
 	if (!tracebackStack.empty()) {
 		sym = tracebackStack.back();
 		tracebackStack.pop_back();
-		logger << "lexer: retracting " << sym << endl;
+		lexer_output << "lexer: retracting " << sym << std::endl;
 		return;
 	}
 
@@ -178,7 +179,7 @@ start:
 		sym.set(symbol::Type::COMP, symbol::NEQ);
 		counter++;
 		if (buf[counter] == '=') { counter++; } 
-		else { err << error::Code::LEX << endl; }
+		else { error::raise(error::Code::LEX); }
 		break;
 	case '=':
 		if (buf[counter + 1] == '=') {
@@ -196,18 +197,18 @@ start:
 		} else if ((pos = oper.find(buf[counter])) != oper.npos) {
 			sym.set(symbol::Type::OPER, 1 << pos);
 		} else {
-			err << error::Code::LEX << endl;
+			error::raise(error::Code::LEX);
 			counter++;
 			goto start;
 		}
 		counter++;
 	}
-	logger << sym << endl;
+	lexer_output << sym << std::endl;
 }
 
 void lexer::traceback(const symbol::Symbol& lastSymbol) {
 	tracebackStack.push_back(sym);
 	sym = lastSymbol;
-	logger << "lexer: tracing back to " << sym << endl;
+	lexer_output << "lexer: tracing back to " << sym << std::endl;
 }
 

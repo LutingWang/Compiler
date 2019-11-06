@@ -59,7 +59,7 @@ std::ostream& symbol::operator << (std::ostream& output, const NonTerminal& nt) 
 #ifdef CASE
 	#error macro conflict
 #endif
-#define CASE(id, info) case id: output << #info; break
+#define CASE(id, info) case NonTerminal::id: output << #info; break
 	CASE(LEX_UNSIGNED_INT, 无符号整数); CASE(LEX_STR, 字符串); CASE(PROGRAM, 程序);
 	CASE(CONST_DEC, 常量说明); CASE(CONST_DEF, 常量定义); CASE(VAR_DEC, 变量说明); 
 	CASE(VAR_DEF, 变量定义);
