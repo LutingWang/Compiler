@@ -10,9 +10,15 @@
 
 #include <exception>
 #include <cassert>
+#include <fstream>
 #include <string>
-#include "compiler.h"
 #include "Symbol.h"
+
+extern std::ofstream err;
+
+namespace lexer {
+	void getsym(void);
+}
 
 namespace error {
 	enum class Code {
@@ -23,6 +29,7 @@ namespace error {
 		EXPECTED_LITERAL, UNEXPECTED_EOF
 	};
 
+	// TODO: change to raise and hide `err`
 	std::ostream& operator << (std::ostream&, Code);
 
 	class Ueof : public std::exception {};

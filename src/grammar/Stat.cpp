@@ -34,9 +34,9 @@ void Stat::Cond::cond(const bool branchIfNot, const std::string& labelName) {
 		symtable::Entry* t2 = Expr::expr();
 		if (!t2->isInt) { err << error::Code::MISMATCHED_COND_TYPE << std::endl; }
 		if (branchIfNot) { std::swap(t1, t2); }
-		MidCode(comp, nullptr, t1, t2, labelName);
+		MidCode::gen(comp, nullptr, t1, t2, labelName);
 	} else {
-		MidCode(branchIfNot ? MidCode::Instr::BEQ : MidCode::Instr::BNE, nullptr, t1, nullptr, labelName);
+		MidCode::gen(branchIfNot ? MidCode::Instr::BEQ : MidCode::Instr::BNE, nullptr, t1, nullptr, labelName);
 	}
 }
 
@@ -53,13 +53,13 @@ bool Stat::Cond::_if(void) {
 	bool hasRet = stat();
 	if (sym.is(symbol::Type::RESERVED, symbol::ELSETK)) {
 		std::string labelEnd = MidCode::genLabel();
-		MidCode(MidCode::Instr::GOTO, nullptr, nullptr, nullptr, labelEnd);
-		MidCode(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelElse);
+		MidCode::gen(MidCode::Instr::GOTO, nullptr, nullptr, nullptr, labelEnd);
+		MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelElse);
 		getsym();
 		hasRet = stat() && hasRet; // ensures that stat() is executed
-		MidCode(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelEnd);
+		MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelEnd);
 	} else {
-		MidCode(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelElse);
+		MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelElse);
 	}
 	return hasRet;
 }
@@ -71,13 +71,13 @@ bool Stat::Cond::_while(void) {
 	assert(sym.is(symbol::Type::DELIM, symbol::LPARENT));
 	getsym();
 	std::string labelBegin = MidCode::genLabel();
-	MidCode(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelBegin);
+	MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelBegin);
 	std::string labelEnd = MidCode::genLabel();
 	cond(true, labelEnd);
 	error::assertSymIsRPARENT();
 	bool hasRet = stat();
-	MidCode(MidCode::Instr::GOTO, nullptr, nullptr, nullptr, labelBegin);
-	MidCode(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelEnd);
+	MidCode::gen(MidCode::Instr::GOTO, nullptr, nullptr, nullptr, labelBegin);
+	MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelEnd);
 	return hasRet;
 }
 
@@ -86,7 +86,7 @@ bool Stat::Cond::_do(void) {
 	assert(sym.is(symbol::Type::RESERVED, symbol::DOTK)); // ensured by outer function
 	getsym();
 	std::string labelBegin = MidCode::genLabel();
-	MidCode(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelBegin);
+	MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelBegin);
 	bool hasRet = stat();
 	if (sym.is(symbol::Type::RESERVED, symbol::WHILETK)) { getsym(); } 
 	else { err << error::Code::MISSING_WHILE << std::endl; }
@@ -117,12 +117,12 @@ bool Stat::Cond::_for(void) {
 	assert(sym.is(symbol::Type::DELIM, symbol::ASSIGN));
 	getsym();
 	t1 = Expr::expr();
-	MidCode(MidCode::Instr::ASSIGN, t0, t1, nullptr);
+	MidCode::gen(MidCode::Instr::ASSIGN, t0, t1, nullptr);
 	error::assertSymIsSEMICN();
 
 	// <cond>;
 	std::string labelBegin = MidCode::genLabel();
-	MidCode(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelBegin);
+	MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelBegin);
 	std::string labelEnd = MidCode::genLabel();
 	cond(true, labelEnd);
 	error::assertSymIsSEMICN();
@@ -149,9 +149,9 @@ bool Stat::Cond::_for(void) {
 	// <stat>
 	bool hasRet = stat();
 
-	MidCode(minus ? MidCode::Instr::SUB : MidCode::Instr::ADD, t0, t1, stepSize);
-	MidCode(MidCode::Instr::GOTO, nullptr, nullptr, nullptr, labelBegin);
-	MidCode(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelEnd);
+	MidCode::gen(minus ? MidCode::Instr::SUB : MidCode::Instr::ADD, t0, t1, stepSize);
+	MidCode::gen(MidCode::Instr::GOTO, nullptr, nullptr, nullptr, labelBegin);
+	MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelEnd);
 	return hasRet;
 }
 
@@ -166,7 +166,7 @@ void Stat::read(void) {
 		symtable::Entry* t0 = table.findSym(sym.str);
 		if (t0 == nullptr) { err << error::Code::NODEF << std::endl; }
 		else if (t0->isConst) { err << error::Code::ILLEGAL_ASSIGN << std::endl; }
-		MidCode(MidCode::Instr::INPUT, t0, nullptr, nullptr);
+		MidCode::gen(MidCode::Instr::INPUT, t0, nullptr, nullptr);
 		getsym();
 	} while (sym.is(symbol::Type::DELIM, symbol::COMMA));
 	error::assertSymIsRPARENT();
@@ -186,10 +186,10 @@ void Stat::write(void) {
 			getsym();
 			t1 = Expr::expr();
 		}
-		MidCode(MidCode::Instr::OUTPUT, nullptr, t1, nullptr, str);
+		MidCode::gen(MidCode::Instr::OUTPUT, nullptr, t1, nullptr, str);
 	} else {
 		t1 = Expr::expr();
-		MidCode(MidCode::Instr::OUTPUT, nullptr, t1, nullptr);
+		MidCode::gen(MidCode::Instr::OUTPUT, nullptr, t1, nullptr);
 	}
 	error::assertSymIsRPARENT();
 }
@@ -217,7 +217,7 @@ void Stat::ret(void) {
 	} else {
 		err << error::Code::ILLEGAL_RET_WITHOUT_VAL << std::endl;
 	}
-	MidCode(MidCode::Instr::RET, nullptr, t1, nullptr);
+	MidCode::gen(MidCode::Instr::RET, nullptr, t1, nullptr);
 }
 
 // <assign> ::= <iden>['['<expr>']']=<expr>
@@ -237,7 +237,7 @@ void Stat::assign(symtable::Entry* const t0) {
 
 	assert(sym.is(symbol::Type::DELIM, symbol::ASSIGN));
 	getsym();
-	MidCode(t2 == nullptr ? MidCode::Instr::ASSIGN : MidCode::Instr::STORE_IND, 
+	MidCode::gen(t2 == nullptr ? MidCode::Instr::ASSIGN : MidCode::Instr::STORE_IND, 
 			t0, Expr::expr(), t2); // t0 = t1[t2];
 }
 
@@ -322,7 +322,7 @@ void Stat::block(void) {
 	symtable::FuncTable* ft = table.curFunc();
 	if (ft->hasRet()) { return; }
 	if (ft->isVoid) {
-		MidCode(MidCode::Instr::RET, nullptr, nullptr, nullptr);
+		MidCode::gen(MidCode::Instr::RET, nullptr, nullptr, nullptr);
 	} else {
 		// for non-void functions, the default <ret> will not fit
 		err << error::Code::ILLEGAL_RET_WITHOUT_VAL << std::endl;

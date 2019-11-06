@@ -18,7 +18,7 @@ namespace symtable {
 
 class MidCode {
 	friend class symtable::Database;
-	friend std::ostream& operator << (std::ostream&, const MidCode&); // TODO: check if const can be dropped
+	friend std::ostream& operator << (std::ostream&, MidCode&);
 public:
 	enum class Instr {
 		ADD,		// t0 = t1 + t2
@@ -46,21 +46,24 @@ public:
 		LABEL,		// lab t3
 	};
 
-	MidCode(const Instr, 
-			symtable::Entry* const , 
-			symtable::Entry* const , 
-			symtable::Entry* const , 
-			const std::string& = "");
+private:
+	MidCode(const Instr, symtable::Entry* const, symtable::Entry* const, 
+			symtable::Entry* const, const std::string&);
 
+public:
 	const Instr instr;			// operation
 	symtable::Entry* const t0;	// result variable
 	symtable::Entry* const t1;	// operand1
 	symtable::Entry* const t2;	// operand2
 	const std::string t3;		// label name
 
+	static void gen(const Instr, symtable::Entry* const, symtable::Entry* const, 
+			symtable::Entry* const, const std::string& = "");
 	static symtable::Entry* genVar(const bool);
 	static symtable::Entry* genConst(const bool, const int);
 	static std::string genLabel(void);
+
+	static void print(std::ostream&);
 };
 
 #endif /* MIDCODE_H */

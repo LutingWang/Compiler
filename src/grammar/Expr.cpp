@@ -35,7 +35,7 @@ symtable::Entry* Expr::factor(void) {
 		assert(sym.numIs(symbol::LPARENT));
 		getsym();
 		t0 = MidCode::genVar(true);
-		MidCode(MidCode::Instr::ASSIGN, t0, expr(), nullptr);
+		MidCode::gen(MidCode::Instr::ASSIGN, t0, expr(), nullptr);
 		error::assertSymIsRPARENT();
 		break;
 	case symbol::Type::OPER: case symbol::Type::INTCON:
@@ -61,7 +61,7 @@ symtable::Entry* Expr::factor(void) {
 				if (!t2->isInt) { err << error::Code::ILLEGAL_IND << std::endl; }
 				error::assertSymIsRBRACK();
 				t0 = MidCode::genVar(t1 == nullptr || t1->isInt);
-				MidCode(MidCode::Instr::LOAD_IND, t0, t1, t2); // t0 = t1[t2];
+				MidCode::gen(MidCode::Instr::LOAD_IND, t0, t1, t2); // t0 = t1[t2];
 			} else {
 				t0 = table.findSym(name);
 				if (t0 == nullptr) { 
@@ -86,7 +86,7 @@ symtable::Entry* Expr::item(void) {
 		t0 = MidCode::genVar(true);
 		do { 
 			t2 = factor(); 
-			MidCode(isMult ? MidCode::Instr::MULT : 
+			MidCode::gen(isMult ? MidCode::Instr::MULT : 
 					MidCode::Instr::DIV, t0, t0, t2); // t0 = t0 [*/] t2
 		} while (basics::mult(isMult));
 	} 
@@ -100,19 +100,19 @@ symtable::Entry* Expr::expr(void) {
 	bool neg;
 	if (basics::add(neg)) {
 		t0 = MidCode::genVar(true);
-		if (neg) { MidCode(MidCode::Instr::SUB, t0, nullptr, item()); } // t0 = -t2
+		if (neg) { MidCode::gen(MidCode::Instr::SUB, t0, nullptr, item()); } // t0 = -t2
 	} else {
 		symtable::Entry* t1 = item();
 		assert(t1 != nullptr);
 		if (basics::add(neg)) {
 			t0 = MidCode::genVar(true);
-			MidCode(neg ? MidCode::Instr::SUB : MidCode::Instr::ADD, t0, t1, item()); // t0 = t1 [+-] t2
+			MidCode::gen(neg ? MidCode::Instr::SUB : MidCode::Instr::ADD, t0, t1, item()); // t0 = t1 [+-] t2
 		} else { return t1; }
 	}
 
 	assert(t0 != nullptr);
 	while (basics::add(neg)) { 
-		MidCode(neg ? MidCode::Instr::SUB : MidCode::Instr::ADD, t0, t0, item()); // t0 = t0 [+-] t2
+		MidCode::gen(neg ? MidCode::Instr::SUB : MidCode::Instr::ADD, t0, t0, item()); // t0 = t0 [+-] t2
 	}
 	return t0;
 }

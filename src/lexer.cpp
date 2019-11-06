@@ -53,7 +53,7 @@ namespace {
 		int i; // end index of token (not included)
 		for (i = counter + 1; i < buf.size() && CType::isalnum(buf[i]); i++);
 		string token = buf.substr(counter, i - counter); 
-		vector<string>::iterator it = find(reserved.begin(), reserved.end(), token);
+		auto it = find(reserved.begin(), reserved.end(), token);
 		if (it == reserved.end()) { // not in the list of reserved words
 			sym.id = symbol::Type::IDENFR;
 			sym.str = token;

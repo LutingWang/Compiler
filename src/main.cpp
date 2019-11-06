@@ -9,12 +9,14 @@
 #include "compilerConfig.h"
 #include "compiler.h"
 #include "InputFile.h"
+#include "MidCode.h"
 using namespace std;
 
+// FIXME: judge toggle
 #if judge
-	InputFile input(PROJECT_BASE_DIR "/test/testfile1.txt");
-	ofstream logger(PROJECT_BASE_DIR "/log.txt");
-	ofstream err(PROJECT_BASE_DIR "/test/testfile1.out");
+	InputFile input(PROJECT_BASE_DIR "./test/testfile1.txt");
+	ofstream logger(PROJECT_BASE_DIR "./log.txt");
+	ofstream err(PROJECT_BASE_DIR "./test/testfile1.out");
 #else
 	InputFile input("testfile.txt");
 	ofstream logger("log.txt");
@@ -27,5 +29,9 @@ int main() {
 		<< "." << COMPILER_VERSION_MINOR << endl;
 
 	grammar::parse();
+	logger.close();
+	err.close();
+
+	MidCode::print(cout);
 	return 0;
 }

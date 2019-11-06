@@ -26,10 +26,7 @@ void symtable::Database::pushFunc(const string& funcName, FuncTable* ft) {
 }
 
 symtable::Database::~Database(void) {
-	for (map<string, FuncTable*>::iterator it = _func.begin(); 
-			it != _func.end(); it++) {
-		delete it->second;
-	}
+	for (auto& e : _func) { delete e.second; }
 	logger << "symtable: deconstruction succeeded" << endl;
 }
 

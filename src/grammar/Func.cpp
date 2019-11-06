@@ -82,7 +82,7 @@ symtable::Entry* Func::argValues(const symtable::FuncTable* ft) {
 	if (!sym.is(symbol::Type::DELIM, symbol::RPARENT|symbol::SEMICN)) { // ')' might be missing
 		while (true) {
 			argv.push_back(Expr::expr());
-			MidCode(MidCode::Instr::PUSH_ARG, nullptr, argv.back(), nullptr);
+			MidCode::gen(MidCode::Instr::PUSH_ARG, nullptr, argv.back(), nullptr);
 			if (!sym.is(symbol::Type::DELIM, symbol::COMMA)) { break; }
 			getsym();
 		}
@@ -104,7 +104,7 @@ symtable::Entry* Func::argValues(const symtable::FuncTable* ft) {
 
 	// generate mid code
 	symtable::Entry* t0 = ft->isVoid ? nullptr : MidCode::genVar(ft->isInt);
-	MidCode(MidCode::Instr::CALL, t0, nullptr, nullptr, ft->name());
+	MidCode::gen(MidCode::Instr::CALL, t0, nullptr, nullptr, ft->name());
 	return t0;
 }
 

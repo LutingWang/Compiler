@@ -5,13 +5,14 @@
     > Created Time: Mon Nov  4 16:21:32 2019
  **********************************************/
 
+#include <algorithm>
 #include <cassert>
 #include <string>
 #include "compiler.h"
 #include "MidCode.h"
 #include "symtable.h"
 
-std::ostream& operator << (std::ostream& output, const MidCode& midcode) {
+std::ostream& operator << (std::ostream& output, MidCode& midcode) {
 	switch (midcode.instr) {
 #ifdef CASE
 	#error macro conflict
@@ -19,53 +20,45 @@ std::ostream& operator << (std::ostream& output, const MidCode& midcode) {
 #define CASE(id, op) case MidCode::Instr::id:			\
 		output << midcode.t0->name() << " = "			\
 			<< midcode.t1->name() << " " #op " "		\
-			<< midcode.t2->name() << std::endl;			\
+			<< midcode.t2->name();			\
 		break
-	CASE(ADD, +);
+	CASE(ADD, +); CASE(MULT, *); CASE(DIV, /);
+#undef CASE
+
 	case MidCode::Instr::SUB:
 		output << midcode.t0->name() << " = ";
 		if (midcode.t1 != nullptr) {
 			output << midcode.t1->name() << ' ';
 		}
-		output << "- " << midcode.t2->name() << std::endl;
-		break;
-	case MidCode::Instr::MULT:
-		output << midcode.t0->name() << " = " 
-			<< midcode.t1->name() << " * " 
-			<< midcode.t2->name() << std::endl;
-		break;
-	case MidCode::Instr::DIV:
-		output << midcode.t0->name() << " = " 
-			<< midcode.t1->name() << " / " 
-			<< midcode.t2->name() << std::endl;
+		output << "- " << midcode.t2->name();
 		break;
 	case MidCode::Instr::LOAD_IND:
 		output << midcode.t0->name() << " = " 
 			<< midcode.t1->name() 
-			<< '[' << midcode.t2->name() << ']' << std::endl;
+			<< '[' << midcode.t2->name() << ']';
 		break;
 	case MidCode::Instr::STORE_IND:
 		output << midcode.t0->name() << '[' << midcode.t2->name() << "] = " 
-			<< midcode.t1->name() << std::endl;
+			<< midcode.t1->name();
 		break;
 	case MidCode::Instr::ASSIGN:
 		output << midcode.t0->name() << " = " 
-			<< midcode.t1->name() << std::endl;
+			<< midcode.t1->name();
 		break;
 	case MidCode::Instr::PUSH_ARG:
-		output << "push " << midcode.t1->name() << std::endl;
+		output << "push " << midcode.t1->name();
 		break;
 	case MidCode::Instr::CALL:
 #if judge
+		output << "call " << midcode.t3;
+		if (midcode.t0 != nullptr) {
+			output << midcode.t0->name() << " = RET";
+		}
+#else
 		if (midcode.t0 != nullptr) {
 			output << midcode.t0->name() << " = ";
 		}
-		output << "call " << midcode.t3 << std::endl;
-#else
-		output << "call " << midcode.t3 << std::endl;
-		if (midcode.t0 != nullptr) {
-			output << midcode.t0->name() << " = RET" << std::endl;;
-		}
+		output << "call " << midcode.t3;
 #endif /* judge */
 		break;
 	case MidCode::Instr::RET:
@@ -73,10 +66,9 @@ std::ostream& operator << (std::ostream& output, const MidCode& midcode) {
 		if (midcode.t1 != nullptr) {
 			output << ' ' << midcode.t1->name();
 		}
-		output << std::endl;
 		break;
 	case MidCode::Instr::INPUT:
-		output << "input " << midcode.t0->name() << std::endl;
+		output << "input " << midcode.t0->name();
 		break;
 	case MidCode::Instr::OUTPUT:
 		output << "output ";
@@ -86,47 +78,52 @@ std::ostream& operator << (std::ostream& output, const MidCode& midcode) {
 		if (midcode.t1 != nullptr) {
 			output << midcode.t1->name();
 		}
-		output << std::endl;
 		break;
-	case MidCode::Instr::BGT:
-		output << "if " << midcode.t1->name() << " > " << midcode.t2->name()
-			<< " branch to \"" << midcode.t3 << '"' << std::endl;
-		break;
-	case MidCode::Instr::BGE:
-		output << "if " << midcode.t1->name() << " >= " << midcode.t2->name()
-			<< " branch to \"" << midcode.t3 << '"' << std::endl;
-		break;
-	case MidCode::Instr::BLT:
-		output << "if " << midcode.t1->name() << " < " << midcode.t2->name()
-			<< " branch to \"" << midcode.t3 << '"' << std::endl;
-		break;
-	case MidCode::Instr::BLE:
-		output << "if " << midcode.t1->name() << " <= " << midcode.t2->name()
-			<< " branch to \"" << midcode.t3 << '"' << std::endl;
-		break;
-	case MidCode::Instr::BEQ:
-		output << "if " << midcode.t1->name() << " == ";
-		if (midcode.t2 != nullptr) {
-			output << midcode.t2->name();
-		} else {
-			output << "0";
-		}
-		output << " branch to \"" << midcode.t3 << '"' << std::endl;
-		break;
-	case MidCode::Instr::BNE:
-		output << "if " << midcode.t1->name() << " != ";
-		if (midcode.t2 != nullptr) {
-			output << midcode.t2->name();
-		} else {
-			output << "0";
-		}
-		output << " branch to \"" << midcode.t3 << '"' << std::endl;
-		break;
+
+#ifdef CASE
+	#error macro conflict
+#endif
+#if judge
+	#define CASE(id, op) case MidCode::Instr::id:		\
+		output << midcode.t1->name() << " " #op " "		\
+			<< midcode.t2->name() << " BNZ "			\
+			<< midcode.t3;					\
+		break
+#else
+	#define CASE(id, op) case MidCode::Instr::id:		\
+		output << "if " << midcode.t1->name()			\
+			<< " " #op " " << midcode.t2->name()		\
+			<< " branch to \"" << midcode.t3			\
+			<< '"';						\
+		break
+#endif /* judge */
+	CASE(BGT, >); CASE(BGE, >=); CASE(BLT, <); CASE(BLE, <=);
+#undef CASE
+
+#ifdef CASE
+	#error macro conflict
+#endif
+#if judge
+	#define CASE(id, op) case MidCode::Instr::id:		\
+		output << "if " << midcode.t1->name() << " " #op " "			\
+			<< ((midcode.t2 == nullptr) ? "0" : midcode.t2->name())		\
+			<< " BNZ " << midcode.t3;		\
+		break
+#else
+	#define CASE(id, op) case MidCode::Instr::id:		\
+		output << "if " << midcode.t1->name() << " " #op " "			\
+			<< ((midcode.t2 == nullptr) ? "0" : midcode.t2->name())		\
+			<< " branch to \"" << midcode.t3 << '"';		\
+		break
+#endif /* judge */
+	CASE(BEQ, ==); CASE(BNE, !=);
+#undef CASE
+
 	case MidCode::Instr::GOTO:
-		output << "goto " << midcode.t3 << std::endl;
+		output << "goto " << midcode.t3;
 		break;
 	case MidCode::Instr::LABEL:
-		output << midcode.t3 << ':' << std::endl;
+		output << midcode.t3 << ':';
 		break;
 	default:
 		assert(0);
@@ -190,8 +187,12 @@ MidCode::MidCode(const Instr instr,
 	default:
 		assert(0);
 	}
-	if (!table._cur->hasRet()) { table._cur->_midcode.push_back(this); }
-	std::cout << *this; // TODO: replace this
+}
+
+void MidCode::gen(const Instr instr, symtable::Entry* const t0, symtable::Entry* const t1, 
+			symtable::Entry* const t2, const std::string& t3) {
+	// TODO: if error happened, exit
+	table._cur->_midcode.push_back(new MidCode(instr, t0, t1, t2, t3));
 }
 
 symtable::Entry* MidCode::genVar(const bool isInt) {
@@ -208,4 +209,36 @@ symtable::Entry* MidCode::genConst(const bool isInt, const int value) {
 std::string MidCode::genLabel(void) {
 	static int counter = 1;
 	return "label" + std::to_string(counter++);
+}
+
+// TODO: reconstruct
+void MidCode::print(std::ostream& output) {
+	for (auto& e : table._global._syms) {
+		if (e.second == nullptr) { continue; }
+		output << *(e.second) << std::endl;
+	}
+	for (auto& f : table._func) {
+		if (f.second == nullptr) { continue; }
+		output << *(f.second) << std::endl;
+		const std::vector<symtable::Entry*>& argv = f.second->argList();
+		for (auto& e : argv) {
+			output << "para " << (e->isInt ? "int " : "char ") 
+				<< e->name() << std::endl;
+		}
+		for (auto& e : f.second->_syms) {
+			if (e.second == nullptr) { continue; }
+			if (find(argv.begin(), argv.end(), e.second) != argv.end()) { continue; }
+			output << *(e.second) << std::endl;
+		}
+		for (auto& mc : f.second->_midcode) {
+			output << *mc << std::endl;
+		}
+	}
+	for (auto& e : table._main._syms) {
+        if (e.second == nullptr) { continue; }
+		output << *(e.second) << std::endl;
+	}
+	for (auto& mc : table._main._midcode) {
+		output << *mc << std::endl;
+	}
 }
