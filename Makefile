@@ -4,8 +4,12 @@
 
 .PHONY: run clean xcode judge
 	
-run:
+rerun:
 	cd ./build && make clean
+	make -C ./build >> ./build/log.txt
+	./build/compiler
+
+run:
 	make -C ./build >> ./build/log.txt
 	./build/compiler
 
