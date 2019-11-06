@@ -27,6 +27,7 @@ void printDefault(){
 void main(){
 	int a;
 	char c;
+	main();
 	printDefault();
 	for(a=0;a>-5;a=a-1)
 		queue[-a]=1;

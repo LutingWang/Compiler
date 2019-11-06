@@ -249,6 +249,14 @@ bool Stat::stat(void) {
 	switch (sym.id) {
 	case symbol::Type::RESERVED:
 		switch (sym.num) {
+		case symbol::MAINTK: // calling to main is not exactly a function call
+			assert(table.isMain());
+			getsym();
+			assert(sym.is(symbol::Type::DELIM, symbol::LPARENT));
+			getsym();
+			error::assertSymIsRPARENT();
+			MidCode::gen(MidCode::Instr::CALL, nullptr, nullptr, nullptr, "main");
+			break;
 		case symbol::IFTK: 
 			hasRet = Cond::_if();
 			break;
@@ -294,7 +302,8 @@ bool Stat::stat(void) {
 			while (!sym.is(symbol::Type::DELIM, symbol::RBRACE)) {
 				hasRet = stat() || hasRet;
 			}
-			// fallthrough
+			getsym();
+			break;
 		case symbol::SEMICN:
 			getsym();
 			break;
