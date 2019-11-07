@@ -14,10 +14,6 @@
 #include "symtable.h"
 #include "MidCode.h"
 
-std::ostream& operator << (std::ostream& output, MidCode& midcode) {
-	return output;
-}
-
 MidCode::MidCode(const Instr instr, 
 		symtable::Entry* const t0, 
 		symtable::Entry* const t1, 
@@ -30,20 +26,16 @@ MidCode::MidCode(const Instr instr,
 		+ (t3 != "");
 	switch (instr) {
 	case Instr::ADD:
+	case Instr::SUB:
 	case Instr::MULT:
 	case Instr::DIV:
 	case Instr::LOAD_IND:
 	case Instr::STORE_IND:
 		assert(status == 0b1110);
 		break;
-	case Instr::SUB:
-		assert(status == 0b1110 || status == 0b1010);
-		break;
 	case Instr::ASSIGN:
-		assert(status == 0b1100);
-		break;
 	case Instr::PUSH_ARG:
-		assert(status == 0b0100);
+		assert(status == 0b1100);
 		break;
 	case Instr::CALL:
 		assert(status == 0b1001 || status == 0b0001);
@@ -65,7 +57,7 @@ MidCode::MidCode(const Instr instr,
 		break;
 	case Instr::BEQ:
 	case Instr::BNE:
-		assert(status == 0b1110 || status == 0b1100);
+		assert(status == 0b0111 || status == 0b0101);
 		break;
 	case Instr::GOTO:
 	case Instr::LABEL:
@@ -79,12 +71,16 @@ MidCode::MidCode(const Instr instr,
 void MidCode::gen(const Instr instr, symtable::Entry* const t0, symtable::Entry* const t1, 
 			symtable::Entry* const t2, const std::string& t3) {
 	if (error::happened) { return; }
-	table._cur->_midcode.push_back(new MidCode(instr, t0, t1, t2, t3));
+	if (table.curFunc()->hasRet()) { return; }
+	if (instr == MidCode::Instr::CALL && t3 == table.curFunc()->name()) {
+		table.curFunc()->_inline = false;
+	}
+	table.curFunc()->_midcode.push_back(new MidCode(instr, t0, t1, t2, t3));
 }
 
 symtable::Entry* MidCode::genVar(const bool isInt) {
-	static int counter = 100;
-	return table._cur->push("$" + std::to_string(counter++), false, isInt);
+	static int counter = 1;
+	return table.curFunc()->push("#" + std::to_string(counter++), false, isInt);
 }
 
 symtable::Entry* MidCode::genConst(const bool isInt, const int value) {
@@ -95,7 +91,7 @@ symtable::Entry* MidCode::genConst(const bool isInt, const int value) {
 
 std::string MidCode::genLabel(void) {
 	static int counter = 1;
-	return "label" + std::to_string(counter++);
+	return "label#" + std::to_string(counter++);
 }
 
 // output functions
@@ -105,22 +101,15 @@ void MidCode::print(void) const { // print this piece of mid code
 	switch (instr) {
 #ifdef CASE
 	#error macro conflict
-#endif
+#endif /* CASE */
 #define CASE(id, op) case MidCode::Instr::id:	\
 		midcode_output << t0->name() << " = "	\
 			<< t1->name() << " " #op " "		\
 			<< t2->name();						\
 		break
-	CASE(ADD, +); CASE(MULT, *); CASE(DIV, /);
+	CASE(ADD, +); CASE(SUB, -); CASE(MULT, *); CASE(DIV, /);
 #undef CASE
 
-	case MidCode::Instr::SUB:
-		midcode_output << t0->name() << " = ";
-		if (t1 != nullptr) {
-			midcode_output << t1->name() << ' ';
-		}
-		midcode_output << "- " << t2->name();
-		break;
 	case MidCode::Instr::LOAD_IND:
 		midcode_output << t0->name() << " = " 
 			<< t1->name() 
@@ -136,6 +125,9 @@ void MidCode::print(void) const { // print this piece of mid code
 		break;
 	case MidCode::Instr::PUSH_ARG:
 		midcode_output << "push " << t1->name();
+#if !judge
+		midcode_output << " to " << t0->name();
+#endif /* judge */
 		break;
 	case MidCode::Instr::CALL:
 #if judge
@@ -171,7 +163,7 @@ void MidCode::print(void) const { // print this piece of mid code
 
 #ifdef CASE
 	#error macro conflict
-#endif
+#endif /* CASE */
 #if judge
 	#define CASE(id, op) case MidCode::Instr::id:		\
 		midcode_output << t1->name() << " " #op " "		\
@@ -191,7 +183,7 @@ void MidCode::print(void) const { // print this piece of mid code
 
 #ifdef CASE
 	#error macro conflict
-#endif
+#endif /* CASE */
 #if judge
 	#define CASE(id, op) case MidCode::Instr::id:		\
 		midcode_output << "if " << t1->name() << " " #op " "			\
@@ -267,18 +259,19 @@ void MidCode::print(const symtable::FuncTable* const ft) {
 	for (auto& mc : ft->_midcode) {
 		mc->print();
 	}
+	midcode_output << std::endl;
 }
 
-void MidCode::printAll(void) {
-	if (!midcode_output) { return; }
+void MidCode::output(void) {
+	for (auto& e : table._global._syms) { 
+		print(e.second); 
+	}
+	midcode_output << std::endl;
 
-	for (auto& e : table._global._syms) { print(e.second); }
 	for (auto& f : table._func) { 
-		midcode_output << std::endl;
 		print(f.second); 
 	}
 
-	midcode_output << std::endl << "void main()" << std::endl;
-	for (auto& e : table._main._syms) { print(e.second); }
-	for (auto& mc : table._main._midcode) { mc->print(); }
+	print(&(table._main));
 }
+

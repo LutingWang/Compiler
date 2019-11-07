@@ -18,37 +18,54 @@ using namespace std;
 
 symtable::Database table;
 
-void symtable::Database::pushFunc(void) { 
-	_cur = &_main; 
-	Printer::print(_main);
-}
-
-void symtable::Database::pushFunc(const string& funcName, FuncTable* const ft) {
-	FuncTable*& ftp = _func[funcName];
-	if (ftp != nullptr) { 
-		error::raise(error::Code::REDEF); 
-		return; 
-	}
-	ftp = ft;
-	_cur = ftp;
-	Printer::print(*ft);
-}
-
 symtable::Database::~Database(void) {
 	for (auto& e : _func) { delete e.second; }
 }
 
 symtable::FuncTable* symtable::Database::curFunc(void) const {
-	assert(_cur != &_global && _cur != &_main);
-	return (FuncTable*) _cur;
+	assert(_cur != nullptr);
+	return _cur;
 }
 
+const symtable::FuncTable* symtable::Database::findFunc(const std::string& funcName) { 
+	if (funcName == "main") { 
+		assert(_cur = &_main);
+		return &_main; 
+	}
+	return _func[funcName]; 
+}
 symtable::Entry* symtable::Database::findSym(const string& symName) {
-	Entry* result = _cur->find(symName);
-	return result == nullptr ? _global.find(symName) : result;
+	if (_cur != nullptr) {
+		Entry* result = _cur->find(symName);
+		if (result != nullptr) { return result; }
+	}
+	return _global.find(symName);
+}
+
+void symtable::Database::pushFunc(const string& funcName, FuncTable* const ft) {
+	FuncTable*& ftp = _func[funcName];
+	if (ftp != nullptr) { error::raise(error::Code::REDEF); }
+	ftp = ft;
+	_cur = ft;
+	Printer::print(*ft);
+}
+
+void symtable::Database::pushFunc(void) { 
+	assert(_cur != &_main);
+	_cur = &_main; 
+	Printer::print(_main);
+}
+
+void symtable::Database::pushArg(const std::string& symName, const bool isInt) {
+	assert(_cur != nullptr && !isMain());
+	_cur->pushArg(symName, isInt);
 }
 
 void symtable::Database::pushSym(const string& symName, const bool isConst, const bool isInt, const int value) {
-	_cur->push(symName, isConst, isInt, value);
+	if (_cur == nullptr) {
+		_global.push(symName, isConst, isInt, value);
+	} else {
+		_cur->push(symName, isConst, isInt, value);
+	}
 }
 

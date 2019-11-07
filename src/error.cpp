@@ -17,12 +17,10 @@ bool error::happened = false;
 void error::raise(Code c) {
 	error::happened = true;
 
-	if (!error_output) { return; }
-
 	switch (c) {
 #ifdef CASE
 	#error macro conflict
-#endif
+#endif /* CASE */
 #if judge
 	#define CASE(id, msg) case Code::id:	\
 		error_output << input.line() << ' '	\
@@ -34,7 +32,7 @@ void error::raise(Code c) {
 		error_output << input.line()		\
 			<< ": " #msg << std::endl;		\
 		break
-#endif
+#endif /* CASE */
 	CASE(LEX, lexical error);
 	CASE(REDEF, redefinition);
 	CASE(NODEF, use of undeclared identifier);
@@ -51,7 +49,7 @@ void error::raise(Code c) {
 
 #ifdef CASE
 	#error macro conflict
-#endif
+#endif /* CASE */
 #if judge
 	#define CASE(id, msg) case Code::id:	\
 		error_output << sym.lastLine << ' '	\
@@ -63,7 +61,7 @@ void error::raise(Code c) {
 		error_output << sym.lastLine		\
 			<< ": " #msg << std::endl;		\
 		break
-#endif
+#endif /* CASE */
 	// missing errors need to output line number of the last symbol
 	CASE(MISSING_SEMICN, missing semicolon);
 	CASE(MISSING_RPARENT, missing right parent);

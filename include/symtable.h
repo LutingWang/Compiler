@@ -14,6 +14,7 @@
 #include <vector>
 
 class MidCode;
+class Optim;
 
 namespace symtable {
 	// One record in the database. A record represents 
@@ -52,39 +53,71 @@ namespace symtable {
 		friend class ::MidCode;
 	protected:
 		const std::string _name;
+	public:
+		std::string name(void) const { return _name; }
 
-		Table(const std::string& name) : _name(name) {}
-
+	protected:
 		// The primary key is set as the name of a symbol. 
 		// Thus, the integrity constraints helps to ensure 
 		// that no symbol is redefined. 
 		std::map<std::string, Entry*> _syms;
 
-		std::vector<MidCode*> _midcode;
+		Table(const std::string& name) : _name(name) {}
 
-		// If a top level return has been detected, no 
-		// more mid code should be generated.
-		bool _hasRet = false;
-
-		~Table(void);
+		virtual ~Table(void);
 
 		Entry* find(const std::string& symName) { return _syms[symName]; }
 
 		Entry* push(const std::string&, const bool isConst, const bool isInt, const int = -1);
-	public:
-		std::string name(void) const { return _name; }
-
-		bool hasRet(void) const { return _hasRet; }
 	};
 	
 	class FuncTable : public Table {
 		friend class Printer;
 		friend class Database;
-	protected:
-		std::vector<Entry*> _argList;
+		friend class ::MidCode;
+		friend class ::Optim;
+	public:
+		const bool isVoid, isInt;
 
-		FuncTable(void) : 
-			Table("unknown"), isVoid(true), isInt(false) {}
+	protected:
+		// Each element points to an existing `Entry` in
+		// `_syms`, so the deinitializer should not deallocate
+		// these pointers.
+		std::vector<Entry*> _argList;
+	public:
+		const std::vector<Entry*>& argList(void) const { return _argList; }
+
+	protected:
+		// The elements in different `FuncTable` should be
+		// distinct, so that optimizer can allocate and
+		// deallocate freely. Therefore, deinitializer is
+		// obligated to deallocate these pointers. 
+		//
+		// Any function that wants to operate on `_midcode`
+		// should guarantee that the inserted elements do
+		// not collide with other `FuncTable`s, since they
+		// are friends.
+		std::vector<MidCode*> _midcode;
+
+	protected:
+		// If a top level return has been detected, no 
+		// more mid code should be generated.
+		bool _hasRet = false;
+	public:
+		// This function can only be called by `Stat::block`
+		void setHasRet(void) { _hasRet = true; }
+
+		bool hasRet(void) const { return _hasRet; }
+
+	protected:
+		// non-recursive functions are inline by default
+		bool _inline = true;
+	public:
+		bool isInline(void) const { return _inline; }
+
+	protected:
+		// deallocate `_midcode`
+		virtual ~FuncTable(void);
 
 		FuncTable(const std::string& name) : 
 			Table(name), isVoid(true), isInt(false) {}
@@ -95,22 +128,18 @@ namespace symtable {
 		void pushArg(const std::string& symName, const bool isInt) {
 			_argList.push_back(push(symName, false, isInt));
 		}
-	public:
-		const bool isVoid, isInt;
-
-		const std::vector<Entry*>& argList(void) const { return _argList; }
 	};
 	
 	// public interface
 	class Database {
 		friend class ::MidCode;
+		friend class ::Optim;
 
 		Table _global;
 		std::map<std::string, FuncTable*> _func;
-		Table _main;
-		Table* _cur = &_global;
+		FuncTable _main;
+		FuncTable* _cur = nullptr;
 
-		void pushFunc(const std::string&, FuncTable* const);
 	public:
 		Database(void) : _global("global"), _main("main") {}
 
@@ -118,14 +147,18 @@ namespace symtable {
 
 		bool isMain(void) const { return _cur == &_main; }
 
-		// can only be called when parsing a function except for main
 		FuncTable* curFunc(void) const;
 
-		// if the symbol is not defined, return nullptr
-		// the caller is obligated to check
-		const FuncTable* findFunc(const std::string& funcName) { return _func[funcName]; }
+		// If the symbol is not defined, return nullptr. 
+		// The caller is obligated to check. Main func 
+		// can also be found.
+		const FuncTable* findFunc(const std::string&);
+
 		Entry* findSym(const std::string&);
 
+	private:
+		void pushFunc(const std::string&, FuncTable* const);
+	public:
 		// automatically check for re-definition
 		void pushFunc(const std::string& funcName) { 
 			pushFunc(funcName, new FuncTable(funcName)); 
@@ -137,14 +170,9 @@ namespace symtable {
 
 		void pushFunc(void); // push main
 
-		void pushArg(const std::string& symName, const bool isInt) {
-			curFunc()->pushArg(symName, isInt);
-		}
+		void pushArg(const std::string&, const bool);
 
 		void pushSym(const std::string&, const bool isConst, const bool isInt, const int = -1);
-		
-		// This function can only be called by `Stat::block`
-		void setHasRet(void) { _cur->_hasRet = true; }
 	};
 }
 

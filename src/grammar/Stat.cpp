@@ -115,6 +115,7 @@ bool Stat::Cond::_for(void) {
 	t0 = table.findSym(sym.str);
 	if (t0 == nullptr) { error::raise(error::Code::NODEF); }
 	else if (t0->isConst) { error::raise(error::Code::ILLEGAL_ASSIGN); }
+	else { assert(!t0->isArray()); }
 	getsym();
 	assert(sym.is(symbol::Type::DELIM, symbol::ASSIGN));
 	getsym();
@@ -134,12 +135,14 @@ bool Stat::Cond::_for(void) {
 	t0 = table.findSym(sym.str);
 	if (t0 == nullptr) { error::raise(error::Code::NODEF); }
 	else if (t0->isConst) { error::raise(error::Code::ILLEGAL_ASSIGN); }
+	else { assert(!t0->isArray()); }
 	getsym();
 	assert(sym.is(symbol::Type::DELIM, symbol::ASSIGN));
 	getsym();
 	assert(sym.is(symbol::Type::IDENFR));
 	t1 = table.findSym(sym.str);
 	if (t1 == nullptr) { error::raise(error::Code::NODEF); }
+	else { assert(!t1->isArray()); }
 	getsym();
 	bool minus;
 	assert(basics::add(minus));
@@ -168,6 +171,7 @@ void Stat::read(void) {
 		symtable::Entry* t0 = table.findSym(sym.str);
 		if (t0 == nullptr) { error::raise(error::Code::NODEF); }
 		else if (t0->isConst) { error::raise(error::Code::ILLEGAL_ASSIGN); }
+		else { assert(!t0->isArray()); }
 		MidCode::gen(MidCode::Instr::INPUT, t0, nullptr, nullptr);
 		getsym();
 	} while (sym.is(symbol::Type::DELIM, symbol::COMMA));
@@ -202,7 +206,7 @@ void Stat::ret(void) {
 
 	assert(sym.is(symbol::Type::RESERVED, symbol::RETURNTK)); // ensured by outer function
 	getsym();
-	if (table.isMain() || table.curFunc()->isVoid) {
+	if (table.curFunc()->isVoid) {
 		if (sym.is(symbol::Type::DELIM, symbol::LPARENT)) {
 			error::raise(error::Code::ILLEGAL_RET_WITH_VAL);
 			getsym();
@@ -323,20 +327,17 @@ void Stat::block(void) {
 	Var::dec();
 
 	while (!sym.is(symbol::Type::DELIM, symbol::RBRACE)) { 
-		if (stat()) { table.setHasRet(); }
+		if (stat()) { table.curFunc()->setHasRet(); }
 	}
 
 	// function main does not have subsequent symbols
 	if (table.isMain()) { return; }
-	
 	getsym();
+
 	symtable::FuncTable* ft = table.curFunc();
 	if (ft->hasRet()) { return; }
-	if (ft->isVoid) {
-		MidCode::gen(MidCode::Instr::RET, nullptr, nullptr, nullptr);
-	} else {
-		// for non-void functions, the default <ret> will not fit
-		error::raise(error::Code::ILLEGAL_RET_WITHOUT_VAL);
-	}
+	// for non-void functions, the default <ret> will not fit
+	if (!ft->isVoid) { error::raise(error::Code::ILLEGAL_RET_WITHOUT_VAL); }
+	MidCode::gen(MidCode::Instr::RET, nullptr, nullptr, nullptr);
 }
 

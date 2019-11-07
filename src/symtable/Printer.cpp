@@ -29,7 +29,7 @@ void symtable::Printer::print(Entry& e) {
 
 void symtable::Printer::print(const Table& t) {
 	symtable_output << std::setw(30) << typeid(t).name() << " : " 
-		<< std::setw(30) << t._name << std::endl;
+		<< std::setw(30) << t.name() << std::endl;
 }
 
 void symtable::Printer::print(const FuncTable& ft) {

@@ -13,26 +13,29 @@
 #include "error.h"
 #include "InputFile.h"
 #include "MidCode.h"
+#include "Optim.h"
 using namespace std;
 
-// relative to this file
-#define TESTFILE_PATH "../test/testfile1"
+// relative to this file, for debug use
+#define TESTFILE_PATH "../test/midcode/gen/gen"
 
 InputFile input(PROJECT_SRC_DIR TESTFILE_PATH);
 
 // Latent streams for corresponding classes to use.
 // Do not expose in the headers!
+//
+// Naming convensions:
+//     *_output		- ofstream
+//     OUTPUT_*		- bool			output switch
 ofstream error_output;
 ofstream symtable_output;
 ofstream lexer_output;
-ofstream grammar_output;
 ofstream midcode_output;
 
 int main() {
 	bool OUTPUT_error = true;
 	bool OUTPUT_symtable = true;
 	bool OUTPUT_lexer = true;
-	bool OUTPUT_grammar = false;
 	bool OUTPUT_midcode = true;
 
 #ifdef OPEN
@@ -43,7 +46,7 @@ int main() {
 		id##_output << std::left;									\
 	} else { id##_output.setstate(iostream::failbit); }
 
-	OPEN(error); OPEN(symtable); OPEN(lexer); OPEN(grammar); OPEN(midcode);
+	OPEN(error); OPEN(symtable); OPEN(lexer); OPEN(midcode);
 #undef OPEN
 
 	// print compiler version info
@@ -54,13 +57,16 @@ int main() {
 
 	if (error::happened) { goto exit; }
 
-	MidCode::printAll();
+	MidCode::output();
+
+	Optim::inlineExpansion();
+
+	MidCode::output();
 
 exit:
 	error_output.close();
 	symtable_output.close();
 	lexer_output.close();
-	grammar_output.close();
 	midcode_output.close();
 	return 0;
 }

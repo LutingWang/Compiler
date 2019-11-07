@@ -81,31 +81,34 @@ symtable::Entry* Expr::factor(void) {
 
 // <item> ::= <factor>{<mult op><factor>}
 symtable::Entry* Expr::item(void) {
-	symtable::Entry* t0 = nullptr;
-	symtable::Entry* t2 = factor();
+	symtable::Entry* t1 = factor();
 	bool isMult;
-	if (basics::mult(isMult)) { 
-		t0 = MidCode::genVar(true);
-		do { 
-			t2 = factor(); 
-			MidCode::gen(isMult ? MidCode::Instr::MULT : MidCode::Instr::DIV, 
-					t0, t0, t2); // t0 = t0 [*/] t2
-		} while (basics::mult(isMult));
+	if (!basics::mult(isMult)) { 
+		assert(t1 != nullptr);
+		return t1;
 	} 
-	assert(t2 != nullptr);
-	return t0 == nullptr ? t2 : t0;
+	symtable::Entry* t0 = MidCode::genVar(true);
+	MidCode::gen(isMult ? MidCode::Instr::MULT : MidCode::Instr::DIV, 
+			t0, t1, factor()); // t0 = t1 [*/] t2
+	while (basics::mult(isMult)) {
+		MidCode::gen(isMult ? MidCode::Instr::MULT : MidCode::Instr::DIV, 
+				t0, t0, factor()); // t0 = t0 [*/] t2
+	}
+	return t0;
 }
 
 // <expr> ::= [<add op>]<item>{<add op><item>}
 symtable::Entry* Expr::expr(void) {
 	symtable::Entry* t0 = nullptr;
+	symtable::Entry* t1;
 	bool neg;
 	if (basics::add(neg)) {
 		t0 = MidCode::genVar(true);
-		if (neg) { MidCode::gen(MidCode::Instr::SUB, t0, nullptr, item()); } // t0 = -t2
+		t1 = MidCode::genConst(true, 0);
+		MidCode::gen(neg ? MidCode::Instr::SUB : MidCode::Instr::ADD, 
+				t0, t1, item()); // t0 = 0 [+-] t2
 	} else {
-		symtable::Entry* t1 = item();
-		assert(t1 != nullptr);
+		t1 = item();
 		if (basics::add(neg)) {
 			t0 = MidCode::genVar(true);
 			MidCode::gen(neg ? MidCode::Instr::SUB : MidCode::Instr::ADD, 
@@ -113,7 +116,6 @@ symtable::Entry* Expr::expr(void) {
 		} else { return t1; }
 	}
 
-	assert(t0 != nullptr);
 	while (basics::add(neg)) { 
 		MidCode::gen(neg ? MidCode::Instr::SUB : MidCode::Instr::ADD, 
 				t0, t0, item()); // t0 = t0 [+-] t2

@@ -76,7 +76,6 @@ void Func::dec(void) {
 // This function is obligated to check whether the arg values
 // match with the function declaration.
 symtable::Entry* Func::argValues(const symtable::FuncTable* const ft) { 
-	if (ft == nullptr) { error::raise(error::Code::NODEF); }
 	assert(sym.is(symbol::Type::DELIM, symbol::LPARENT)); // ensured by outer function
 	getsym();
 
@@ -84,15 +83,19 @@ symtable::Entry* Func::argValues(const symtable::FuncTable* const ft) {
 	if (!sym.is(symbol::Type::DELIM, symbol::RPARENT|symbol::SEMICN)) { // ')' might be missing
 		while (true) {
 			argv.push_back(Expr::expr());
-			MidCode::gen(MidCode::Instr::PUSH_ARG, nullptr, argv.back(), nullptr);
 			if (!sym.is(symbol::Type::DELIM, symbol::COMMA)) { break; }
 			getsym();
 		}
 	}
 	error::assertSymIsRPARENT();
 
-	// error handling
-	if (ft == nullptr) { return nullptr; }
+	if (ft == nullptr) { 
+		error::raise(error::Code::NODEF); 
+		return nullptr;
+	}
+
+	// TODO: don't push target
+	// check and push args
 	const std::vector<symtable::Entry*>& al = ft->argList();
 	if (argv.size() != al.size()) {
 		error::raise(error::Code::MISMATCHED_ARG_NUM);
@@ -102,6 +105,7 @@ symtable::Entry* Func::argValues(const symtable::FuncTable* const ft) {
 			error::raise(error::Code::MISMATCHED_ARG_TYPE);
 			break;
 		}
+		MidCode::gen(MidCode::Instr::PUSH_ARG, al[i], argv[i], nullptr);
 	}
 
 	// generate mid code

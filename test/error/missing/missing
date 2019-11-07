@@ -20,25 +20,25 @@ void main( {
 	if (a[0] {}
 	while (a[0] {}
 	do {} while (a[0]
-	for (a = a[0]; a[0]; a = a + 1 {}
+	for (normal_i = a[0]; a[0]; normal_i = normal_i + 1 {}
 	f1(;
 	f2(a[0];
 	f3(a[0], a[1];
 	f4(;
 	f5(a[0];
 	f6(a[0], a[1];
-	scanf(a;
+	scanf(normal_i;
 	printf("abc";
-	printf(a;
-	printf("abc", a;
+	printf(a[0];
+	printf("abc", a[0];
 
 	f1()
 	f4()
 	a[0] = 1
-	scanf(a)
+	scanf(normal_i)
 	printf("abc")
-	printf(a)
-	printf("abc", a)
+	printf(a[0])
+	printf("abc", a[0])
 
 	do {} (a[0]);
 }

@@ -33,7 +33,7 @@ namespace error {
 	namespace {
 #ifdef ASSERT_DELIM
 	#error macro conflict
-#endif
+#endif /* ASSERT_DELIM */
 #define ASSERT_DELIM(s) inline void assertSymIs##s(void) {				\
 	if (sym.is(symbol::Type::DELIM, symbol::s)) { lexer::getsym(); }	\
 	else { raise(Code::MISSING_##s); }									\

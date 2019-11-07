@@ -8,6 +8,7 @@
 #include <fstream>
 #include <typeinfo>
 #include "error.h"
+#include "MidCode.h"
 
 #include "Printer.h"
 
@@ -22,8 +23,12 @@ symtable::Entry* symtable::Table::push(const string& symName, const bool isConst
 	Entry*& entry = _syms[symName];
 	if (entry != nullptr) { error::raise(error::Code::REDEF); } 
 	else {
-		entry = new Entry(_name + '_' + symName, isConst, isInt, value);
+		entry = new Entry(name() + '_' + symName, isConst, isInt, value);
 		Printer::print(*entry);
 	}
 	return entry;
+}
+
+symtable::FuncTable::~FuncTable(void) {
+	for (auto& mc : _midcode) { delete mc; }
 }

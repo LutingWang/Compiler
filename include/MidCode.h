@@ -14,22 +14,23 @@
 namespace symtable {
 	class Entry;
 	class FuncTable;
-	class Database;
 }
 
+class Optim;
+
 class MidCode {
-	friend class symtable::Database;
+	friend class ::Optim;
 public:
 	enum class Instr {
 		ADD,		// t0 = t1 + t2
-		SUB,		// t0 = t1(nullable) - t2
+		SUB,		// t0 = t1 - t2
 		MULT,		// t0 = t1 * t2
 		DIV,		// t0 = t1 / t2
 		LOAD_IND,	// t0 = t1[t2]
 		STORE_IND,	// t0[t2] = t1
 		ASSIGN,		// t0 = t1
 
-		PUSH_ARG,	// push t1
+		PUSH_ARG,	// push t1 to t0
 		CALL,		// t0(nullable) = call t3
 		RET,		// return t1(nullable)
 
@@ -59,6 +60,12 @@ public:
 
 	static void gen(const Instr, symtable::Entry* const, symtable::Entry* const, 
 			symtable::Entry* const, const std::string& = "");
+
+	// naming convension:
+	//     #1		- temporary variable
+	//     int$0	- global int constant
+	//     char$0	- global int constant
+	//     label#1	- non-functional labels
 	static symtable::Entry* genVar(const bool);
 	static symtable::Entry* genConst(const bool, const int);
 	static std::string genLabel(void);
@@ -68,7 +75,7 @@ private:
 	static void print(symtable::Entry* const);
 	static void print(const symtable::FuncTable* const);
 public:
-	static void printAll(void);
+	static void output(void);
 };
 
 #endif /* MIDCODE_H */
