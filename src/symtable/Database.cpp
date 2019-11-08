@@ -34,6 +34,7 @@ const symtable::FuncTable* symtable::Database::findFunc(const std::string& funcN
 	}
 	return _func[funcName]; 
 }
+
 symtable::Entry* symtable::Database::findSym(const string& symName) {
 	if (_cur != nullptr) {
 		Entry* result = _cur->find(symName);

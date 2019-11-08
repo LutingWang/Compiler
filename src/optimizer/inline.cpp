@@ -13,7 +13,7 @@
 
 #include "Optim.h"
 
-void Optim::inlineExpansion(void) {
+void Optim::inlineExpan(void) {
 	std::vector<MidCode*>& mc = table._main._midcode;
 	for (int i = 0; i < mc.size(); i++) {
 		if (mc[i]->instr != MidCode::Instr::PUSH_ARG &&

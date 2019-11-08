@@ -23,9 +23,9 @@ class Stat {
 		static void cond(const bool, const std::string&);
 	public:
 		static bool _if(void);
-		static bool _while(void);
+		static void _while(void);
 		static bool _do(void);
-		static bool _for(void);
+		static void _for(void);
 	};
 	static void read(void);
 	static void write(void);

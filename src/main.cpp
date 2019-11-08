@@ -16,7 +16,7 @@
 using namespace std;
 
 // relative to this file, for debug use
-#define TESTFILE_PATH "../test/midcode/expr/expr"
+#define TESTFILE_PATH "../test/testfile1"
 
 InputFile input(PROJECT_SRC_DIR TESTFILE_PATH);
 

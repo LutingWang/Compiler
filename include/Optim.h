@@ -8,7 +8,22 @@
 #ifndef OPTIM_H
 #define OPTIM_H
 
+#include <map>
+#include <string>
+
+class FlowChart;
+
 class Optim {
+	FlowChart* _mainFlow;
+
+	// <func name, func flow chart>
+	std::map<std::string, FlowChart*> _chart;
+
+	// build `_chart` from `table`
+	Optim(void);
+
+	// Write back to `table`
+	~Optim(void);
 public:
 	static void inlineExpan(void);
 	static void commonExprElim(void);

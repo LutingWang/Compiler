@@ -60,14 +60,15 @@ bool Stat::Cond::_if(void) {
 		getsym();
 		hasRet = stat() && hasRet; // ensures that stat() is executed
 		MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelEnd);
+		return hasRet;
 	} else {
 		MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelElse);
+		return false;
 	}
-	return hasRet;
 }
 
 // <while stat> ::= while'('<cond>')'<stat>
-bool Stat::Cond::_while(void) {
+void Stat::Cond::_while(void) {
 	assert(sym.is(symbol::Type::RESERVED, symbol::WHILETK)); // ensured by outer function
 	getsym();
 	assert(sym.is(symbol::Type::DELIM, symbol::LPARENT));
@@ -77,10 +78,9 @@ bool Stat::Cond::_while(void) {
 	std::string labelEnd = MidCode::genLabel();
 	cond(true, labelEnd);
 	error::assertSymIsRPARENT();
-	bool hasRet = stat();
+	stat();
 	MidCode::gen(MidCode::Instr::GOTO, nullptr, nullptr, nullptr, labelBegin);
 	MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelEnd);
-	return hasRet;
 }
 
 // <do stat> ::= do<stat>while'('<cond>')'
@@ -100,7 +100,7 @@ bool Stat::Cond::_do(void) {
 }
 
 // <for stat> ::= for'('<iden>=<expr>;<cond>;<iden>=<iden><add op><unsigned int>')'<stat>
-bool Stat::Cond::_for(void) {
+void Stat::Cond::_for(void) {
 	symtable::Entry* t0;
 	symtable::Entry* t1;
 
@@ -151,13 +151,11 @@ bool Stat::Cond::_for(void) {
 	getsym();
 	error::assertSymIsRPARENT();
 
-	// <stat>
-	bool hasRet = stat();
+	stat();
 
 	MidCode::gen(minus ? MidCode::Instr::SUB : MidCode::Instr::ADD, t0, t1, stepSize);
 	MidCode::gen(MidCode::Instr::GOTO, nullptr, nullptr, nullptr, labelBegin);
 	MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelEnd);
-	return hasRet;
 }
 
 // <read stat> ::= scanf'('<iden>{,<iden>}')'
@@ -265,13 +263,13 @@ bool Stat::stat(void) {
 			hasRet = Cond::_if();
 			break;
 		case symbol::WHILETK:
-			hasRet = Cond::_while();
+			Cond::_while();
 			break;
 		case symbol::DOTK:
 			hasRet = Cond::_do();
 			break;
 		case symbol::FORTK:
-			hasRet = Cond::_for();
+			Cond::_for();
 			break;
 		case symbol::SCANFTK:
 			read();
@@ -331,8 +329,7 @@ void Stat::block(void) {
 	}
 
 	// function main does not have subsequent symbols
-	if (table.isMain()) { return; }
-	getsym();
+	if (!table.isMain()) { getsym(); }
 
 	symtable::FuncTable* ft = table.curFunc();
 	if (ft->hasRet()) { return; }

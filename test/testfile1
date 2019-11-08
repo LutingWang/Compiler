@@ -27,6 +27,10 @@ void printDefault(){
 void main(){
 	int a;
 	char c;
+	if (a > a) {
+		return;
+		a = 1;
+	}
 	main();
 	printDefault();
 	for(a=0;a>-5;a=a-1)
