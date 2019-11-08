@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 #include "symtable.h"
-#include "MidCode.h"
+#include "midcode.h"
 
 #include "Optim.h"
 

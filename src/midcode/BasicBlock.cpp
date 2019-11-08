@@ -7,9 +7,7 @@
 
 #include <set>
 #include <vector>
-#include "MidCode.h"
-
-#include "BasicBlock.h"
+#include "midcode.h"
 
 BasicBlock::BasicBlock(const std::vector<MidCode*>& midcodes) : midcodes(midcodes) {}
 

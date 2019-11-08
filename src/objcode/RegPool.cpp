@@ -1,12 +1,10 @@
 /**********************************************
-    > File Name: common.cpp
+    > File Name: RegPool.cpp
     > Author: Luting Wang
     > Mail: 2457348692@qq.com 
-    > Created Time: Thu Nov  7 20:25:38 2019
+    > Created Time: Sat Nov  9 00:00:58 2019
  **********************************************/
 
-#include "Optim.h"
+#include "objcode.h"
 
-void Optim::commonExprElim(void) {
-	Optim optimizer;
-}
+

@@ -9,8 +9,8 @@
 #include <vector>
 #include "compiler.h"
 #include "error.h"
+#include "midcode.h"
 #include "symtable.h"
-#include "MidCode.h"
 
 #include "basics.h"
 #include "Expr.h"

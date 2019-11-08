@@ -9,8 +9,8 @@
 #include <map>
 #include "compiler.h"
 #include "error.h"
+#include "midcode.h"
 #include "symtable.h"
-#include "MidCode.h"
 
 #include "basics.h"
 #include "Const.h"

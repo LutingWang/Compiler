@@ -8,7 +8,7 @@
 #include <fstream>
 #include <typeinfo>
 #include "error.h"
-#include "MidCode.h"
+#include "midcode.h"
 
 #include "Printer.h"
 

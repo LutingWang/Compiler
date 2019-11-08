@@ -5,9 +5,8 @@
     > Created Time: Fri Nov  8 15:17:59 2019
  **********************************************/
 
+#include "midcode.h"
 #include "symtable.h"
-
-#include "FlowChart.h"
 
 #include "Optim.h"
 

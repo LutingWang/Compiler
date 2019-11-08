@@ -10,8 +10,8 @@
 #include "compiler.h"
 #include "compilerConfig.h"
 #include "error.h"
+#include "midcode.h"
 #include "InputFile.h"
-#include "MidCode.h"
 #include "Optim.h"
 using namespace std;
 
@@ -30,12 +30,14 @@ ofstream error_output;
 ofstream symtable_output;
 ofstream lexer_output;
 ofstream midcode_output;
+ofstream mips_output;
 
 int main() {
 	bool OUTPUT_error = true;
 	bool OUTPUT_symtable = true;
 	bool OUTPUT_lexer = true;
 	bool OUTPUT_midcode = true;
+	bool OUTPUT_mips = true;
 
 #ifdef OPEN
 	#error macro conflict
@@ -45,7 +47,7 @@ int main() {
 		id##_output << std::left;									\
 	} else { id##_output.setstate(iostream::failbit); }
 
-	OPEN(error); OPEN(symtable); OPEN(lexer); OPEN(midcode);
+	OPEN(error); OPEN(symtable); OPEN(lexer); OPEN(midcode); OPEN(mips);
 #undef OPEN
 
 	// print compiler version info
@@ -68,5 +70,6 @@ exit:
 	symtable_output.close();
 	lexer_output.close();
 	midcode_output.close();
+	mips_output.close();
 	return 0;
 }

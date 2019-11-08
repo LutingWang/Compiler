@@ -10,11 +10,7 @@
 #include <set>
 #include <string>
 #include <vector>
-#include "MidCode.h"
-
-#include "BasicBlock.h"
-
-#include "FlowChart.h"
+#include "midcode.h"
 
 FlowChart::FlowChart(const std::vector<MidCode*>& mc) {
 	// initialize <label name, label pos in mid code>

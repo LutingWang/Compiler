@@ -14,7 +14,7 @@ run:
 	./build/compiler
 
 clean:
-	rm -r ./build/* ./judge/* ./Xcode/*
+	-rm -r ./build/* ./include/compilerConfig.h ./judge/* ./Xcode/*
 
 xcode:
 	cd ./Xcode && cmake -G "Xcode" ..

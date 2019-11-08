@@ -8,11 +8,12 @@
 #include <algorithm>
 #include <cassert>
 #include <fstream>
+#include <map>
 #include <string>
 #include "compilerConfig.h"
 #include "error.h"
+#include "midcode.h"
 #include "symtable.h"
-#include "MidCode.h"
 
 MidCode::MidCode(const Instr instr, 
 		symtable::Entry* const t0, 

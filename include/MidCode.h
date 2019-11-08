@@ -1,5 +1,5 @@
 /**********************************************
-    > File Name: MidCode.h
+    > File Name: midcode.h
     > Author: Luting Wang
     > Mail: 2457348692@qq.com 
     > Created Time: Mon Nov  4 12:18:57 2019
@@ -9,7 +9,9 @@
 #define MIDCODE_H
 
 #include <iostream>
+#include <set>
 #include <string>
+#include <vector>
 
 namespace symtable {
 	class Entry;
@@ -19,7 +21,7 @@ namespace symtable {
 class Optim;
 
 class MidCode {
-	friend class ::Optim;
+	friend class Optim;
 public:
 	enum class Instr {
 		ADD,		// t0 = t1 + t2
@@ -72,10 +74,39 @@ public:
 
 private:
 	void print(void) const;
-	static void print(symtable::Entry* const);
+	static void print(symtable::Entry* const); // if `judge` is off, print nothing
 	static void print(const symtable::FuncTable* const);
 public:
+	// The output is only valid before optimization. 
 	static void output(void);
+};
+
+class BasicBlock {
+public:
+	std::vector<MidCode*> midcodes;
+	std::set<BasicBlock*> prec; // precursors
+	std::set<BasicBlock*> succ; // successors
+
+	BasicBlock(const std::vector<MidCode*>&);
+
+	// Add a basic block to `_successors` and
+	// add `this` to `_precursors` of the basic
+	// block.
+	void proceed(BasicBlock* const);
+};
+
+class FlowChart {
+public:
+	std::vector<BasicBlock*> blocks;
+
+	FlowChart(const std::vector<MidCode*>&);
+
+	// deallocate `blocks`
+	~FlowChart(void);
+
+	// merge all the mid codes in `blocks` into 
+	// one vector and return
+	std::vector<MidCode*> output(void) const;
 };
 
 #endif /* MIDCODE_H */
