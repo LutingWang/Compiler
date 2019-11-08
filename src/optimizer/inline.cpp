@@ -1,5 +1,5 @@
 /**********************************************
-    > File Name: Optim.cpp
+    > File Name: inline.cpp
     > Author: Luting Wang
     > Mail: 2457348692@qq.com 
     > Created Time: Wed Nov  6 22:13:52 2019
@@ -32,9 +32,10 @@ void Optim::inlineExpansion(void) {
 		}
 
 		// iterate over all push statements and convert to assign
+        const std::vector<symtable::Entry*>& argv = ft->argList();
 		for (int k = i; k < callPos; k++) {
 			MidCode* arg2assign = new MidCode(MidCode::Instr::ASSIGN, 
-					mc[k]->t0, mc[k]->t1, nullptr, "");
+					argv[k - i], mc[k]->t1, nullptr, "");
 			delete mc[k];
 			mc[k] = arg2assign;
 		}

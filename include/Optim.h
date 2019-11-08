@@ -10,7 +10,8 @@
 
 class Optim {
 public:
-	static void inlineExpansion(void);
+	static void inlineExpan(void);
+	static void commonExprElim(void);
 };
 
 #endif /* OPTIM_H */

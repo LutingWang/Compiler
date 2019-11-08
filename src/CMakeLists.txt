@@ -5,6 +5,9 @@ project (compiler)
 add_subdirectory ("grammar")
 set (LIBS ${LIBS} grammar)
 
+add_subdirectory ("optimizer")
+set (LIBS ${LIBS} optimizer)
+
 add_subdirectory ("symtable")
 set (LIBS ${LIBS} symtable)
 

@@ -12,41 +12,6 @@ void main() {
 	int e, f[10];
 	char g, h[10];
 
-	if (e > e);
-	if (e >= e);
-	if (e < e);
-	if (e <= e);
-	if (e == e);
-	if (e != e);
-
-	while (e > e);
-	while (e >= e);
-	while (e < e);
-	while (e <= e);
-	while (e == e);
-	while (e != e);
-
-	do; while (e > e)
-	do; while (e >= e)
-	do; while (e < e)
-	do; while (e <= e)
-	do; while (e == e)
-	do; while (e != e)
-
-	for (e = e; e > e; e = e + 1);
-	for (e = e; e >= e; e = e + 1);
-	for (e = e; e < e; e = e + 1);
-	for (e = e; e <= e; e = e + 1);
-	for (e = e; e == e; e = e + 1);
-	for (e = e; e != e; e = e + 1);
-
-	scanf(e);
-	scanf(e, g);
-
-	printf("abc");
-	printf(e);
-	printf("abc", e);
-
 	e = a + b;
 	e = a - b;
 	e = a * b;
@@ -54,57 +19,22 @@ void main() {
 	e = f[10];
 	f[10] = e;
 	e = a;
-	
+
 	e = func1(a, c);
 	func1(a, c);
 	func2();
 
-	{
-		if (e > e);
-		if (e >= e);
-		if (e < e);
-		if (e <= e);
-		if (e == e);
-		if (e != e);
+	scanf(e);
+	printf("abc");
+	printf(e);
+	printf("abc", e);
 
-		while (e > e);
-		while (e >= e);
-		while (e < e);
-		while (e <= e);
-		while (e == e);
-		while (e != e);
-
-		do; while (e > e)
-		do; while (e >= e)
-		do; while (e < e)
-		do; while (e <= e)
-		do; while (e == e)
-		do; while (e != e)
-
-		for (e = e; e > e; e = e + 1);
-		for (e = e; e >= e; e = e + 1);
-		for (e = e; e < e; e = e + 1);
-		for (e = e; e <= e; e = e + 1);
-		for (e = e; e == e; e = e + 1);
-		for (e = e; e != e; e = e + 1);
-
-		scanf(e);
-		scanf(e, g);
-
-		printf("abc");
-		printf(e);
-		printf("abc", e);
-
-		e = a + b;
-		e = a - b;
-		e = a * b;
-		e = a / b;
-		e = f[10];
-		f[10] = e;
-		e = a;
-		
-		e = func1(a, c);
-		func1(a, c);
-		func2();
-	}
+	if (e > e);
+	if (e >= e);
+	if (e < e);
+	if (e <= e);
+	if (e == e);
+	if (e);
+	if (e != e);
+	do; while (e)
 }

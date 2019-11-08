@@ -30,7 +30,7 @@ public:
 		STORE_IND,	// t0[t2] = t1
 		ASSIGN,		// t0 = t1
 
-		PUSH_ARG,	// push t1 to t0
+		PUSH_ARG,	// push t1
 		CALL,		// t0(nullable) = call t3
 		RET,		// return t1(nullable)
 

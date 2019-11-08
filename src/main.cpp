@@ -5,7 +5,6 @@
     > Created Time: Mon Sep 23 09:22:09 2019
  **********************************************/
 
-//#include <iomanip>
 #include <iostream>
 #include <string>
 #include "compiler.h"
@@ -17,7 +16,7 @@
 using namespace std;
 
 // relative to this file, for debug use
-#define TESTFILE_PATH "../test/midcode/gen/gen"
+#define TESTFILE_PATH "../test/midcode/expr/expr"
 
 InputFile input(PROJECT_SRC_DIR TESTFILE_PATH);
 
@@ -59,7 +58,8 @@ int main() {
 
 	MidCode::output();
 
-	Optim::inlineExpansion();
+	// Optim::inlineExpan();
+	Optim::commonExprElim();
 
 	MidCode::output();
 

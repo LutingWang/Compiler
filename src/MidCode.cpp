@@ -34,8 +34,10 @@ MidCode::MidCode(const Instr instr,
 		assert(status == 0b1110);
 		break;
 	case Instr::ASSIGN:
-	case Instr::PUSH_ARG:
 		assert(status == 0b1100);
+		break;
+	case Instr::PUSH_ARG:
+		assert(status == 0b0100);
 		break;
 	case Instr::CALL:
 		assert(status == 0b1001 || status == 0b0001);
@@ -125,9 +127,6 @@ void MidCode::print(void) const { // print this piece of mid code
 		break;
 	case MidCode::Instr::PUSH_ARG:
 		midcode_output << "push " << t1->name();
-#if !judge
-		midcode_output << " to " << t0->name();
-#endif /* judge */
 		break;
 	case MidCode::Instr::CALL:
 #if judge
@@ -143,7 +142,11 @@ void MidCode::print(void) const { // print this piece of mid code
 #endif /* judge */
 		break;
 	case MidCode::Instr::RET:
+#if judeg
 		midcode_output << "ret";
+#else
+		midcode_output << "return";
+#endif /* judge */
 		if (t1 != nullptr) {
 			midcode_output << ' ' << t1->name();
 		}

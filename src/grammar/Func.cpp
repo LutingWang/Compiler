@@ -94,7 +94,6 @@ symtable::Entry* Func::argValues(const symtable::FuncTable* const ft) {
 		return nullptr;
 	}
 
-	// TODO: don't push target
 	// check and push args
 	const std::vector<symtable::Entry*>& al = ft->argList();
 	if (argv.size() != al.size()) {
@@ -105,7 +104,7 @@ symtable::Entry* Func::argValues(const symtable::FuncTable* const ft) {
 			error::raise(error::Code::MISMATCHED_ARG_TYPE);
 			break;
 		}
-		MidCode::gen(MidCode::Instr::PUSH_ARG, al[i], argv[i], nullptr);
+		MidCode::gen(MidCode::Instr::PUSH_ARG, nullptr, argv[i], nullptr);
 	}
 
 	// generate mid code

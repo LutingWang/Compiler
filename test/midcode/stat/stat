@@ -1,0 +1,102 @@
+void main() {
+	const int a = 1, b = 2;
+	const char c = 'c', d = 'd';
+	int e, f[10];
+	char g, h[10];
+
+	if (e > a) e = 1;
+	if (e >= a) e = 1;
+	if (e < a) e = 1;
+	if (e <= a) e = 1;
+	if (e == a) e = 1;
+	if (e != a) e = 1;
+	if (a) e = 1;
+
+	if (e > a) e = 1; else e = 1;
+	if (e >= a) e = 1; else e = 1;
+	if (e < a) e = 1; else e = 1;
+	if (e <= a) e = 1; else e = 1;
+	if (e == a) e = 1; else e = 1;
+	if (e != a) e = 1; else e = 1;
+	if (a) e = 1; else e = 1;
+
+	while (e > a) e = 1;
+	while (e >= a) e = 1;
+	while (e < a) e = 1;
+	while (e <= a) e = 1;
+	while (e == a) e = 1;
+	while (e != a) e = 1;
+	while (a) e = 1;
+
+	do e = 1; while (e > a)
+	do e = 1; while (e >= a)
+	do e = 1; while (e < a)
+	do e = 1; while (e <= a)
+	do e = 1; while (e == a)
+	do e = 1; while (e != a)
+	do e = 1; while (a)
+
+	for (e = e; a > e; e = e + 1) e = 1;
+	for (e = e; a >= e; e = e + 1) e = 1;
+	for (e = e; a < e; e = e + 1) e = 1;
+	for (e = e; a <= e; e = e + 1) e = 1;
+	for (e = e; a == e; e = e + 1) e = 1;
+	for (e = e; a != e; e = e + 1) e = 1;
+	for (e = e; a; e = e + 1) e = 1;
+
+	scanf(e);
+	scanf(e, g);
+
+	printf("abc");
+	printf(e);
+	printf("abc", e);
+
+	{
+		if (e > a) e = 1;
+		if (e >= a) e = 1;
+		if (e < a) e = 1;
+		if (e <= a) e = 1;
+		if (e == a) e = 1;
+		if (e != a) e = 1;
+		if (a) e = 1;
+
+		if (e > a) e = 1; else e = 1;
+		if (e >= a) e = 1; else e = 1;
+		if (e < a) e = 1; else e = 1;
+		if (e <= a) e = 1; else e = 1;
+		if (e == a) e = 1; else e = 1;
+		if (e != a) e = 1; else e = 1;
+		if (a) e = 1; else e = 1;
+
+		while (e > a) e = 1;
+		while (e >= a) e = 1;
+		while (e < a) e = 1;
+		while (e <= a) e = 1;
+		while (e == a) e = 1;
+		while (e != a) e = 1;
+		while (a) e = 1;
+
+		do e = 1; while (e > a)
+		do e = 1; while (e >= a)
+		do e = 1; while (e < a)
+		do e = 1; while (e <= a)
+		do e = 1; while (e == a)
+		do e = 1; while (e != a)
+		do e = 1; while (a)
+
+		for (e = e; a > e; e = e + 1) e = 1;
+		for (e = e; a >= e; e = e + 1) e = 1;
+		for (e = e; a < e; e = e + 1) e = 1;
+		for (e = e; a <= e; e = e + 1) e = 1;
+		for (e = e; a == e; e = e + 1) e = 1;
+		for (e = e; a != e; e = e + 1) e = 1;
+		for (e = e; a; e = e + 1) e = 1;
+
+		scanf(e);
+		scanf(e, g);
+
+		printf("abc");
+		printf(e);
+		printf("abc", e);
+	}
+}
