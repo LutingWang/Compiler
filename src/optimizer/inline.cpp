@@ -8,8 +8,8 @@
 #include <cassert>
 #include <string>
 #include <vector>
-#include "symtable.h"
 #include "midcode.h"
+#include "symtable.h"
 
 #include "Optim.h"
 
