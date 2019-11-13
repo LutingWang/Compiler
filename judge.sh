@@ -32,5 +32,5 @@ do
 done
 
 zip ${jud_dir}/Archive.zip ${jud_dir}/*
-clang++ -o ${jud_dir}/compiler ${jud_dir}/*.cpp ${jud_dir}/*.h -std=c++11
 cp ${cur_dir}/test/testfile1 ${jud_dir}/testfile.txt
+cd ${jud_dir} && clang++ *.cpp *.h -std=c++11

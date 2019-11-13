@@ -62,6 +62,10 @@ public:
 	symtable::Entry* const t2;	// operand2
 	const std::string t3;		// label name
 
+	bool is(const Instr) const;
+	// TODO: make all t's private
+	const std::string& labelName(void) const;
+
 	static void gen(const Instr, symtable::Entry* const, symtable::Entry* const, 
 			symtable::Entry* const, const std::string& = "");
 

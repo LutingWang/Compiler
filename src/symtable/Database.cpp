@@ -43,6 +43,14 @@ symtable::Entry* symtable::Database::findSym(const string& symName) {
 	return _global.find(symName);
 }
 
+void symtable::Database::funcs(std::vector<const FuncTable*>& functables) const {
+	assert(functables.empty());
+	functables.push_back(&_main);
+	for (auto& pair : _func) {
+		functables.push_back(pair.second);
+	}
+}
+
 void symtable::Database::pushFunc(const string& funcName, FuncTable* const ft) {
 	FuncTable*& ftp = _func[funcName];
 	if (ftp != nullptr) { error::raise(error::Code::REDEF); }

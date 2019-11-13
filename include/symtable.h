@@ -102,6 +102,8 @@ namespace symtable {
 		// not collide with other `FuncTable`s, since they
 		// are friends.
 		std::vector<MidCode*> _midcode;
+	public:
+		const std::vector<MidCode*>& midcodes(void) const;
 
 	protected:
 		// If a top level return has been detected, no 
@@ -160,6 +162,8 @@ namespace symtable {
 		const FuncTable* findFunc(const std::string&);
 
 		Entry* findSym(const std::string&);
+
+		void funcs(std::vector<const FuncTable*>&) const;
 
 	private:
 		void pushFunc(const std::string&, FuncTable* const);

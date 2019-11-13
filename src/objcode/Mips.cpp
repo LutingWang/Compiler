@@ -13,13 +13,14 @@
 
 #include "./include/ObjFunc.h"
 #include "./include/StackFrame.h"
+#include "./include/StrPool.h"
 
 #include "Mips.h"
 
-Mips Mips::_instance;
+Mips Mips::__instance;
 
-Mips& Mips::getInstance(void) {
-	return _instance;
+const Mips& Mips::getInstance(void) {
+	return __instance;
 }
 
 Mips::~Mips(void) {
@@ -29,14 +30,31 @@ Mips::~Mips(void) {
 	}
 }
 
+void Mips::init(void) {
+	assert(__instance._global == nullptr);
+	strpool.init();
+
+	std::set<symtable::Entry*> globalSyms;
+	for (auto& pair : table._global._syms) {
+		symtable::Entry* const entry = pair.second;
+		assert(globalSyms.count(entry) == 0);
+		if (entry->isConst) { continue; }
+		globalSyms.insert(pair.second);
+	}
+	__instance._global = new Sbss(globalSyms);
+	
+	for (auto& pair : table._func) {
+		__instance._func[pair.first] = new ObjFunc(pair.second->_midcode, pair.second->argList());
+	}
+	__instance._func["main"] = new ObjFunc(table._main._midcode, {});
+}
+
 extern std::ofstream mips_output;
 
-void Mips::_output(void) const {
+void Mips::output(void) const {
+	assert(_global != nullptr);
 	mips_output << ".data" << std::endl;
-	for (auto& pair : _str) {
-		mips_output << pair.second << ": .asciiz \"" 
-			<< pair.first << '"' << std::endl;
-	}
+	strpool.output();
 
 	mips_output << std::endl 
 		<< ".text" << std::endl
@@ -51,25 +69,3 @@ void Mips::_output(void) const {
 	}
 }
 
-void Mips::output(void) {
-	if (_global != nullptr) {
-		_output();
-		return;
-	}
-
-	std::set<symtable::Entry*> globalSyms;
-	for (auto& pair : table._global._syms) {
-		symtable::Entry* const entry = pair.second;
-		assert(globalSyms.count(entry) == 0);
-		if (entry->isConst) { continue; }
-		globalSyms.insert(pair.second);
-	}
-	_global = new Sbss(globalSyms);
-	
-	for (auto& pair : table._func) {
-		_func[pair.first] = new ObjFunc(pair.second->_midcode, pair.second->argList());
-	}
-	_func["main"] = new ObjFunc(table._main._midcode, {});
-
-	_output();
-}

@@ -71,6 +71,25 @@ MidCode::MidCode(const Instr instr,
 	}
 }
 
+bool MidCode::is(const Instr instr) const {
+	return this->instr == instr;
+}
+
+const std::string& MidCode::labelName(void) const {
+	switch (instr) {
+#define CASE(id) case Instr::id
+	CASE(CALL): CASE(OUTPUT):
+	CASE(BGT): CASE(BGE):
+	CASE(BLT): CASE(BLE):
+	CASE(BEQ): CASE(BNE):
+	CASE(GOTO): CASE(LABEL):
+		break;
+#undef CASE
+	default: assert(0);
+	}
+	return t3;
+}
+
 void MidCode::gen(const Instr instr, symtable::Entry* const t0, symtable::Entry* const t1, 
 			symtable::Entry* const t2, const std::string& t3) {
 	if (error::happened) { return; }

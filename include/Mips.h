@@ -21,29 +21,23 @@ class Mips {
 	friend class StackFrame;
 
 	// singleton design pattern
-	static Mips _instance;
+	static Mips __instance;
 	Mips(void) {}
 public:
-	static Mips& getInstance(void);
+	static const Mips& getInstance(void);
 
 private:
 	// memory regulator for global variables
 	Sbss* _global = nullptr;
 
-	// map from string literals to their labels
-	std::map<std::string, std::string> _str = {
-		{ "", "str_0" },
-		{ "\\n", "str_1" }
-	};
-
+	// map from function name to obj codes
 	std::map<std::string, ObjFunc*> _func;
 public:
 	~Mips(void);
 
-private:
-	void _output(void) const;
-public:
-	void output(void);
+	static void init(void);
+
+	void output(void) const;
 };
 
 #endif /* MIPS_H */

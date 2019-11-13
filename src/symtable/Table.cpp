@@ -32,3 +32,7 @@ symtable::Entry* symtable::Table::push(const string& symName, const bool isConst
 symtable::FuncTable::~FuncTable(void) {
 	for (auto& mc : _midcode) { delete mc; }
 }
+
+const std::vector<MidCode*>& symtable::FuncTable::midcodes(void) const {
+	return _midcode;
+}

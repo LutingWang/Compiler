@@ -16,7 +16,6 @@
 #include "Optim.h"
 using namespace std;
 
-// TODO: save ra once entering function
 // TODO: change midcode naming to avoid conflict
 // TODO: scan iterations, add comment of type
 
@@ -49,9 +48,8 @@ int main() {
 	bool OUTPUT_mips = true;
 
 #define OPEN(id) if (OUTPUT_##id) {							\
-		id##_output.open(judge ?							\
-				PROJECT_SRC_DIR TESTFILE_PATH "." #id :		\
-				#id ".txt");								\
+		id##_output.open(judge ? #id ".txt" :				\
+				PROJECT_SRC_DIR TESTFILE_PATH "." #id);		\
 		id##_output << std::left;							\
 	} else { id##_output.setstate(iostream::failbit); }
 
@@ -73,6 +71,7 @@ int main() {
 
 	MidCode::output();
 
+	Mips::init();
 	Mips::getInstance().output();
 
 exit:

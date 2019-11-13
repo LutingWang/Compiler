@@ -13,8 +13,8 @@ char shiftPlus(int s1,int s2){
 }
 
 void printShift(int key,int s1,int s2){
-	if(key >= 1) printf(shiftPlus(s1,s2));
-	else{printf(shiftPlus(s2,s1));}
+	if(key >= 1) printf("def", shiftPlus(s1,s2));
+	else{printf("ghi", shiftPlus(s2,s1));}
 }
 
 void printDefault(){

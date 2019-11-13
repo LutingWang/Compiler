@@ -17,6 +17,7 @@
 #include "./include/ObjCode.h"
 #include "./include/RegPool.h"
 #include "./include/StackFrame.h"
+#include "./include/StrPool.h"
 
 #include "./include/ObjFunc.h"
 
@@ -64,10 +65,16 @@
 // |            |                   | move a0, t1       |
 // |            |                   | li v0, 1          |
 // |            |                   | syscall           |
+// |            |                   | la a0, "\n"       |
+// |            |                   | li v0, 4          |
+// |            |                   | syscall           |
 // |            |                   | move a0, t8       |
 // |            | ----------------- | ----------------- |
 // |            | printf(t3)        | move t8, a0       |
 // |            |                   | la a0, t3         |
+// |            |                   | li v0, 4          |
+// |            |                   | syscall           |
+// |            |                   | la a0, "\n"       |
 // |            |                   | li v0, 4          |
 // |            |                   | syscall           |
 // |            |                   | move a0, t8       |
@@ -75,6 +82,9 @@
 // |            | printf(t1)        | move t8, a0       |
 // |            |                   | move a0, t1       |
 // |            |                   | li v0, 1          |
+// |            |                   | syscall           |
+// |            |                   | la a0, "\n"       |
+// |            |                   | li v0, 4          |
 // |            |                   | syscall           |
 // |            |                   | move a0, t8       |
 // | ---------- | ----------------- | ----------------- |
@@ -260,7 +270,7 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
         CASE(OUTPUT):
             GEN(move, Reg::t8, Reg::a0, noreg, noimm, nolab);
             if (midcode->t3 != "") {
-                GEN(la, Reg::a0, noreg, noreg, noimm,  Mips::getInstance()._str[midcode->t3]);
+                GEN(la, Reg::a0, noreg, noreg, noimm,  strpool[midcode->t3]);
                 GEN(li, Reg::v0, noreg, noreg, 4, nolab);
                 GEN(syscall, noreg, noreg, noreg, noimm, nolab);
             }
@@ -270,6 +280,9 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
                 GEN(li, Reg::v0, noreg, noreg, midcode->t1->isInt ? 1 : 11, nolab);
                 GEN(syscall, noreg, noreg, noreg, noimm, nolab);
             }
+            GEN(la, Reg::a0, noreg, noreg, noimm,  strpool["\\n"]);
+            GEN(li, Reg::v0, noreg, noreg, 4, nolab);
+            GEN(syscall, noreg, noreg, noreg, noimm, nolab);
             GEN(move, Reg::a0, Reg::t8, noreg, noimm, nolab);
             break;
         CASE(BGT):
@@ -336,15 +349,6 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
 
 ObjFunc::ObjFunc(const std::vector<MidCode*>& midcodes, 
 		const std::vector<symtable::Entry*>& args) {
-	// generate strings
-	auto& strMap = Mips::getInstance()._str;
-	for (auto& midcode : midcodes) {
-		if (midcode->instr == MidCode::Instr::OUTPUT &&
-				!strMap.count(midcode->t3)) {
-			strMap.emplace(std::make_pair(midcode->t3, "str_" + std::to_string(strMap.size())));
-		}
-	}
-
 	// initialize flow chart
 	FlowChart flowchart(midcodes);
 
