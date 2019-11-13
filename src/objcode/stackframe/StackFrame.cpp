@@ -6,6 +6,7 @@
  **********************************************/
 
 #include <algorithm>
+#include <cassert>
 #include <map>
 #include <set>
 #include <vector>
@@ -15,7 +16,7 @@
 #include "../include/Reg.h"
 
 #include "../include/ObjCode.h"
-#include "../include/StackFrame.h"
+#include "../include/memory.h"
 
 StackFrame::StackFrame(std::vector<ObjCode>& output, 
 		std::vector<symtable::Entry*> argList, 
@@ -24,7 +25,6 @@ StackFrame::StackFrame(std::vector<ObjCode>& output,
 
 	for (auto& entry : syms) {
         assert(std::find(argList.begin(), argList.end(), entry) == argList.end());
-		assert(!Mips::getInstance()._global->contains(entry));
 	}
 
 	_regBase = _size;
@@ -47,7 +47,7 @@ int StackFrame::operator [] (symtable::Entry* const entry) const {
 	if (contains(entry)) {
 		return _locate(entry);
 	} else {
-		return Mips::getInstance()._global->_locate(entry);
+		return Sbss::global()->_locate(entry);
 	}
 }
 
@@ -85,7 +85,7 @@ void StackFrame::_visit(bool isLoad, Reg reg, symtable::Entry* const entry) {
 				reg, Reg::sp, Reg::zero, _locate(entry), "");
 	} else {
 		_output.emplace_back(isLoad ? ObjCode::Instr::lw : ObjCode::Instr::sw, 
-				reg, Reg::gp, Reg::zero, Mips::getInstance()._global->_locate(entry), "");
+				reg, Reg::gp, Reg::zero, Sbss::global()->_locate(entry), "");
 	}
 }
 

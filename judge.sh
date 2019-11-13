@@ -31,6 +31,7 @@ do
 	sed -i "" 's/".*\/include\/\(.*\)"/"\1"/g' $file
 done
 
-zip ${jud_dir}/Archive.zip ${jud_dir}/*
 cp ${cur_dir}/test/testfile1 ${jud_dir}/testfile.txt
-cd ${jud_dir} && clang++ *.cpp *.h -std=c++11
+cd ${jud_dir}
+zip Archive.zip ./*
+clang++ *.cpp *.h -std=c++11

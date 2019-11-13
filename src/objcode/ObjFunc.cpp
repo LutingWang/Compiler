@@ -16,7 +16,7 @@
 
 #include "./include/ObjCode.h"
 #include "./include/RegPool.h"
-#include "./include/StackFrame.h"
+#include "./include/memory.h"
 #include "./include/StrPool.h"
 
 #include "./include/ObjFunc.h"
@@ -374,13 +374,6 @@ ObjFunc::ObjFunc(const std::vector<MidCode*>& midcodes,
 	_regpool->storage(_storage);
     for (auto& entry : args) {
         _storage.erase(entry);
-    }
-    for (auto it = _storage.begin(); it != _storage.end(); ) {
-        if (Mips::getInstance()._global->contains(*it)) {
-            it = _storage.erase(it);
-        } else {
-            it++;
-        }
     }
     _stackframe = new StackFrame(_objcodes, args, _storage);
 

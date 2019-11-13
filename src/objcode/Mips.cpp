@@ -12,7 +12,7 @@
 #include "symtable.h"
 
 #include "./include/ObjFunc.h"
-#include "./include/StackFrame.h"
+#include "./include/memory.h"
 #include "./include/StrPool.h"
 
 #include "Mips.h"
@@ -24,35 +24,26 @@ const Mips& Mips::getInstance(void) {
 }
 
 Mips::~Mips(void) {
-	delete _global;
 	for (auto& pair : _func) {
 		delete pair.second;
 	}
 }
 
 void Mips::init(void) {
-	assert(__instance._global == nullptr);
+	Sbss::init();
 	strpool.init();
 
-	std::set<symtable::Entry*> globalSyms;
-	for (auto& pair : table._global._syms) {
-		symtable::Entry* const entry = pair.second;
-		assert(globalSyms.count(entry) == 0);
-		if (entry->isConst) { continue; }
-		globalSyms.insert(pair.second);
-	}
-	__instance._global = new Sbss(globalSyms);
-	
 	for (auto& pair : table._func) {
 		__instance._func[pair.first] = new ObjFunc(pair.second->_midcode, pair.second->argList());
 	}
 	__instance._func["main"] = new ObjFunc(table._main._midcode, {});
+
+	Sbss::deinit();
 }
 
 extern std::ofstream mips_output;
 
 void Mips::output(void) const {
-	assert(_global != nullptr);
 	mips_output << ".data" << std::endl;
 	strpool.output();
 

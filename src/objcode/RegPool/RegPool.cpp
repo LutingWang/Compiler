@@ -5,6 +5,7 @@
     > Created Time: Sat Nov  9 00:00:58 2019
  **********************************************/
 
+#include <cassert>
 #include <set>
 #include <vector>
 #include "midcode.h"
@@ -14,7 +15,7 @@
 #include "Simulator.h"
 
 #include "../include/RegPool.h"
-#include "../include/StackFrame.h"
+#include "../include/memory.h"
 
 RegPool::RegPool(const std::vector<MidCode*>& midcode, 
 		const std::vector<symtable::Entry*>& reg_a) : 

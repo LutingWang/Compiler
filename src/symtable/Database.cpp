@@ -43,6 +43,10 @@ symtable::Entry* symtable::Database::findSym(const string& symName) {
 	return _global.find(symName);
 }
 
+const symtable::Table& symtable::Database::global(void) const {
+	return _global;
+}
+
 void symtable::Database::funcs(std::vector<const FuncTable*>& functables) const {
 	assert(functables.empty());
 	functables.push_back(&_main);

@@ -13,12 +13,9 @@
 #include <vector>
 
 class ObjFunc;
-class Sbss;
-class StackFrame;
 
 class Mips {
 	friend class ObjFunc;
-	friend class StackFrame;
 
 	// singleton design pattern
 	static Mips __instance;
@@ -27,9 +24,6 @@ public:
 	static const Mips& getInstance(void);
 
 private:
-	// memory regulator for global variables
-	Sbss* _global = nullptr;
-
 	// map from function name to obj codes
 	std::map<std::string, ObjFunc*> _func;
 public:

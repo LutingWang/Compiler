@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -63,6 +64,8 @@ namespace symtable {
 		// Thus, the integrity constraints helps to ensure 
 		// that no symbol is redefined. 
 		std::map<std::string, Entry*> _syms;
+	public:
+		void syms(std::set<Entry*>&) const;
 
 		// TODO: alter name to avoid conflict in mips
 		Table(const std::string& name) : _name(name) {}
@@ -162,6 +165,8 @@ namespace symtable {
 		const FuncTable* findFunc(const std::string&);
 
 		Entry* findSym(const std::string&);
+
+		const Table& global(void) const;
 
 		void funcs(std::vector<const FuncTable*>&) const;
 

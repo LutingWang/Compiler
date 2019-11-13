@@ -22,12 +22,25 @@ class ObjCode;
 
 class Sbss {
 	friend class StackFrame;
+private:
+	static const Sbss* _global;
 protected:
-	std::map<symtable::Entry*, int> _syms;
+	static const Sbss* global(void);
+public:
+	static void init(void);
 
-	int _size = 0;
-	
+	static void deinit(void);
+
+private:
+	std::map<symtable::Entry*, int> _syms;
+protected:
 	int _locate(symtable::Entry*) const;
+
+private:
+	int _size = 0;
+protected:
+	int size(void) const;
+	
 public:
 	Sbss(const std::set<symtable::Entry*>& syms);
 

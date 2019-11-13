@@ -5,6 +5,7 @@
     > Created Time: Tue Oct  1 12:10:59 2019
  **********************************************/
 
+#include <cassert>
 #include <fstream>
 #include <typeinfo>
 #include "error.h"
@@ -35,4 +36,12 @@ symtable::FuncTable::~FuncTable(void) {
 
 const std::vector<MidCode*>& symtable::FuncTable::midcodes(void) const {
 	return _midcode;
+}
+
+void symtable::Table::syms(std::set<Entry*>& symList) const {
+	assert(symList.empty());
+	for (auto& pair : _syms) {
+		auto result = symList.insert(pair.second);
+		assert(result.second);
+	}
 }
