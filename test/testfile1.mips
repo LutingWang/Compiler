@@ -1,0 +1,172 @@
+.data
+str_0: .asciiz ""
+str_1: .asciiz "\n"
+str_2: .asciiz "abc"
+
+.text
+jal main
+li $v0 10
+syscall
+
+main:
+subi $sp, $sp, 100
+lw $t0, 4($sp)
+ble $t0, $t0, label_3
+addi $sp, $sp, 100
+jr $ra
+label_3:
+sw $a0, 84($sp)
+sw $a1, 88($sp)
+sw $a2, 92($sp)
+sw $a3, 96($sp)
+sw $ra, 80($sp)
+jal printDefault
+lw $ra, 80($sp)
+lw $a0, 84($sp)
+lw $a1, 88($sp)
+lw $a2, 92($sp)
+lw $a3, 96($sp)
+li $t0, 0
+move $t1, $t0
+sw $t1, 4($sp)
+label_4:
+li $t0, 0
+li $t1, 5
+sub $t2, $t0, $t1
+lw $t3, 4($sp)
+sw $t2, 8($sp)
+ble $t3, $t2, label_5
+li $t0, 0
+lw $t1, 4($sp)
+sub $t2, $t0, $t1
+sll $t8, $t2, 2
+add $t8, $t8, $sp
+li $t3, 1
+sw $t3, 0($t8)
+sub $t1, $t1, $t3
+sw $t1, 4($sp)
+sw $t2, 12($sp)
+j label_4
+label_5:
+li $t0, 0
+move $t1, $t0
+sw $t1, 4($sp)
+label_6:
+lw $t0, 4($sp)
+li $t1, 5
+bge $t0, $t1, label_7
+lw $t0, 4($sp)
+sll $t8, $t0, 2
+add $t8, $t8, $sp
+li $t1, 1
+sw $t1, 0($t8)
+add $t0, $t0, $t1
+sw $t0, 4($sp)
+j label_6
+label_7:
+li $v0, 12
+syscall 
+move $t0, $v0
+sw $t0, 0($sp)
+addi $sp, $sp, 100
+jr $ra
+
+printDefault:
+subi $sp, $sp, 88
+sw $a0, 72($sp)
+sw $a1, 76($sp)
+sw $a2, 80($sp)
+sw $a3, 84($sp)
+sw $ra, 68($sp)
+li $t0, 1
+move $a0, $t0
+li $t1, 2
+move $a1, $t1
+li $t2, 0
+move $a2, $t2
+jal printShift
+lw $ra, 68($sp)
+lw $a0, 72($sp)
+lw $a1, 76($sp)
+lw $a2, 80($sp)
+lw $a3, 84($sp)
+move $t8, $a0
+la $a0, str_2
+li $v0, 4
+syscall 
+lw $t0, 0($sp)
+move $a0, $t0
+li $v0, 11
+syscall 
+move $a0, $t8
+addi $sp, $sp, 88
+jr $ra
+
+printShift:
+subi $sp, $sp, 92
+li $t0, 1
+blt $a0, $t0, label_1
+sw $a0, 76($sp)
+sw $a1, 80($sp)
+sw $a2, 84($sp)
+sw $a3, 88($sp)
+sw $ra, 72($sp)
+move $a0, $a1
+move $a1, $a2
+jal shiftPlus
+lw $ra, 72($sp)
+lw $a0, 76($sp)
+lw $a1, 80($sp)
+lw $a2, 84($sp)
+lw $a3, 88($sp)
+move $t0, $v0
+sw $t0, 4($sp)
+move $t8, $a0
+lw $t0, 4($sp)
+move $a0, $t0
+li $v0, 11
+syscall 
+move $a0, $t8
+j label_2
+label_1:
+sw $a0, 76($sp)
+sw $a1, 80($sp)
+sw $a2, 84($sp)
+sw $a3, 88($sp)
+sw $ra, 72($sp)
+move $a0, $a2
+move $a1, $a1
+jal shiftPlus
+lw $ra, 72($sp)
+lw $a0, 76($sp)
+lw $a1, 80($sp)
+lw $a2, 84($sp)
+lw $a3, 88($sp)
+move $t0, $v0
+sw $t0, 0($sp)
+move $t8, $a0
+lw $t0, 0($sp)
+move $a0, $t0
+li $v0, 11
+syscall 
+move $a0, $t8
+label_2:
+addi $sp, $sp, 92
+jr $ra
+
+shiftPlus:
+subi $sp, $sp, 84
+li $t0, 43
+move $v0, $t0
+addi $sp, $sp, 84
+jr $ra
+
+subPi:
+subi $sp, $sp, 88
+add $t0, $a0, $a1
+li $t1, 3
+sub $t0, $t0, $t1
+move $v0, $t0
+sw $t0, 0($sp)
+addi $sp, $sp, 88
+jr $ra

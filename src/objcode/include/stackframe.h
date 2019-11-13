@@ -27,11 +27,11 @@ protected:
 
 	int _size = 0;
 	
-	bool _contains(symtable::Entry*) const;
-
 	int _locate(symtable::Entry*) const;
 public:
 	Sbss(const std::set<symtable::Entry*>& syms);
+
+	bool contains(symtable::Entry*) const;
 };
 
 class StackFrame : protected Sbss {

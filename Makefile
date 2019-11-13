@@ -2,7 +2,7 @@
 	cd ./build && \
 	cmake .. > log.txt
 
-.PHONY: run clean xcode judge
+.PHONY: run clean xcode
 	
 rerun:
 	cd ./build && make clean
@@ -18,11 +18,3 @@ clean:
 
 xcode:
 	cd ./Xcode && cmake -G "Xcode" ..
-
-judge:
-	rm ./judge/*
-	-cp ./src/* ./judge/
-	cp ./src/**/* ./judge/
-	cp ./include/* ./judge/
-	rm ./judge/CMakeLists.txt
-	zip ./judge/Archive.zip ./judge/*

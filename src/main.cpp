@@ -16,10 +16,18 @@
 #include "Optim.h"
 using namespace std;
 
-// relative to this file, for debug use
-#define TESTFILE_PATH "../test/testfile2"
+// TODO: save ra once entering function
+// TODO: change midcode naming to avoid conflict
+// TODO: scan iterations, add comment of type
 
+// relative to this file, for debug use
+#define TESTFILE_PATH "../test/testfile1"
+
+#if judge
+InputFile input("testfile.txt");
+#else
 InputFile input(PROJECT_SRC_DIR TESTFILE_PATH);
+#endif /* judge */
 
 // Latent streams for corresponding classes to use.
 // Do not expose in the headers!
@@ -40,12 +48,11 @@ int main() {
 	bool OUTPUT_midcode = true;
 	bool OUTPUT_mips = true;
 
-#ifdef OPEN
-	#error macro conflict
-#endif /* OPEN */
-#define OPEN(id) if (OUTPUT_##id) {									\
-		id##_output.open(PROJECT_SRC_DIR TESTFILE_PATH "." #id);	\
-		id##_output << std::left;									\
+#define OPEN(id) if (OUTPUT_##id) {							\
+		id##_output.open(judge ?							\
+				PROJECT_SRC_DIR TESTFILE_PATH "." #id :		\
+				#id ".txt");								\
+		id##_output << std::left;							\
 	} else { id##_output.setstate(iostream::failbit); }
 
 	OPEN(error); OPEN(symtable); OPEN(lexer); OPEN(midcode); OPEN(mips);

@@ -13,9 +13,6 @@ symbol::Symbol sym;
 std::ostream& symbol::operator << (std::ostream& output, const Symbol& s) {
 	output << typeid(s).name() << '<';
 	switch (sym.id) {
-#ifdef CASE
-	#error macro conflict
-#endif /* CASE */
 #define CASE(id, info) case id: output << #id << ' ' << info; break
 	CASE(Type::IDENFR, sym.str); CASE(Type::INTCON, sym.num);
 	CASE(Type::CHARCON, sym.ch); CASE(Type::STRCON, sym.str);
@@ -56,9 +53,6 @@ std::ostream& symbol::operator << (std::ostream& output, const Symbol& s) {
 std::ostream& symbol::operator << (std::ostream& output, const NonTerminal& nt) {
 	output << typeid(nt).name() << '<';
 	switch (nt) {
-#ifdef CASE
-	#error macro conflict
-#endif /* CASE */
 #define CASE(id, info) case NonTerminal::id: output << #info; break
 	CASE(LEX_UNSIGNED_INT, 无符号整数); CASE(LEX_STR, 字符串); CASE(PROGRAM, 程序);
 	CASE(CONST_DEC, 常量说明); CASE(CONST_DEF, 常量定义); CASE(VAR_DEC, 变量说明); 

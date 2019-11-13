@@ -81,4 +81,5 @@ void RegPool::clear(StackFrame& stackframe) {
 		_actionCounter++;
 	}
 	_blockCounter++;
+    _actionCounter = 0;
 }

@@ -94,7 +94,7 @@ symtable::Entry* MidCode::genConst(const bool isInt, const int value) {
 
 std::string MidCode::genLabel(void) {
 	static int counter = 1;
-	return "label#" + std::to_string(counter++);
+	return "label_" + std::to_string(counter++);
 }
 
 // output functions
@@ -102,9 +102,6 @@ extern std::ofstream midcode_output;
 
 void MidCode::print(void) const { // print this piece of mid code
 	switch (instr) {
-#ifdef CASE
-	#error macro conflict
-#endif /* CASE */
 #define CASE(id, op) case MidCode::Instr::id:	\
 		midcode_output << t0->name() << " = "	\
 			<< t1->name() << " " #op " "		\
@@ -165,9 +162,6 @@ void MidCode::print(void) const { // print this piece of mid code
 		}
 		break;
 
-#ifdef CASE
-	#error macro conflict
-#endif /* CASE */
 #if judge
 	#define CASE(id, op) case MidCode::Instr::id:		\
 		midcode_output << t1->name() << " " #op " "		\
@@ -185,9 +179,6 @@ void MidCode::print(void) const { // print this piece of mid code
 	CASE(BGT, >); CASE(BGE, >=); CASE(BLT, <); CASE(BLE, <=);
 #undef CASE
 
-#ifdef CASE
-	#error macro conflict
-#endif /* CASE */
 #if judge
 	#define CASE(id, op) case MidCode::Instr::id:		\
 		midcode_output << "if " << t1->name() << " " #op " "			\

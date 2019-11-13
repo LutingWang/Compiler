@@ -10,7 +10,7 @@
 
 #include "../include/StackFrame.h"
 
-bool Sbss::_contains(symtable::Entry* entry) const {
+bool Sbss::contains(symtable::Entry* entry) const {
 	return _syms.count(entry);
 }
 

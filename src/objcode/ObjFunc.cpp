@@ -5,6 +5,7 @@
     > Created Time: Mon Nov 11 20:55:23 2019
  **********************************************/
 
+#include <algorithm>
 #include <cassert>
 #include <fstream>
 #include <set>
@@ -251,7 +252,7 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
             GEN(jr, Reg::ra, noreg, noreg, noimm, nolab);
             return;
         CASE(INPUT):
-            GEN(li, Reg::v0, noreg, noreg, 5, nolab);
+            GEN(li, Reg::v0, noreg, noreg, midcode->t0->isInt ? 5 : 12, nolab);
             GEN(syscall, noreg, noreg, noreg, noimm, nolab);
             t0 = REQ;
             GEN(move, t0, Reg::v0, noreg, noimm, nolab);
@@ -333,7 +334,6 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
 }
 #undef CASE
 
-
 ObjFunc::ObjFunc(const std::vector<MidCode*>& midcodes, 
 		const std::vector<symtable::Entry*>& args) {
 	// generate strings
@@ -370,6 +370,13 @@ ObjFunc::ObjFunc(const std::vector<MidCode*>& midcodes,
 	_regpool->storage(_storage);
     for (auto& entry : args) {
         _storage.erase(entry);
+    }
+    for (auto it = _storage.begin(); it != _storage.end(); ) {
+        if (Mips::getInstance()._global->contains(*it)) {
+            it = _storage.erase(it);
+        } else {
+            it++;
+        }
     }
     _stackframe = new StackFrame(_objcodes, args, _storage);
 

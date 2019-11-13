@@ -21,21 +21,33 @@
 #include "Stat.h"
 using lexer::getsym;
 
+namespace {
+	MidCode::Instr translate(symbol::Comp comp, bool takeNot) {
+		switch (comp) {
+#define CASE(id, pos, neg) \
+		case symbol::id: \
+			return takeNot ? MidCode::Instr::neg : MidCode::Instr::pos
+		CASE(LSS, BLT, BGE);
+		CASE(LEQ, BLE, BGT);
+		CASE(GRE, BGT, BLE);
+		CASE(GEQ, BGE, BLT);
+		CASE(EQL, BEQ, BNE);
+		CASE(NEQ, BNE, BEQ);
+#undef CASE
+		default: assert(0);
+		}
+	}
+}
+
 // <cond> ::= <expr>[<comp op><expr>]
 void Stat::Cond::cond(const bool branchIfNot, const std::string& labelName) {
-	static std::map<symbol::Comp, MidCode::Instr> translator = {
-		{ symbol::LSS, MidCode::Instr::BLT }, { symbol::LEQ, MidCode::Instr::BLE },
-		{ symbol::GRE, MidCode::Instr::BGT }, { symbol::GEQ, MidCode::Instr::BGE },
-		{ symbol::EQL, MidCode::Instr::BEQ }, { symbol::NEQ, MidCode::Instr::BNE }
-	};
 	symtable::Entry* t1 = Expr::expr();
 	if (!t1->isInt) { error::raise(error::Code::MISMATCHED_COND_TYPE); }
 	if (sym.is(symbol::Type::COMP)) {
-		MidCode::Instr comp = translator[symbol::Comp(sym.num)];
+		MidCode::Instr comp = translate(static_cast<symbol::Comp>(sym.num), branchIfNot);
 		getsym();
 		symtable::Entry* t2 = Expr::expr();
 		if (!t2->isInt) { error::raise(error::Code::MISMATCHED_COND_TYPE); }
-		if (branchIfNot) { std::swap(t1, t2); }
 		MidCode::gen(comp, nullptr, t1, t2, labelName);
 	} else {
 		MidCode::gen(branchIfNot ? MidCode::Instr::BEQ : MidCode::Instr::BNE, nullptr, t1, nullptr, labelName);

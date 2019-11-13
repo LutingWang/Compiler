@@ -31,7 +31,6 @@ void main(){
 		return;
 		a = 1;
 	}
-	main();
 	printDefault();
 	for(a=0;a>-5;a=a-1)
 		queue[-a]=1;

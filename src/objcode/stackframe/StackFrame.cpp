@@ -24,7 +24,7 @@ StackFrame::StackFrame(std::vector<ObjCode>& output,
 
 	for (auto& entry : syms) {
         assert(std::find(argList.begin(), argList.end(), entry) == argList.end());
-		assert(!Mips::getInstance()._global->_contains(entry));
+		assert(!Mips::getInstance()._global->contains(entry));
 	}
 
 	_regBase = _size;
@@ -44,7 +44,7 @@ int StackFrame::operator [] (symtable::Entry* const entry) const {
 	if (_args.count(entry)) {
 		return _args.at(entry);
 	}
-	if (_contains(entry)) {
+	if (contains(entry)) {
 		return _locate(entry);
 	} else {
 		return Mips::getInstance()._global->_locate(entry);
@@ -80,7 +80,7 @@ void StackFrame::_visit(bool isLoad, Reg reg, symtable::Entry* const entry) {
 		_output.emplace_back(ObjCode::Instr::lw, reg, Reg::sp, Reg::zero, _args[entry], "");
 		return;
 	}
-	if (_contains(entry)) {
+	if (contains(entry)) {
 		_output.emplace_back(isLoad ? ObjCode::Instr::lw : ObjCode::Instr::sw, 
 				reg, Reg::sp, Reg::zero, _locate(entry), "");
 	} else {

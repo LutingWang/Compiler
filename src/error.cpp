@@ -18,9 +18,6 @@ void error::raise(Code c) {
 	error::happened = true;
 
 	switch (c) {
-#ifdef CASE
-	#error macro conflict
-#endif /* CASE */
 #if judge
 	#define CASE(id, msg) case Code::id:	\
 		error_output << input.line() << ' '	\
@@ -47,9 +44,6 @@ void error::raise(Code c) {
 	CASE(UNEXPECTED_EOF, file ended unexpectedly);
 #undef CASE
 
-#ifdef CASE
-	#error macro conflict
-#endif /* CASE */
 #if judge
 	#define CASE(id, msg) case Code::id:	\
 		error_output << sym.lastLine << ' '	\

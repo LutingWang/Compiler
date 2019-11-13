@@ -15,6 +15,17 @@ jr $ra
 
 main:
 subi $sp, $sp, 84
+sw $a0, 68($sp)
+sw $a1, 72($sp)
+sw $a2, 76($sp)
+sw $a3, 80($sp)
+sw $ra, 64($sp)
+jal main
+lw $ra, 64($sp)
+lw $a0, 68($sp)
+lw $a1, 72($sp)
+lw $a2, 76($sp)
+lw $a3, 80($sp)
 move $t8, $a0
 la $a0, str_2
 li $v0, 4
