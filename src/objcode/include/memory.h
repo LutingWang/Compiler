@@ -21,8 +21,6 @@ namespace symtable {
 class ObjCode;
 
 class Sbss {
-	friend class StackFrame;
-private:
 	static const Sbss* _global;
 protected:
 	static const Sbss* global(void);
@@ -33,10 +31,7 @@ public:
 
 private:
 	std::map<symtable::Entry*, int> _syms;
-protected:
-	int _locate(symtable::Entry*) const;
 
-private:
 	int _size = 0;
 protected:
 	int size(void) const;
@@ -45,6 +40,8 @@ public:
 	Sbss(const std::set<symtable::Entry*>& syms);
 
 	bool contains(symtable::Entry*) const;
+
+	int locate(symtable::Entry*) const;
 };
 
 class StackFrame : protected Sbss {
@@ -54,11 +51,13 @@ class StackFrame : protected Sbss {
 
 	int _regBase;
 
-	void _visit(bool isLoad, Reg, symtable::Entry* const = nullptr);
+	int _size;
+
+	void _visit(bool isLoad, Reg, symtable::Entry* const);
 public:
 	StackFrame(std::vector<ObjCode>&, 
 			std::vector<symtable::Entry*> argList, 
-			std::set<symtable::Entry*> syms);
+			const std::set<symtable::Entry*>& syms);
 
 	int size(void) const;
 

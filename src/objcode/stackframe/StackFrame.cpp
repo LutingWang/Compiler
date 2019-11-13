@@ -20,15 +20,15 @@
 
 StackFrame::StackFrame(std::vector<ObjCode>& output, 
 		std::vector<symtable::Entry*> argList, 
-		std::set<symtable::Entry*> syms) :
+		const std::set<symtable::Entry*>& syms) :
 	Sbss(syms), _output(output) {
 
 	for (auto& entry : syms) {
         assert(std::find(argList.begin(), argList.end(), entry) == argList.end());
 	}
 
-	_regBase = _size;
-	_size += (reg::s.size() + reg::t.size() + 1 /* ra */ + reg::a.size()) * 4;
+	_regBase = Sbss::size();
+	_size = _regBase + (reg::s.size() + reg::t.size() + 1 /* ra */ + reg::a.size()) * 4;
 
 	for (int i = 4; i < argList.size(); i++) {
 		_args[argList[i]] = _size;
@@ -41,14 +41,9 @@ int StackFrame::size(void) const {
 }
 
 int StackFrame::operator [] (symtable::Entry* const entry) const {
-	if (_args.count(entry)) {
-		return _args.at(entry);
-	}
-	if (contains(entry)) {
-		return _locate(entry);
-	} else {
-		return Sbss::global()->_locate(entry);
-	}
+	if (_args.count(entry)) { return _args.at(entry); }
+	if (contains(entry)) { return locate(entry); } 
+	else { return Sbss::global()->locate(entry); }
 }
 
 int StackFrame::operator [] (Reg reg) const {
@@ -67,30 +62,28 @@ int StackFrame::operator [] (Reg reg) const {
 }
 
 void StackFrame::_visit(bool isLoad, Reg reg, symtable::Entry* const entry) {
+	ObjCode::Instr instr = isLoad ? ObjCode::Instr::lw : ObjCode::Instr::sw;
+	Reg t1 = Reg::sp;
+	int imm;
 	if (entry == nullptr) {
-		_output.emplace_back(isLoad ? ObjCode::Instr::lw : ObjCode::Instr::sw, 
-				reg, Reg::sp, Reg::zero, operator[](reg), "");
-		return;
-	}
-	if (entry->isConst) {
-		_output.emplace_back(ObjCode::Instr::li, reg, Reg::zero, Reg::zero, entry->value, "");
-		return;
-	}
-	if (_args.count(entry)) {
-		_output.emplace_back(ObjCode::Instr::lw, reg, Reg::sp, Reg::zero, _args[entry], "");
-		return;
-	}
-	if (contains(entry)) {
-		_output.emplace_back(isLoad ? ObjCode::Instr::lw : ObjCode::Instr::sw, 
-				reg, Reg::sp, Reg::zero, _locate(entry), "");
+		imm = operator[](reg);
+	} else if (entry->isConst) {
+		instr = ObjCode::Instr::li;
+		t1 = Reg::zero;
+		imm = entry->value;
+	} else if (_args.count(entry)) {
+		imm = _args[entry];
+	} else if (contains(entry)) {
+		imm = locate(entry);
 	} else {
-		_output.emplace_back(isLoad ? ObjCode::Instr::lw : ObjCode::Instr::sw, 
-				reg, Reg::gp, Reg::zero, Sbss::global()->_locate(entry), "");
+		imm = global()->locate(entry);
+		t1 = Reg::gp;
 	}
+	_output.emplace_back(instr, reg, t1, Reg::zero, imm, "");
 }
 
 void StackFrame::store(Reg reg) {
-	_visit(false, reg);
+	_visit(false, reg, nullptr);
 }
 
 void StackFrame::store(Reg reg, symtable::Entry* const entry) {
@@ -98,7 +91,7 @@ void StackFrame::store(Reg reg, symtable::Entry* const entry) {
 }
 
 void StackFrame::load(Reg reg) {
-	_visit(true, reg);
+	_visit(true, reg, nullptr);
 }
 
 void StackFrame::load(Reg reg, symtable::Entry* const entry) {

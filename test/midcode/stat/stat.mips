@@ -1,0 +1,739 @@
+.data
+str_0: .asciiz ""
+str_1: .asciiz "\n"
+str_2: .asciiz "abc"
+
+.text
+jal main
+li $v0 10
+syscall
+
+main:
+subi $sp, $sp, 92
+lw $t0, 0($sp)
+li $t1, 1
+ble $t0, $t1, label_1
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_1:
+lw $t0, 0($sp)
+li $t1, 1
+blt $t0, $t1, label_2
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_2:
+lw $t0, 0($sp)
+li $t1, 1
+bge $t0, $t1, label_3
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_3:
+lw $t0, 0($sp)
+li $t1, 1
+bgt $t0, $t1, label_4
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_4:
+lw $t0, 0($sp)
+li $t1, 1
+bne $t0, $t1, label_5
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_5:
+lw $t0, 0($sp)
+li $t1, 1
+beq $t0, $t1, label_6
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_6:
+li $t0, 1
+beqz $t0, label_7
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_7:
+lw $t0, 0($sp)
+li $t1, 1
+ble $t0, $t1, label_8
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_9
+label_8:
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_9:
+lw $t0, 0($sp)
+li $t1, 1
+blt $t0, $t1, label_10
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_11
+label_10:
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_11:
+lw $t0, 0($sp)
+li $t1, 1
+bge $t0, $t1, label_12
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_13
+label_12:
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_13:
+lw $t0, 0($sp)
+li $t1, 1
+bgt $t0, $t1, label_14
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_15
+label_14:
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_15:
+lw $t0, 0($sp)
+li $t1, 1
+bne $t0, $t1, label_16
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_17
+label_16:
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_17:
+lw $t0, 0($sp)
+li $t1, 1
+beq $t0, $t1, label_18
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_19
+label_18:
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_19:
+li $t0, 1
+beqz $t0, label_20
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_21
+label_20:
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_21:
+label_22:
+lw $t0, 0($sp)
+li $t1, 1
+ble $t0, $t1, label_23
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_22
+label_23:
+label_24:
+lw $t0, 0($sp)
+li $t1, 1
+blt $t0, $t1, label_25
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_24
+label_25:
+label_26:
+lw $t0, 0($sp)
+li $t1, 1
+bge $t0, $t1, label_27
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_26
+label_27:
+label_28:
+lw $t0, 0($sp)
+li $t1, 1
+bgt $t0, $t1, label_29
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_28
+label_29:
+label_30:
+lw $t0, 0($sp)
+li $t1, 1
+bne $t0, $t1, label_31
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_30
+label_31:
+label_32:
+lw $t0, 0($sp)
+li $t1, 1
+beq $t0, $t1, label_33
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_32
+label_33:
+label_34:
+li $t0, 1
+beqz $t0, label_35
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_34
+label_35:
+label_36:
+li $t0, 1
+move $t1, $t0
+li $t2, 1
+sw $t1, 0($sp)
+bgt $t1, $t2, label_36
+label_37:
+li $t0, 1
+move $t1, $t0
+li $t2, 1
+sw $t1, 0($sp)
+bge $t1, $t2, label_37
+label_38:
+li $t0, 1
+move $t1, $t0
+li $t2, 1
+sw $t1, 0($sp)
+blt $t1, $t2, label_38
+label_39:
+li $t0, 1
+move $t1, $t0
+li $t2, 1
+sw $t1, 0($sp)
+ble $t1, $t2, label_39
+label_40:
+li $t0, 1
+move $t1, $t0
+li $t2, 1
+sw $t1, 0($sp)
+beq $t1, $t2, label_40
+label_41:
+li $t0, 1
+move $t1, $t0
+li $t2, 1
+sw $t1, 0($sp)
+bne $t1, $t2, label_41
+label_42:
+li $t0, 1
+move $t1, $t0
+li $t2, 1
+sw $t1, 0($sp)
+bnez $t2, label_42
+lw $t0, 0($sp)
+move $t0, $t0
+sw $t0, 0($sp)
+label_43:
+li $t0, 1
+lw $t1, 0($sp)
+ble $t0, $t1, label_44
+li $t0, 1
+move $t1, $t0
+add $t1, $t1, $t0
+sw $t1, 0($sp)
+j label_43
+label_44:
+lw $t0, 0($sp)
+move $t0, $t0
+sw $t0, 0($sp)
+label_45:
+li $t0, 1
+lw $t1, 0($sp)
+blt $t0, $t1, label_46
+li $t0, 1
+move $t1, $t0
+add $t1, $t1, $t0
+sw $t1, 0($sp)
+j label_45
+label_46:
+lw $t0, 0($sp)
+move $t0, $t0
+sw $t0, 0($sp)
+label_47:
+li $t0, 1
+lw $t1, 0($sp)
+bge $t0, $t1, label_48
+li $t0, 1
+move $t1, $t0
+add $t1, $t1, $t0
+sw $t1, 0($sp)
+j label_47
+label_48:
+lw $t0, 0($sp)
+move $t0, $t0
+sw $t0, 0($sp)
+label_49:
+li $t0, 1
+lw $t1, 0($sp)
+bgt $t0, $t1, label_50
+li $t0, 1
+move $t1, $t0
+add $t1, $t1, $t0
+sw $t1, 0($sp)
+j label_49
+label_50:
+lw $t0, 0($sp)
+move $t0, $t0
+sw $t0, 0($sp)
+label_51:
+li $t0, 1
+lw $t1, 0($sp)
+bne $t0, $t1, label_52
+li $t0, 1
+move $t1, $t0
+add $t1, $t1, $t0
+sw $t1, 0($sp)
+j label_51
+label_52:
+lw $t0, 0($sp)
+move $t0, $t0
+sw $t0, 0($sp)
+label_53:
+li $t0, 1
+lw $t1, 0($sp)
+beq $t0, $t1, label_54
+li $t0, 1
+move $t1, $t0
+add $t1, $t1, $t0
+sw $t1, 0($sp)
+j label_53
+label_54:
+lw $t0, 0($sp)
+move $t0, $t0
+sw $t0, 0($sp)
+label_55:
+li $t0, 1
+beqz $t0, label_56
+li $t0, 1
+move $t1, $t0
+add $t1, $t1, $t0
+sw $t1, 0($sp)
+j label_55
+label_56:
+li $v0, 5
+syscall 
+move $t0, $v0
+li $v0, 5
+syscall 
+move $t0, $v0
+li $v0, 12
+syscall 
+move $t1, $v0
+move $t8, $a0
+la $a0, str_2
+li $v0, 4
+syscall 
+la $a0, str_1
+li $v0, 4
+syscall 
+move $a0, $t8
+move $t8, $a0
+move $a0, $t0
+li $v0, 1
+syscall 
+la $a0, str_1
+li $v0, 4
+syscall 
+move $a0, $t8
+move $t8, $a0
+la $a0, str_2
+li $v0, 4
+syscall 
+move $a0, $t0
+li $v0, 1
+syscall 
+la $a0, str_1
+li $v0, 4
+syscall 
+move $a0, $t8
+li $t2, 1
+sw $t0, 0($sp)
+sw $t1, 4($sp)
+ble $t0, $t2, label_57
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_57:
+lw $t0, 0($sp)
+li $t1, 1
+blt $t0, $t1, label_58
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_58:
+lw $t0, 0($sp)
+li $t1, 1
+bge $t0, $t1, label_59
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_59:
+lw $t0, 0($sp)
+li $t1, 1
+bgt $t0, $t1, label_60
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_60:
+lw $t0, 0($sp)
+li $t1, 1
+bne $t0, $t1, label_61
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_61:
+lw $t0, 0($sp)
+li $t1, 1
+beq $t0, $t1, label_62
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_62:
+li $t0, 1
+beqz $t0, label_63
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_63:
+lw $t0, 0($sp)
+li $t1, 1
+ble $t0, $t1, label_64
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_65
+label_64:
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_65:
+lw $t0, 0($sp)
+li $t1, 1
+blt $t0, $t1, label_66
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_67
+label_66:
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_67:
+lw $t0, 0($sp)
+li $t1, 1
+bge $t0, $t1, label_68
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_69
+label_68:
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_69:
+lw $t0, 0($sp)
+li $t1, 1
+bgt $t0, $t1, label_70
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_71
+label_70:
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_71:
+lw $t0, 0($sp)
+li $t1, 1
+bne $t0, $t1, label_72
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_73
+label_72:
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_73:
+lw $t0, 0($sp)
+li $t1, 1
+beq $t0, $t1, label_74
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_75
+label_74:
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_75:
+li $t0, 1
+beqz $t0, label_76
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_77
+label_76:
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+label_77:
+label_78:
+lw $t0, 0($sp)
+li $t1, 1
+ble $t0, $t1, label_79
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_78
+label_79:
+label_80:
+lw $t0, 0($sp)
+li $t1, 1
+blt $t0, $t1, label_81
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_80
+label_81:
+label_82:
+lw $t0, 0($sp)
+li $t1, 1
+bge $t0, $t1, label_83
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_82
+label_83:
+label_84:
+lw $t0, 0($sp)
+li $t1, 1
+bgt $t0, $t1, label_85
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_84
+label_85:
+label_86:
+lw $t0, 0($sp)
+li $t1, 1
+bne $t0, $t1, label_87
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_86
+label_87:
+label_88:
+lw $t0, 0($sp)
+li $t1, 1
+beq $t0, $t1, label_89
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_88
+label_89:
+label_90:
+li $t0, 1
+beqz $t0, label_91
+li $t0, 1
+move $t1, $t0
+sw $t1, 0($sp)
+j label_90
+label_91:
+label_92:
+li $t0, 1
+move $t1, $t0
+li $t2, 1
+sw $t1, 0($sp)
+bgt $t1, $t2, label_92
+label_93:
+li $t0, 1
+move $t1, $t0
+li $t2, 1
+sw $t1, 0($sp)
+bge $t1, $t2, label_93
+label_94:
+li $t0, 1
+move $t1, $t0
+li $t2, 1
+sw $t1, 0($sp)
+blt $t1, $t2, label_94
+label_95:
+li $t0, 1
+move $t1, $t0
+li $t2, 1
+sw $t1, 0($sp)
+ble $t1, $t2, label_95
+label_96:
+li $t0, 1
+move $t1, $t0
+li $t2, 1
+sw $t1, 0($sp)
+beq $t1, $t2, label_96
+label_97:
+li $t0, 1
+move $t1, $t0
+li $t2, 1
+sw $t1, 0($sp)
+bne $t1, $t2, label_97
+label_98:
+li $t0, 1
+move $t1, $t0
+li $t2, 1
+sw $t1, 0($sp)
+bnez $t2, label_98
+lw $t0, 0($sp)
+move $t0, $t0
+sw $t0, 0($sp)
+label_99:
+li $t0, 1
+lw $t1, 0($sp)
+ble $t0, $t1, label_100
+li $t0, 1
+move $t1, $t0
+add $t1, $t1, $t0
+sw $t1, 0($sp)
+j label_99
+label_100:
+lw $t0, 0($sp)
+move $t0, $t0
+sw $t0, 0($sp)
+label_101:
+li $t0, 1
+lw $t1, 0($sp)
+blt $t0, $t1, label_102
+li $t0, 1
+move $t1, $t0
+add $t1, $t1, $t0
+sw $t1, 0($sp)
+j label_101
+label_102:
+lw $t0, 0($sp)
+move $t0, $t0
+sw $t0, 0($sp)
+label_103:
+li $t0, 1
+lw $t1, 0($sp)
+bge $t0, $t1, label_104
+li $t0, 1
+move $t1, $t0
+add $t1, $t1, $t0
+sw $t1, 0($sp)
+j label_103
+label_104:
+lw $t0, 0($sp)
+move $t0, $t0
+sw $t0, 0($sp)
+label_105:
+li $t0, 1
+lw $t1, 0($sp)
+bgt $t0, $t1, label_106
+li $t0, 1
+move $t1, $t0
+add $t1, $t1, $t0
+sw $t1, 0($sp)
+j label_105
+label_106:
+lw $t0, 0($sp)
+move $t0, $t0
+sw $t0, 0($sp)
+label_107:
+li $t0, 1
+lw $t1, 0($sp)
+bne $t0, $t1, label_108
+li $t0, 1
+move $t1, $t0
+add $t1, $t1, $t0
+sw $t1, 0($sp)
+j label_107
+label_108:
+lw $t0, 0($sp)
+move $t0, $t0
+sw $t0, 0($sp)
+label_109:
+li $t0, 1
+lw $t1, 0($sp)
+beq $t0, $t1, label_110
+li $t0, 1
+move $t1, $t0
+add $t1, $t1, $t0
+sw $t1, 0($sp)
+j label_109
+label_110:
+lw $t0, 0($sp)
+move $t0, $t0
+sw $t0, 0($sp)
+label_111:
+li $t0, 1
+beqz $t0, label_112
+li $t0, 1
+move $t1, $t0
+add $t1, $t1, $t0
+sw $t1, 0($sp)
+j label_111
+label_112:
+li $v0, 5
+syscall 
+move $t0, $v0
+li $v0, 5
+syscall 
+move $t0, $v0
+li $v0, 12
+syscall 
+move $t1, $v0
+move $t8, $a0
+la $a0, str_2
+li $v0, 4
+syscall 
+la $a0, str_1
+li $v0, 4
+syscall 
+move $a0, $t8
+move $t8, $a0
+move $a0, $t0
+li $v0, 1
+syscall 
+la $a0, str_1
+li $v0, 4
+syscall 
+move $a0, $t8
+move $t8, $a0
+la $a0, str_2
+li $v0, 4
+syscall 
+move $a0, $t0
+li $v0, 1
+syscall 
+la $a0, str_1
+li $v0, 4
+syscall 
+move $a0, $t8
+sw $t0, 0($sp)
+sw $t1, 4($sp)
+addi $sp, $sp, 92
+jr $ra

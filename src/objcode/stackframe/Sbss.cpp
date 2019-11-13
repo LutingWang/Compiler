@@ -30,10 +30,6 @@ void Sbss::deinit(void) {
 	_global = nullptr;
 }
 
-int Sbss::_locate(symtable::Entry* entry) const {
-	return _syms.at(entry);
-}
-
 int Sbss::size(void) const {
 	return _size;
 }
@@ -51,4 +47,8 @@ Sbss::Sbss(const std::set<symtable::Entry*>& syms) {
 
 bool Sbss::contains(symtable::Entry* entry) const {
 	return _syms.count(entry);
+}
+
+int Sbss::locate(symtable::Entry* entry) const {
+	return _syms.at(entry);
 }
