@@ -18,14 +18,19 @@ function copy_dir() {
 	done
 }
 
-rm -r ./judge/*
-copy_dir ./include
-copy_dir ./src
-rm ./judge/CMakeLists.txt
+cur_dir=$(dirname $0)
+jud_dir=${cur_dir}/judge
 
-for file in `ls ./judge/*.cpp ./judge/*.h`
+rm -r ${jud_dir}/*
+copy_dir ${cur_dir}/include
+copy_dir ${cur_dir}/src
+rm ${jud_dir}/CMakeLists.txt
+
+for file in `ls ${jud_dir}/*.cpp ${jud_dir}/*.h`
 do
-	cat $file | sed 's/".*\/include\/\(.*\)"/"\1"/g' >> $file
+	sed -i "" 's/".*\/include\/\(.*\)"/"\1"/g' $file
 done
 
-zip ./judge/Archive.zip ./judge/*
+zip ${jud_dir}/Archive.zip ${jud_dir}/*
+clang++ -o ${jud_dir}/compiler ${jud_dir}/*.cpp ${jud_dir}/*.h -std=c++11
+cp ${cur_dir}/test/testfile1 ${jud_dir}/testfile.txt
