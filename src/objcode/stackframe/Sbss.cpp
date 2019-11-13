@@ -8,32 +8,23 @@
 #include <vector>
 #include "symtable.h"
 
-#include "../include/stackframe.h"
+#include "../include/StackFrame.h"
 
-bool StackFrame::Sbss::_contains(symtable::Entry* entry) const {
+bool Sbss::_contains(symtable::Entry* entry) const {
 	return _syms.count(entry);
 }
 
-int StackFrame::Sbss::operator [] (symtable::Entry* entry) const {
+int Sbss::_locate(symtable::Entry* entry) const {
 	return _syms.at(entry);
 }
 
-void StackFrame::Sbss::_alloc(const std::vector<symtable::Entry*>& syms, int offset) {
-	int top = offset;
+Sbss::Sbss(const std::set<symtable::Entry*>& syms) {
+	int offset = 0;
 	for (auto& entry : syms) {
 		assert(!entry->isConst);
-		_syms[entry] = top;
-		if (entry->value == -1) { top += 4; }
-		else { top += entry->value * 4; }
+		_syms[entry] = offset;
+		if (entry->value == -1) { offset += 4; } 
+		else { offset += entry->value * 4; }
 	}
-
-	_size += top - offset;
-}
-
-StackFrame::Sbss::Sbss(const std::vector<symtable::Entry*>& syms) {
-	_alloc(syms);
-}
-
-StackFrame::Sbss::Sbss(const std::set<symtable::Entry*>& syms) {
-	_alloc(std::vector<symtable::Entry*>(syms.begin(), syms.end()));
+	_size = offset;
 }

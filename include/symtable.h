@@ -14,6 +14,7 @@
 #include <vector>
 
 class MidCode;
+class Mips;
 class Optim;
 
 namespace symtable {
@@ -51,6 +52,7 @@ namespace symtable {
 		friend class Printer;
 		friend class Database;
 		friend class ::MidCode;
+		friend class ::Mips;
 	protected:
 		const std::string _name;
 	public:
@@ -62,6 +64,7 @@ namespace symtable {
 		// that no symbol is redefined. 
 		std::map<std::string, Entry*> _syms;
 
+		// TODO: alter name to avoid conflict in mips
 		Table(const std::string& name) : _name(name) {}
 
 		virtual ~Table(void);
@@ -75,6 +78,7 @@ namespace symtable {
 		friend class Printer;
 		friend class Database;
 		friend class ::MidCode;
+		friend class ::Mips;
 		friend class ::Optim;
 	public:
 		const bool isVoid, isInt;
@@ -133,6 +137,7 @@ namespace symtable {
 	// public interface
 	class Database {
 		friend class ::MidCode;
+		friend class ::Mips;
 		friend class ::Optim;
 
 		Table _global;

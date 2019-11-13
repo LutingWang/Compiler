@@ -10,33 +10,48 @@
 #include <set>
 #include <vector>
 #include "symtable.h"
+#include "Mips.h"
 
 #include "../include/Reg.h"
 
-#include "../include/stackframe.h"
+#include "../include/ObjCode.h"
+#include "../include/StackFrame.h"
 
 StackFrame::StackFrame(std::vector<ObjCode>& output, 
-		const Sbss& global, 
 		std::vector<symtable::Entry*> argList, 
-		const std::set<symtable::Entry*>& syms) :
-	_output(output), _global(global), _local(syms) {
+		std::set<symtable::Entry*> syms) :
+	Sbss(syms), _output(output) {
 
 	for (auto& entry : syms) {
-		assert(std::find(argList.begin(), argList.end(), entry) == argList.end());
-		assert(!global._contains(entry));
+        assert(std::find(argList.begin(), argList.end(), entry) == argList.end());
+		assert(!Mips::getInstance()._global->_contains(entry));
 	}
 
-	_regBase = _local._size;
-	int regSize = (reg::s.size() + reg::t.size() + 1 /* ra */) * 4;
+	_regBase = _size;
+	_size += (reg::s.size() + reg::t.size() + 1 /* ra */ + reg::a.size()) * 4;
 
-	while (argList.size() < 4) { argList.push_back(nullptr); }
-	for (int i = 0; i < 4; i++) { argList[i] = nullptr; }
-	_local._alloc(argList, _regBase + regSize);
-
-	_size = regSize + _local._size;
+	for (int i = 4; i < argList.size(); i++) {
+		_args[argList[i]] = _size;
+		_size += 4;
+	}
 }
 
-int StackFrame::_locate(Reg reg) {
+int StackFrame::size(void) const {
+	return _size;
+}
+
+int StackFrame::operator [] (symtable::Entry* const entry) const {
+	if (_args.count(entry)) {
+		return _args.at(entry);
+	}
+	if (_contains(entry)) {
+		return _locate(entry);
+	} else {
+		return Mips::getInstance()._global->_locate(entry);
+	}
+}
+
+int StackFrame::operator [] (Reg reg) const {
 	static const std::vector<Reg> regs = {
 		Reg::s0, Reg::s1, Reg::s2, Reg::s3, Reg::s4, Reg::s5, Reg::s6, Reg::s7,
 		Reg::t0, Reg::t1, Reg::t2, Reg::t3, Reg::t4, Reg::t5, Reg::t6, Reg::t7,
@@ -51,12 +66,41 @@ int StackFrame::_locate(Reg reg) {
 	return offset;
 }
 
-// TODO: finish
-void StackFrame::_visit(Reg reg, symtable::Entry* const entry, bool isLoad) {
-	assert(!entry->isConst);
-	if (_local._contains(entry)) {
-
-	} else {
-
+void StackFrame::_visit(bool isLoad, Reg reg, symtable::Entry* const entry) {
+	if (entry == nullptr) {
+		_output.emplace_back(isLoad ? ObjCode::Instr::lw : ObjCode::Instr::sw, 
+				reg, Reg::sp, Reg::zero, operator[](reg), "");
+		return;
 	}
+	if (entry->isConst) {
+		_output.emplace_back(ObjCode::Instr::li, reg, Reg::zero, Reg::zero, entry->value, "");
+		return;
+	}
+	if (_args.count(entry)) {
+		_output.emplace_back(ObjCode::Instr::lw, reg, Reg::sp, Reg::zero, _args[entry], "");
+		return;
+	}
+	if (_contains(entry)) {
+		_output.emplace_back(isLoad ? ObjCode::Instr::lw : ObjCode::Instr::sw, 
+				reg, Reg::sp, Reg::zero, _locate(entry), "");
+	} else {
+		_output.emplace_back(isLoad ? ObjCode::Instr::lw : ObjCode::Instr::sw, 
+				reg, Reg::gp, Reg::zero, Mips::getInstance()._global->_locate(entry), "");
+	}
+}
+
+void StackFrame::store(Reg reg) {
+	_visit(false, reg);
+}
+
+void StackFrame::store(Reg reg, symtable::Entry* const entry) {
+	_visit(false, reg, entry);
+}
+
+void StackFrame::load(Reg reg) {
+	_visit(true, reg);
+}
+
+void StackFrame::load(Reg reg, symtable::Entry* const entry) {
+	_visit(true, reg, entry);
 }

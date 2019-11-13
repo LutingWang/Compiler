@@ -12,10 +12,10 @@
 
 #include "Simulator.h"
 
-Simulator::Simulator(const std::vector<symtable::Entry*>& reg_a, 
+Simulator::Simulator(const std::vector<symtable::Entry*>& reg_a,
 		const std::vector<symtable::Entry*>& reg_s, 
 		const std::vector<symtable::Entry*>& _seq, 
-		std::vector<Action>& actions) :
+		std::vector<Action*>& actions) :
 	_reg_a(reg_a), 
 	_reg_s(reg_s), 
 	_reg_t(reg::t.size(), nullptr), 
@@ -24,27 +24,27 @@ Simulator::Simulator(const std::vector<symtable::Entry*>& reg_a,
 	_actions(actions) {}
 
 void Simulator::request(bool write, bool mask) {
-	const symtable::Entry* target = _seq[_counter];
+    symtable::Entry* target = _seq[_counter];
 	_counter++;
 
 	// check a registers
 	int ind = std::find(_reg_a.begin(), _reg_a.end(), target) - _reg_a.begin();
 	if (ind != _reg_a.size()) {
-		_actions.emplace_back(reg::a[ind]);
+		_actions.push_back(new Action(reg::a[ind], nullptr, nullptr));
 		return;
 	}
 
 	// check s registers
 	ind = std::find(_reg_s.begin(), _reg_s.end(), target) - _reg_s.begin();
     if (ind != _reg_s.size()) {
-        _actions.emplace_back(reg::s[ind]);
+        _actions.push_back(new Action(reg::s[ind], nullptr, nullptr));
         return;
     }
 
 	// check temporary registers
     ind = std::find(_reg_t.begin(), _reg_t.end(), target) - _reg_t.begin();
     if (ind != _reg_t.size()) {
-        _actions.emplace_back(reg::t[ind]);
+        _actions.push_back(new Action(reg::t[ind], nullptr, nullptr));
 		if (write) { _dirty[ind] = true; }
         return;
     }
@@ -52,8 +52,9 @@ void Simulator::request(bool write, bool mask) {
 	// try to find a nullptr in the temporary registers
     ind = std::find(_reg_t.begin(), _reg_t.end(), nullptr) - _reg_t.begin();
     if (ind != _reg_t.size()) {
-        _actions.emplace_back(reg::t[ind], target);
-		if (write) { _dirty[ind] = true; }
+        _actions.push_back(new Action(reg::t[ind], write ? nullptr : target, nullptr));
+        _reg_t[ind] = target;
+        _dirty[ind] = write;
         return;
     }
 
@@ -69,18 +70,19 @@ void Simulator::request(bool write, bool mask) {
     
     // if `mask` is on and valid, disqualify the corresponding reg
     if (mask) {
-        ind = std::find(reg::t.begin(), reg::t.end(), _actions.back().reg) - reg::t.begin();
+        ind = std::find(reg::t.begin(), reg::t.end(), _actions.back()->reg) - reg::t.begin();
         if (ind != reg::t.size()) { usage[ind] = 0; }
     }
     
     // find the register with latest usage
     ind = std::max_element(usage.begin(), usage.end()) - usage.begin();
-    _actions.emplace_back(reg::t[ind], target, _dirty[ind] ? _reg_t[ind] : nullptr);
-	if (write) { _dirty[ind] = true; }
+    _actions.push_back(new Action(reg::t[ind], write ? nullptr : target, _dirty[ind] ? _reg_t[ind] : nullptr));
+    _reg_t[ind] = target;
+    _dirty[ind] = write;
 }
 
 void Simulator::clear(void) {
 	for (int i = 0; i < _reg_t.size(); i++) {
-		if (_dirty[i]) { _actions.emplace_back(reg::t[i], nullptr, _reg_t[i]); }
+		if (_dirty[i]) { _actions.push_back(new Action(reg::t[i], nullptr, _reg_t[i])); }
 	}
 }

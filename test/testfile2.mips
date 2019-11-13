@@ -1,0 +1,28 @@
+.data
+str_0: .asciiz ""
+str_1: .asciiz "\n"
+str_2: .asciiz "abc"
+
+.text
+jal main
+li $v0 10
+syscall
+
+func:
+subi $sp, $sp, 84
+addi $sp, $sp, 84
+jr $ra
+
+main:
+subi $sp, $sp, 84
+move $t8, $a0
+la $a0, str_2
+li $v0, 4
+syscall 
+li $t0, 100
+move $a0, $t0
+li $v0, 11
+syscall 
+move $a0, $t8
+addi $sp, $sp, 84
+jr $ra

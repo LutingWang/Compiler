@@ -16,13 +16,13 @@ namespace symtable {
 
 // An action describes the operation upon request of a 
 // temporary register. 
-struct Action {
+class Action {
+public:
 	const Reg reg;
     symtable::Entry* const load; // sym to load to reg
     symtable::Entry* const store; // sym to write back
 
-	Action(Reg reg, symtable::Entry* load = nullptr, 
-			symtable::Entry* store = nullptr) :
+	Action(Reg reg, symtable::Entry* const load, symtable::Entry* const store) :
 		reg(reg), load(load), store(store) {}
 };
 

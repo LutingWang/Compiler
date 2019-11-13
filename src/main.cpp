@@ -12,11 +12,12 @@
 #include "error.h"
 #include "midcode.h"
 #include "InputFile.h"
+#include "Mips.h"
 #include "Optim.h"
 using namespace std;
 
 // relative to this file, for debug use
-#define TESTFILE_PATH "../test/testfile1"
+#define TESTFILE_PATH "../test/testfile2"
 
 InputFile input(PROJECT_SRC_DIR TESTFILE_PATH);
 
@@ -64,6 +65,8 @@ int main() {
 	Optim::commonExprElim();
 
 	MidCode::output();
+
+	Mips::getInstance().output();
 
 exit:
 	error_output.close();

@@ -83,12 +83,12 @@ FlowChart::FlowChart(const std::vector<MidCode*>& mc) {
 
 	// Scan the blocks to store flow information.
 	// For return statements, proceed to `_tail`.
-	BasicBlock* tail = new BasicBlock({});
+	_tail = new BasicBlock({});
 	for (int i = 0; i < blocks.size(); i++) {
 		MidCode* exitcode = blocks[i]->midcodes.back();
 		switch (exitcode->instr) {
 		case MidCode::Instr::RET:
-			blocks[i]->proceed(tail);
+			blocks[i]->proceed(_tail);
 			break;
 		case MidCode::Instr::GOTO:
 			assert(blockMap.find(exitcode->t3) != blockMap.end());
@@ -109,7 +109,6 @@ FlowChart::FlowChart(const std::vector<MidCode*>& mc) {
 			}
 		}
 	}
-	blocks.push_back(tail);
 
 	// iterate over and delete those blocks that can never be visited
 	for (int i = 1; i < blocks.size(); i++) {
@@ -134,6 +133,7 @@ FlowChart::FlowChart(const std::vector<MidCode*>& mc) {
 
 FlowChart::~FlowChart(void) {
 	for (auto& block : blocks) { delete block; }
+	delete _tail;
 }
 
 std::vector<MidCode*> FlowChart::output(void) const {

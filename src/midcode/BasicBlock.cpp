@@ -15,3 +15,7 @@ void BasicBlock::proceed(BasicBlock* const successor) {
 	succ.insert(successor);
 	successor->prec.insert(this);
 }
+
+bool BasicBlock::isFuncCall(void) const {
+	return midcodes.back()->instr == MidCode::Instr::CALL;
+}

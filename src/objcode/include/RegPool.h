@@ -22,35 +22,40 @@ class MidCode;
 class ObjCode;
 class StackFrame;
 
-struct Action;
+class Action;
 
 class RegPool {
 	// global registers
 	std::vector<symtable::Entry*> _reg_a;
 	std::vector<symtable::Entry*> _reg_s;
 
-	void assignRegS(const std::vector<MidCode*>&);
-
-	// actions grouped by blocks
-	std::vector<std::vector<Action>> _actions;
+	// cached actions grouped by blocks
+	std::vector<std::vector<Action*>> _actionCache;
 	int _blockCounter = 0;
 	int _actionCounter = 0;
 
-	void execute(const StackFrame&);
-
+	// execute the current action
+	void _execute(StackFrame&);
 public:
-	// derive `_actions` using simulator
+	// assign global registers
 	RegPool(const std::vector<MidCode*>&, 
 			const std::vector<symtable::Entry*>& reg_a);
+    
+    ~RegPool(void);
+    
+	// simulate register assignment
+	void simulate(const std::vector<symtable::Entry*>&, 
+			const std::vector<bool>& write, 
+			const std::vector<bool>& mask);
 
 	// which syms need to be stored in the stack
 	void storage(std::set<symtable::Entry*>&) const;
 
 	// perform one operation and returns the register
-	Reg request(const StackFrame&);
+	Reg request(StackFrame&);
 
 	// finish up all the remaining operations in this block
-	void clear(const StackFrame&);
+	void clear(StackFrame&);
 };
 
 #endif /* REGPOOL_H */

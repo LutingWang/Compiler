@@ -17,7 +17,7 @@ namespace symtable {
 	class Entry;
 }
 
-struct Action;
+class Action;
 
 class Simulator {
 	const std::vector<symtable::Entry*>& _reg_a;
@@ -32,12 +32,12 @@ class Simulator {
 	// need to be done at each request, while the second
 	// part stores all the registers back to the stack, so
 	// that the basic block can exit safely.
-	std::vector<Action>& _actions;
+	std::vector<Action*>& _actions;
 public:
 	Simulator(const std::vector<symtable::Entry*>& reg_a, 
 			const std::vector<symtable::Entry*>& reg_s, 
 			const std::vector<symtable::Entry*>& _seq, 
-			std::vector<Action>& actions);
+			std::vector<Action*>& actions);
 
 	void request(bool write, bool mask);
 

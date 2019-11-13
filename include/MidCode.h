@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+// TODO: split into multiple files
+
 namespace symtable {
 	class Entry;
 	class FuncTable;
@@ -82,10 +84,7 @@ public:
 };
 
 class BasicBlock {
-public:
-	std::vector<MidCode*> midcodes;
-	std::set<BasicBlock*> prec; // precursors
-	std::set<BasicBlock*> succ; // successors
+	friend class FlowChart;
 
 	BasicBlock(const std::vector<MidCode*>&);
 
@@ -93,9 +92,16 @@ public:
 	// add `this` to `_precursors` of the basic
 	// block.
 	void proceed(BasicBlock* const);
+public:
+	std::vector<MidCode*> midcodes;
+	std::set<BasicBlock*> prec; // precursors
+	std::set<BasicBlock*> succ; // successors
+
+	bool isFuncCall(void) const;
 };
 
 class FlowChart {
+	BasicBlock* _tail;
 public:
 	std::vector<BasicBlock*> blocks;
 

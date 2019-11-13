@@ -8,6 +8,7 @@
 #ifndef REG_H
 #define REG_H
 
+#include <iostream>
 #include <vector>
 
 enum class Reg {
@@ -29,5 +30,7 @@ namespace reg {
 	extern const std::vector<Reg> t;
 	extern const std::vector<Reg> s;
 }
+
+std::ostream& operator << (std::ostream&, const Reg);
 
 #endif /* REG_H */
