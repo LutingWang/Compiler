@@ -94,7 +94,7 @@ void MidCode::gen(const Instr instr, symtable::Entry* const t0, symtable::Entry*
 			symtable::Entry* const t2, const std::string& t3) {
 	if (error::happened) { return; }
 	if (table.curFunc()->hasRet()) { return; }
-	if (instr == MidCode::Instr::CALL && t3 == table.curFunc()->name()) {
+	if (instr == Instr::CALL && t3 == table.curFunc()->name()) {
 		table.curFunc()->_inline = false;
 	}
 	table.curFunc()->_midcode.push_back(new MidCode(instr, t0, t1, t2, t3));
@@ -107,8 +107,7 @@ symtable::Entry* MidCode::genVar(const bool isInt) {
 
 symtable::Entry* MidCode::genConst(const bool isInt, const int value) {
 	std::string name = (isInt ? "int$" : "char$") + std::to_string(value);
-	symtable::Entry* entry = table._global.find(name);
-	return (entry != nullptr) ? entry : table._global.push(name, true, isInt, value);
+    return table.global().contains(name) ? table.global().find(name) : table._global.push(name, true, isInt, value);
 }
 
 std::string MidCode::genLabel(void) {
@@ -226,66 +225,71 @@ void MidCode::print(void) const { // print this piece of mid code
 	midcode_output << std::endl;
 }
 
-void MidCode::print(symtable::Entry* const e) {
+void MidCode::print(symtable::Entry* const entry) {
 #if judge
-	if (e == nullptr) { return; }
-	if (e->isConst) {
+	if (entry == nullptr) { return; }
+	if (entry->isConst) {
 		midcode_output << "const ";
-		if (e->isInt) {
-			midcode_output << "int " << e->name() << " = " << e->value;
+		if (entry->isInt) {
+			midcode_output << "int " << entry->name() << " = " << entry->value;
 		} else {
-			midcode_output << "char " << e->name() << " = '" << (char) e->value << '\'';
+			midcode_output << "char " << entry->name() << " = '" << (char) entry->value << '\'';
 		}
 	} else {
-		midcode_output << "var " << (e->isInt ? "int " : "char ") << e->name(); 
-		if (e->value != -1) {
-			midcode_output << '[' << e->value << ']';
+		midcode_output << "var " << (entry->isInt ? "int " : "char ") << entry->name();
+		if (entry->value != -1) {
+			midcode_output << '[' << entry->value << ']';
 		}
 	}
 	midcode_output << std::endl;
 #endif /* judge */
 }
 
-void MidCode::print(const symtable::FuncTable* const ft) {
-	if (ft == nullptr) { return; }
+void MidCode::print(const symtable::FuncTable* const functable) {
+	if (functable == nullptr) { return; }
 #if judge
-	if (ft->isVoid) { midcode_output << "void"; }
-	else if (ft->isInt) { midcode_output << "int"; }
+	if (functable->isVoid) { midcode_output << "void"; }
+	else if (functable->isInt) { midcode_output << "int"; }
 	else { midcode_output << "char"; }
 #else
 	midcode_output << "func";
 #endif /* judge */
-	midcode_output << ' ' << ft->name() << "()" << std::endl;
+	midcode_output << ' ' << functable->name() << "()" << std::endl;
 
 #if judge
-	const std::vector<symtable::Entry*>& argv = ft->argList();
-	for (auto& e : argv) {
-		midcode_output << "para " << (e->isInt ? "int " : "char ") 
-			<< e->name() << std::endl;
+	const std::vector<symtable::Entry*>& argv = functable->argList();
+	for (auto& entry : argv) {
+		midcode_output << "para " << (entry->isInt ? "int " : "char ")
+			<< entry->name() << std::endl;
 	}
-	for (auto& e : ft->_syms) {
+    
+    std::set<symtable::Entry*> syms;
+    functable->syms(syms);
+	for (auto& entry : syms) {
 		// exclude parameters
-		if (e.second == nullptr) { continue; }
-		if (find(argv.begin(), argv.end(), e.second) != argv.end()) { continue; }
-		print(e.second);
+		if (entry == nullptr) { continue; }
+		if (find(argv.begin(), argv.end(), entry) != argv.end()) { continue; }
+		print(entry);
 	}
 #endif /* judge */
-	for (auto& mc : ft->_midcode) {
-		mc->print();
+	for (auto& midcode : functable->midcodes()) {
+		midcode->print();
 	}
 	midcode_output << std::endl;
 }
 
 void MidCode::output(void) {
-	for (auto& e : table._global._syms) { 
-		print(e.second); 
+    std::set<symtable::Entry*> globalSyms;
+    table.global().syms(globalSyms);
+	for (auto& entry : globalSyms) {
+		print(entry);
 	}
 	midcode_output << std::endl;
 
-	for (auto& f : table._func) { 
-		print(f.second); 
+    std::set<const symtable::FuncTable*> funcs;
+    table.funcs(funcs);
+	for (auto& functable : funcs) {
+		print(functable);
 	}
-
-	print(&(table._main));
 }
 

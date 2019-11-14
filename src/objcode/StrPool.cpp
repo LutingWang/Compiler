@@ -36,7 +36,7 @@ void StrPool::init(void) {
 	for (auto& functable : funcs) {
 		for (auto& midcode : functable->midcodes()) {
 			if (midcode->is(MidCode::Instr::OUTPUT)) {
-				_insert(midcode->labelName());
+                _insert(midcode->labelName());
 			}
 		}
 	}

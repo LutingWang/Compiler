@@ -17,21 +17,29 @@
 using namespace std;
 
 symtable::Table::~Table(void) {
-	for (auto& e : _syms) { delete e.second; }
+	for (auto& entry : _syms) { delete entry.second; }
+}
+
+bool symtable::Table::contains(const std::string& symName) const {
+    return _syms.count(symName);
+}
+
+symtable::Entry* symtable::Table::find(const std::string& symName) const {
+    return _syms.at(symName);
 }
 
 symtable::Entry* symtable::Table::push(const string& symName, const bool isConst, const bool isInt, const int value) {
-	Entry*& entry = _syms[symName];
-	if (entry != nullptr) { error::raise(error::Code::REDEF); } 
-	else {
-		entry = new Entry(name() + '_' + symName, isConst, isInt, value);
-		Printer::print(*entry);
+	if (contains(symName)) {
+        error::raise(error::Code::REDEF);
+    } else {
+        _syms[symName] = new Entry(name() + '_' + symName, isConst, isInt, value);
+		Printer::print(*find(symName));
 	}
-	return entry;
+	return find(symName);
 }
 
 symtable::FuncTable::~FuncTable(void) {
-	for (auto& mc : _midcode) { delete mc; }
+	for (auto& midcode : midcodes()) { delete midcode; }
 }
 
 const std::vector<MidCode*>& symtable::FuncTable::midcodes(void) const {

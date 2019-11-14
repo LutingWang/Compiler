@@ -71,8 +71,10 @@ namespace symtable {
 		Table(const std::string& name) : _name(name) {}
 
 		virtual ~Table(void);
-
-		Entry* find(const std::string& symName) { return _syms[symName]; }
+        
+        bool contains(const std::string&) const;
+        
+        Entry* find(const std::string&) const;
 
 		Entry* push(const std::string&, const bool isConst, const bool isInt, const int = -1);
 	};
@@ -93,7 +95,7 @@ namespace symtable {
 		std::vector<Entry*> _argList;
 	public:
 		const std::vector<Entry*>& argList(void) const { return _argList; }
-
+        
 	protected:
 		// The elements in different `FuncTable` should be
 		// distinct, so that optimizer can allocate and
@@ -164,7 +166,7 @@ namespace symtable {
 		// can also be found.
 		const FuncTable* findFunc(const std::string&);
 
-		Entry* findSym(const std::string&);
+		Entry* findSym(const std::string&) const;
 
 		const Table& global(void) const;
 

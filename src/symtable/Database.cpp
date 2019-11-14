@@ -35,12 +35,14 @@ const symtable::FuncTable* symtable::Database::findFunc(const std::string& funcN
 	return _func[funcName]; 
 }
 
-symtable::Entry* symtable::Database::findSym(const string& symName) {
-	if (_cur != nullptr) {
-		Entry* result = _cur->find(symName);
-		if (result != nullptr) { return result; }
-	}
-	return _global.find(symName);
+symtable::Entry* symtable::Database::findSym(const string& symName) const {
+	if (curFunc()->contains(symName)) {
+        return curFunc()->find(symName);
+    } else if (global().contains(symName)) {
+        return global().find(symName);
+    } else {
+        return nullptr;
+    }
 }
 
 const symtable::Table& symtable::Database::global(void) const {
