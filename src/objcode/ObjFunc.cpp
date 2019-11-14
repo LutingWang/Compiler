@@ -12,7 +12,6 @@
 #include <string>
 #include "midcode.h"
 #include "symtable.h"
-#include "Mips.h"
 
 #include "./include/ObjCode.h"
 #include "./include/RegPool.h"
@@ -20,6 +19,34 @@
 #include "./include/StrPool.h"
 
 #include "./include/ObjFunc.h"
+
+std::map<std::string, ObjFunc*> ObjFunc::_func;
+
+void ObjFunc::init(void) {
+    std::set<const symtable::FuncTable*> funcs;
+    table.funcs(funcs);
+    for (auto& functable : funcs) {
+        _func[functable->name()] = new ObjFunc(functable->midcodes(), functable->argList());
+    }
+}
+
+extern std::ofstream mips_output;
+
+void ObjFunc::output(void) {
+	for (auto& pair : _func) {
+		mips_output << std::endl
+			<< pair.first << ':' << std::endl;
+        for (auto& objcode : pair.second->_objcodes) {
+            objcode.output();
+        }
+	}
+}
+
+void ObjFunc::deinit(void) {
+    for (auto& pair : _func) {
+        delete pair.second;
+    }
+}
 
 // | Operation  | Instruction       | Mips              |
 // | ---------- | ----------------- | ----------------- |
@@ -390,10 +417,3 @@ ObjFunc::~ObjFunc(void) {
 	delete _regpool;
 	delete _stackframe;
 }
-
-void ObjFunc::output(void) const {
-	for (auto& objcode : _objcodes) {
-		objcode.output();
-	}
-}
-

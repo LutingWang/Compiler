@@ -12,7 +12,7 @@
 #include "error.h"
 #include "midcode.h"
 #include "InputFile.h"
-#include "Mips.h"
+#include "mips.h"
 #include "Optim.h"
 using namespace std;
 
@@ -71,8 +71,9 @@ int main() {
 
 	MidCode::output();
 
-	Mips::init();
-	Mips::getInstance().output();
+	mips::init();
+	mips::output();
+	mips::deinit();
 
 exit:
 	error_output.close();

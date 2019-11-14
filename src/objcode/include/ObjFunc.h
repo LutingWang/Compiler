@@ -8,6 +8,7 @@
 #ifndef OBJ_FUNC_H
 #define OBJ_FUNC_H
 
+#include <map>
 #include <set>
 #include <vector>
 
@@ -23,6 +24,15 @@ class RegPool;
 class StackFrame;
 
 class ObjFunc {
+	static std::map<std::string, ObjFunc*> _func;
+public:
+	static void init(void);
+
+	static void output(void);
+
+	static void deinit(void);
+
+private:
 	RegPool* _regpool = nullptr;
 	StackFrame* _stackframe = nullptr;
 
@@ -36,8 +46,6 @@ public:
 			const std::vector<symtable::Entry*>&);
 
 	~ObjFunc(void);
-
-	void output(void) const;
 };
 
 #endif /* OBJ_FUNC_H */

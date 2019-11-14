@@ -47,11 +47,12 @@ const symtable::Table& symtable::Database::global(void) const {
 	return _global;
 }
 
-void symtable::Database::funcs(std::vector<const FuncTable*>& functables) const {
+void symtable::Database::funcs(std::set<const FuncTable*>& functables) const {
 	assert(functables.empty());
-	functables.push_back(&_main);
+	functables.insert(&_main);
 	for (auto& pair : _func) {
-		functables.push_back(pair.second);
+		auto result = functables.insert(pair.second);
+        assert(result.second);
 	}
 }
 

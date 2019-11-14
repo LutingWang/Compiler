@@ -48,12 +48,8 @@ void RegPool::simulate(const std::vector<symtable::Entry*>& _seq,
 void RegPool::storage(std::set<symtable::Entry*>& stack) const {
 	for (auto& actions : _actionCache) {
 		for (auto& action : actions) {
-            if (action->store != nullptr && !action->store->isConst) {
-                stack.insert(action->store);
-            }
-            if (action->load != nullptr && !action->load->isConst) {
-                stack.insert(action->load);
-            }
+            stack.insert(action->store);
+            stack.insert(action->load);
 		}
 	}
 	stack.erase(nullptr);
@@ -78,6 +74,7 @@ Reg RegPool::request(StackFrame& stackframe) {
 
 void RegPool::clear(StackFrame& stackframe) {
 	while (_actionCounter < _actionCache[_blockCounter].size()) {
+        assert(_actionCache[_blockCounter][_actionCounter]->load == nullptr);
 		_execute(stackframe);
 		_actionCounter++;
 	}

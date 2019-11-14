@@ -31,7 +31,7 @@ void StrPool::_insert(const std::string& str) {
 }
 
 void StrPool::init(void) {
-	std::vector<const symtable::FuncTable*> funcs;
+	std::set<const symtable::FuncTable*> funcs;
 	table.funcs(funcs);
 	for (auto& functable : funcs) {
 		for (auto& midcode : functable->midcodes()) {

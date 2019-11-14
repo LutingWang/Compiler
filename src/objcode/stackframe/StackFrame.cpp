@@ -11,7 +11,6 @@
 #include <set>
 #include <vector>
 #include "symtable.h"
-#include "Mips.h"
 
 #include "../include/Reg.h"
 
@@ -60,14 +59,18 @@ int StackFrame::operator [] (Reg reg) const {
 	assert(offset < _size);
 	return offset;
 }
+           
+void StackFrame::_visit(const bool isLoad, const Reg reg) {
+    _output.emplace_back(isLoad ? ObjCode::Instr::lw : ObjCode::Instr::sw, 
+			reg, Reg::sp, Reg::zero, operator[](reg), "");
+}
 
-void StackFrame::_visit(bool isLoad, Reg reg, symtable::Entry* const entry) {
+void StackFrame::_visit(const bool isLoad, const Reg reg, symtable::Entry* const entry) {
+    assert(entry != nullptr);
 	ObjCode::Instr instr = isLoad ? ObjCode::Instr::lw : ObjCode::Instr::sw;
 	Reg t1 = Reg::sp;
 	int imm;
-	if (entry == nullptr) {
-		imm = operator[](reg);
-	} else if (entry->isConst) {
+	if (entry->isConst) {
 		instr = ObjCode::Instr::li;
 		t1 = Reg::zero;
 		imm = entry->value;
@@ -76,22 +79,22 @@ void StackFrame::_visit(bool isLoad, Reg reg, symtable::Entry* const entry) {
 	} else if (contains(entry)) {
 		imm = locate(entry);
 	} else {
+        t1 = Reg::gp;
 		imm = global()->locate(entry);
-		t1 = Reg::gp;
 	}
 	_output.emplace_back(instr, reg, t1, Reg::zero, imm, "");
 }
 
 void StackFrame::store(Reg reg) {
-	_visit(false, reg, nullptr);
+	_visit(false, reg);
+}
+
+void StackFrame::load(Reg reg) {
+   _visit(true, reg);
 }
 
 void StackFrame::store(Reg reg, symtable::Entry* const entry) {
 	_visit(false, reg, entry);
-}
-
-void StackFrame::load(Reg reg) {
-	_visit(true, reg, nullptr);
 }
 
 void StackFrame::load(Reg reg, symtable::Entry* const entry) {

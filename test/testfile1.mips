@@ -1,9 +1,9 @@
 .data
 str_0: .asciiz ""
 str_1: .asciiz "\n"
-str_2: .asciiz "abc"
-str_3: .asciiz "def"
-str_4: .asciiz "ghi"
+str_4: .asciiz "abc"
+str_2: .asciiz "def"
+str_3: .asciiz "ghi"
 
 .text
 jal main
@@ -93,7 +93,7 @@ lw $a1, 76($sp)
 lw $a2, 80($sp)
 lw $a3, 84($sp)
 move $t8, $a0
-la $a0, str_2
+la $a0, str_4
 li $v0, 4
 syscall 
 lw $t0, 0($sp)
@@ -127,7 +127,7 @@ lw $a3, 88($sp)
 move $t0, $v0
 sw $t0, 0($sp)
 move $t8, $a0
-la $a0, str_3
+la $a0, str_2
 li $v0, 4
 syscall 
 lw $t0, 0($sp)
@@ -156,7 +156,7 @@ lw $a3, 88($sp)
 move $t0, $v0
 sw $t0, 4($sp)
 move $t8, $a0
-la $a0, str_4
+la $a0, str_3
 li $v0, 4
 syscall 
 lw $t0, 4($sp)

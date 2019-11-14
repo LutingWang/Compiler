@@ -15,35 +15,23 @@
 #include "./include/memory.h"
 #include "./include/StrPool.h"
 
-#include "Mips.h"
+#include "mips.h"
 
-Mips Mips::__instance;
-
-const Mips& Mips::getInstance(void) {
-	return __instance;
-}
-
-Mips::~Mips(void) {
-	for (auto& pair : _func) {
-		delete pair.second;
-	}
-}
-
-void Mips::init(void) {
+void mips::init(void) {
 	Sbss::init();
 	strpool.init();
+    ObjFunc::init();
+	
+}
 
-	for (auto& pair : table._func) {
-		__instance._func[pair.first] = new ObjFunc(pair.second->_midcode, pair.second->argList());
-	}
-	__instance._func["main"] = new ObjFunc(table._main._midcode, {});
-
-	Sbss::deinit();
+void mips::deinit(void) {
+    ObjFunc::deinit();
+    Sbss::deinit();
 }
 
 extern std::ofstream mips_output;
 
-void Mips::output(void) const {
+void mips::output(void) {
 	mips_output << ".data" << std::endl;
 	strpool.output();
 
@@ -53,10 +41,6 @@ void Mips::output(void) const {
 		<< "li $v0 10" << std::endl
 		<< "syscall" << std::endl;
 
-	for (auto& pair : _func) {
-		mips_output << std::endl
-			<< pair.first << ':' << std::endl;
-		pair.second->output();
-	}
+    ObjFunc::output();
 }
 

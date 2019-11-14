@@ -168,7 +168,7 @@ namespace symtable {
 
 		const Table& global(void) const;
 
-		void funcs(std::vector<const FuncTable*>&) const;
+		void funcs(std::set<const FuncTable*>&) const;
 
 	private:
 		void pushFunc(const std::string&, FuncTable* const);

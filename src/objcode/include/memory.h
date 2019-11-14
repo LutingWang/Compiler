@@ -53,7 +53,9 @@ class StackFrame : protected Sbss {
 
 	int _size;
 
-	void _visit(bool isLoad, Reg, symtable::Entry* const);
+	void _visit(const bool isLoad, const Reg);
+
+	void _visit(const bool isLoad, const Reg, symtable::Entry* const);
 public:
 	StackFrame(std::vector<ObjCode>&, 
 			std::vector<symtable::Entry*> argList, 
@@ -67,9 +69,9 @@ public:
 
 	void store(Reg);
 
-	void store(Reg, symtable::Entry* const);
-
 	void load(Reg);
+
+	void store(Reg, symtable::Entry* const);
 
 	void load(Reg, symtable::Entry* const);
 };
