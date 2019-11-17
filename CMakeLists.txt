@@ -4,7 +4,7 @@ set (CMAKE_C_COMPILER "/Applications/Xcode.app/Contents/Developer/Toolchains/Xco
 set (CMAKE_CXX_COMPILER "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++")
 project(compiler)
 
-set (Compiler_VERSION_MAJOR 1)
+set (Compiler_VERSION_MAJOR 2)
 set (Compiler_VERSION_MINOR 0)
 
 set (CMAKE_CXX_STANDARD 11)

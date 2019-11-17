@@ -179,8 +179,8 @@ void MidCode::_print(void) const {
 		break;
 	case MidCode::Instr::CALL:
 #if judge
-		midcode_output << "call " << t3;
-		if (t0 != nullptr) {
+		midcode_output << "call " << labelName();
+		if (_t0 != nullptr) {
 			midcode_output << std::endl << t0()->name() << " = RET";
 		}
 #else
@@ -214,7 +214,7 @@ void MidCode::_print(void) const {
 	#define CASE(id, op) case MidCode::Instr::id:		\
 		midcode_output << t1()->name() << " " #op " "		\
 			<< t2()->name() << " BNZ "			\
-			<< t3;					\
+			<< labelName();					\
 		break
 #else
 	#define CASE(id, op) case MidCode::Instr::id:		\
@@ -230,7 +230,7 @@ void MidCode::_print(void) const {
 #if judge
 	#define CASE(id, op) case MidCode::Instr::id:		\
 		midcode_output << "if " << t1()->name() << " " #op " "			\
-			<< ((t2 == nullptr) ? "0" : t2()->name())		\
+			<< ((_t2 == nullptr) ? "0" : t2()->name())		\
 			<< " BNZ " << labelName();		\
 		break
 #else
