@@ -13,8 +13,6 @@
 #include "./include/InputFile.h"
 using namespace std;
 
-InputFile input(TESTFILE_PATH);
-
 InputFile::InputFile(string path) : _input(path) {
 	assert(_input);
 }

@@ -11,6 +11,8 @@
 #include <iostream>
 #include <string>
 
+class Lexer;
+
 namespace symbol {
 	enum class NonTerminal {
 		LEX_UNSIGNED_INT, LEX_STR, PROGRAM, CONST_DEC, CONST_DEF, VAR_DEC, VAR_DEF,
@@ -68,28 +70,31 @@ namespace symbol {
 	};
 
 	class Symbol {
+		friend class ::Lexer;
 		friend std::ostream& operator << (std::ostream&, const symbol::Symbol&);
-	public:
+
 		// line number of the previous symbol
-		int lastLine;
+		int _lastLine;
 
 		// type identifier for the symbol
-		Type id;
+		Type _id;
 
 		// union of symbol value
-		char ch;
-		unsigned int num;
-		std::string str;
+		char _ch;
+		unsigned int _num;
+		std::string _str;
+	public:
+		int lastLine(void) const;
+		Type id(void) const;
+		char ch(void) const;
+		unsigned int num(void) const;
+		const std::string& str(void) const;
 
-		// helpers to simplify data accessing
-		bool is(const Type type) const noexcept { return this->id == type; }
-		bool numIs(const unsigned int num) const noexcept { return this->num & num; }
-		bool is(const Type type, const unsigned int num) const noexcept { return numIs(num) && is(type); }
+		bool is(const Type) const noexcept;
+		bool is(const Type, const unsigned int) const noexcept;
+		bool numIs(const unsigned int) const noexcept;
 
-		void set(const Type type, const unsigned int num) noexcept {
-			this->id = type;
-			this->num = num;
-		}
+		void set(const Type, const unsigned int) noexcept;
 	};
 
 	std::ostream& operator << (std::ostream&, const NonTerminal&);

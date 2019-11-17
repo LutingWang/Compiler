@@ -1,6 +1,0 @@
-void func() {}
-void main() {
-	const char c = 'd';
-	main();
-	printf("abc", c);
-}

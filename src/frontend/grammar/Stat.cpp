@@ -13,7 +13,7 @@
 #include "symtable/SymTable.h"
 
 #include "../include/errors.h"
-#include "../include/lexer.h"
+#include "../include/Lexer.h"
 
 #include "basics.h"
 #include "Const.h"
@@ -22,7 +22,6 @@
 #include "Var.h"
 
 #include "Stat.h"
-using lexer::getsym;
 
 namespace {
 	MidCode::Instr translate(symbol::Comp comp, bool takeNot) {
@@ -47,8 +46,8 @@ void Stat::Cond::cond(const bool branchIfNot, const std::string& labelName) {
 	const symtable::Entry* const t1 = Expr::expr();
 	if (!t1->isInt()) { error::raise(error::Code::MISMATCHED_COND_TYPE); }
 	if (sym.is(symbol::Type::COMP)) {
-		MidCode::Instr comp = translate(static_cast<symbol::Comp>(sym.num), branchIfNot);
-		getsym();
+		MidCode::Instr comp = translate(static_cast<symbol::Comp>(sym.num()), branchIfNot);
+		Lexer::getsym();
 		const symtable::Entry* const t2 = Expr::expr();
 		if (!t2->isInt()) { error::raise(error::Code::MISMATCHED_COND_TYPE); }
 		MidCode::gen(comp, nullptr, t1, t2, labelName);
@@ -60,9 +59,9 @@ void Stat::Cond::cond(const bool branchIfNot, const std::string& labelName) {
 // <if stat> ::= if'('<cond>')'<stat>[else<stat>]
 bool Stat::Cond::_if(void) {
 	assert(sym.is(symbol::Type::RESERVED, symbol::IFTK)); // ensured by outer function
-	getsym();
+	Lexer::getsym();
 	assert(sym.is(symbol::Type::DELIM, symbol::LPARENT));
-	getsym();
+	Lexer::getsym();
 	std::string labelElse = MidCode::genLabel();
 	cond(true, labelElse);
 	error::assertSymIsRPARENT();
@@ -72,7 +71,7 @@ bool Stat::Cond::_if(void) {
 		std::string labelEnd = MidCode::genLabel();
 		MidCode::gen(MidCode::Instr::GOTO, nullptr, nullptr, nullptr, labelEnd);
 		MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelElse);
-		getsym();
+		Lexer::getsym();
 		hasRet = stat() && hasRet; // ensures that stat() is executed
 		MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelEnd);
 		return hasRet;
@@ -85,9 +84,9 @@ bool Stat::Cond::_if(void) {
 // <while stat> ::= while'('<cond>')'<stat>
 void Stat::Cond::_while(void) {
 	assert(sym.is(symbol::Type::RESERVED, symbol::WHILETK)); // ensured by outer function
-	getsym();
+	Lexer::getsym();
 	assert(sym.is(symbol::Type::DELIM, symbol::LPARENT));
-	getsym();
+	Lexer::getsym();
 	std::string labelBegin = MidCode::genLabel();
 	MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelBegin);
 	std::string labelEnd = MidCode::genLabel();
@@ -101,14 +100,14 @@ void Stat::Cond::_while(void) {
 // <do stat> ::= do<stat>while'('<cond>')'
 bool Stat::Cond::_do(void) {
 	assert(sym.is(symbol::Type::RESERVED, symbol::DOTK)); // ensured by outer function
-	getsym();
+	Lexer::getsym();
 	std::string labelBegin = MidCode::genLabel();
 	MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelBegin);
 	bool hasRet = stat();
-	if (sym.is(symbol::Type::RESERVED, symbol::WHILETK)) { getsym(); } 
+	if (sym.is(symbol::Type::RESERVED, symbol::WHILETK)) { Lexer::getsym(); }
 	else { error::raise(error::Code::MISSING_WHILE); }
 	assert(sym.is(symbol::Type::DELIM, symbol::LPARENT));
-	getsym();
+	Lexer::getsym();
 	cond(false, labelBegin);
 	error::assertSymIsRPARENT();
 	return hasRet;
@@ -121,18 +120,18 @@ void Stat::Cond::_for(void) {
 
 	// for'('
 	assert(sym.is(symbol::Type::RESERVED, symbol::FORTK)); // ensured by outer function
-	getsym();
+	Lexer::getsym();
 	assert(sym.is(symbol::Type::DELIM, symbol::LPARENT));
-	getsym();
+	Lexer::getsym();
 
 	// <iden>=<expr>;
 	assert(sym.is(symbol::Type::IDENFR));
-	t0 = SymTable::getTable().findSym(sym.str);
+	t0 = SymTable::getTable().findSym(sym.str());
 	if (t0->isConst()) { error::raise(error::Code::ILLEGAL_ASSIGN); }
 	else { assert(t0->isInvalid() || !t0->isArray()); }
-	getsym();
+	Lexer::getsym();
 	assert(sym.is(symbol::Type::DELIM, symbol::ASSIGN));
-	getsym();
+	Lexer::getsym();
 	t1 = Expr::expr();
 	MidCode::gen(MidCode::Instr::ASSIGN, t0, t1, nullptr);
 	error::assertSymIsSEMICN();
@@ -146,21 +145,21 @@ void Stat::Cond::_for(void) {
 
 	// <iden>=<iden><add op><unsigned int>')'
 	assert(sym.is(symbol::Type::IDENFR));
-	t0 = SymTable::getTable().findSym(sym.str);
+	t0 = SymTable::getTable().findSym(sym.str());
 	if (t0->isConst()) { error::raise(error::Code::ILLEGAL_ASSIGN); }
 	else { assert(t0->isInvalid() || !t0->isArray()); }
-	getsym();
+	Lexer::getsym();
 	assert(sym.is(symbol::Type::DELIM, symbol::ASSIGN));
-	getsym();
+	Lexer::getsym();
 	assert(sym.is(symbol::Type::IDENFR));
-	t1 = SymTable::getTable().findSym(sym.str);
+	t1 = SymTable::getTable().findSym(sym.str());
 	assert(t1->isInvalid() || !t1->isArray());
-	getsym();
+	Lexer::getsym();
 	bool minus;
 	assert(basics::add(minus));
 	assert(sym.is(symbol::Type::INTCON));
-	const symtable::Entry* const stepSize = MidCode::genConst(true, sym.num);
-	getsym();
+	const symtable::Entry* const stepSize = MidCode::genConst(true, sym.num());
+	Lexer::getsym();
 	error::assertSymIsRPARENT();
 
 	stat();
@@ -173,16 +172,16 @@ void Stat::Cond::_for(void) {
 // <read stat> ::= scanf'('<iden>{,<iden>}')'
 void Stat::read(void) {
 	assert(sym.is(symbol::Type::RESERVED, symbol::SCANFTK)); // ensured by outer function
-	getsym();
+	Lexer::getsym();
 	assert(sym.is(symbol::Type::DELIM, symbol::LPARENT));
 	do {
-		getsym();
+		Lexer::getsym();
 		assert(sym.is(symbol::Type::IDENFR));
-		const symtable::Entry* const t0 = SymTable::getTable().findSym(sym.str);
+		const symtable::Entry* const t0 = SymTable::getTable().findSym(sym.str());
 		if (t0->isConst()) { error::raise(error::Code::ILLEGAL_ASSIGN); }
 		else { assert(t0->isInvalid() || !t0->isArray()); }
 		MidCode::gen(MidCode::Instr::INPUT, t0, nullptr, nullptr);
-		getsym();
+		Lexer::getsym();
 	} while (sym.is(symbol::Type::DELIM, symbol::COMMA));
 	error::assertSymIsRPARENT();
 }
@@ -190,18 +189,18 @@ void Stat::read(void) {
 // <write stat> ::= printf'('<string>[,<expr>]')'|printf'('<expr>')'
 void Stat::write(void) {
 	assert(sym.is(symbol::Type::RESERVED, symbol::PRINTFTK)); // ensured by outer function
-	getsym();
+	Lexer::getsym();
 	assert(sym.is(symbol::Type::DELIM, symbol::LPARENT));
-	getsym();
+	Lexer::getsym();
     
     int nfield = 0;
 	if (sym.is(symbol::Type::STRCON)) {
         nfield++;
-        MidCode::gen(MidCode::Instr::OUTPUT_STR, nullptr, nullptr, nullptr, sym.str);
-		std::string str = sym.str;
-		getsym();
+        MidCode::gen(MidCode::Instr::OUTPUT_STR, nullptr, nullptr, nullptr, sym.str());
+		std::string str = sym.str();
+		Lexer::getsym();
 		if (sym.is(symbol::Type::DELIM, symbol::COMMA)) {
-			getsym();
+			Lexer::getsym();
 		}
 	}
     if (!sym.is(symbol::Type::DELIM, symbol::RPARENT)) {
@@ -218,16 +217,16 @@ void Stat::ret(void) {
 	const symtable::Entry* t1 = nullptr;
 
 	assert(sym.is(symbol::Type::RESERVED, symbol::RETURNTK)); // ensured by outer function
-	getsym();
+	Lexer::getsym();
 	if (SymTable::getTable().curFunc().isVoid()) {
 		if (sym.is(symbol::Type::DELIM, symbol::LPARENT)) {
 			error::raise(error::Code::ILLEGAL_RET_WITH_VAL);
-			getsym();
+			Lexer::getsym();
 			Expr::expr();
 			error::assertSymIsRPARENT();
 		}
 	} else if (sym.is(symbol::Type::DELIM, symbol::LPARENT)) {
-		getsym();
+		Lexer::getsym();
 		t1 = Expr::expr();
 		if (SymTable::getTable().curFunc().isInt() != t1->isInt()) {
 			error::raise(error::Code::ILLEGAL_RET_WITHOUT_VAL);
@@ -247,7 +246,7 @@ void Stat::assign(const symtable::Entry* const t0) {
 	assert(sym.is(symbol::Type::DELIM));
 	if (sym.numIs(symbol::LBRACK)) {
 		assert(t0->isInvalid() || t0->isArray());
-		getsym();
+		Lexer::getsym();
 		t2 = Expr::expr();
 		if (!t2->isInt()) { error::raise(error::Code::ILLEGAL_IND); }
 		error::assertSymIsRBRACK();
@@ -256,7 +255,7 @@ void Stat::assign(const symtable::Entry* const t0) {
     }
 
 	assert(sym.is(symbol::Type::DELIM, symbol::ASSIGN));
-	getsym();
+	Lexer::getsym();
 	MidCode::gen(t2 == nullptr ? MidCode::Instr::ASSIGN : MidCode::Instr::STORE_IND, 
 			t0, Expr::expr(), t2); // t0 = t1[t2];
 }
@@ -264,14 +263,14 @@ void Stat::assign(const symtable::Entry* const t0) {
 // <stat> ::= <if stat>|<while stat>|<do stat>|<for stat>|'{'{<stat>}'}'|<read stat>;|<write stat>;|<ret stat>;|<assign>;|<func call>;|;
 bool Stat::stat(void) {
 	bool hasRet = false;
-	switch (sym.id) {
+	switch (sym.id()) {
 	case symbol::Type::RESERVED:
-		switch (sym.num) {
+		switch (sym.num()) {
 		case symbol::MAINTK: // calling to main is not exactly a function call
 			assert(SymTable::getTable().isMain());
-			getsym();
+			Lexer::getsym();
 			assert(sym.is(symbol::Type::DELIM, symbol::LPARENT));
-			getsym();
+			Lexer::getsym();
 			error::assertSymIsRPARENT();
 			MidCode::gen(MidCode::Instr::CALL, nullptr, nullptr, nullptr, "main");
 			break;
@@ -304,8 +303,8 @@ bool Stat::stat(void) {
 		}
 		break;
 	case symbol::Type::IDENFR: {
-			std::string name = sym.str;
-			getsym();
+			std::string name = sym.str();
+			Lexer::getsym();
 			assert(sym.is(symbol::Type::DELIM));
 			if (sym.numIs(symbol::LPARENT)) {
 				Func::argValues(SymTable::getTable().findFunc(name));
@@ -316,16 +315,16 @@ bool Stat::stat(void) {
 		}
 		break;
 	case symbol::Type::DELIM:
-		switch (sym.num) {
+		switch (sym.num()) {
 		case symbol::LBRACE:
-			getsym();
+			Lexer::getsym();
 			while (!sym.is(symbol::Type::DELIM, symbol::RBRACE)) {
 				hasRet = stat() || hasRet;
 			}
-			getsym();
+			Lexer::getsym();
 			break;
 		case symbol::SEMICN:
-			getsym();
+			Lexer::getsym();
 			break;
 		default: assert(0);
 		}
@@ -338,7 +337,7 @@ bool Stat::stat(void) {
 // <block> ::= '{'<const dec><var dec>{<stat>}'}'
 void Stat::block(void) {
 	assert(sym.is(symbol::Type::DELIM, symbol::LBRACE));
-	getsym();
+	Lexer::getsym();
 	Const::dec();
 	Var::dec();
 
@@ -349,7 +348,7 @@ void Stat::block(void) {
 	}
 
 	// function main does not have subsequent symbols
-	if (!SymTable::getTable().isMain()) { getsym(); }
+	if (!SymTable::getTable().isMain()) { Lexer::getsym(); }
 
     const symtable::FuncTable& functable = SymTable::getTable().curFunc();
 	if (functable.hasRet()) { return; }

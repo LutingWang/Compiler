@@ -8,8 +8,10 @@
 #ifndef FRONTEND_H
 #define FRONTEND_H
 
+#include <string>
+
 namespace grammar {
-	void parse(void);
+	void parse(const std::string&);
 }
 
 #endif /* FRONTEND_H */

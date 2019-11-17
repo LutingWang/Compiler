@@ -1,6 +1,65 @@
-void func() {}
+void func1() {
+	printf("def");
+}
+
+void func2(int a) {
+	printf(a);
+}
+
+int func3(int a) {
+	printf("in");
+	return(a);
+}
 
 void main() {
 	const int a = 1;
-	int b[]
+	int b[10], c;
+	printf("abc");
+	printf(a + 1);
+	printf(1 + a);
+	printf(a - 1);
+	printf(1 - a);
+	printf(a * 2);
+	printf(a / 2);
+
+	b[0] = 2;
+	printf(b[0]);
+	c = b[0];
+	printf(c);
+	c = a;
+	printf(c);
+
+	if (a > 1) {
+		printf(1);
+	} else {
+		printf(2);
+	}
+
+	if (a >= 1) {
+		printf(1);
+	} else {
+		printf(2);
+	}
+
+	if (a < 1) {
+		printf(1);
+	} else {
+		printf(2);
+	}
+
+	if (a <= 1) {
+		printf(1);
+	} else {
+		printf(2);
+	}
+
+	if (a == 1) {
+		printf(1);
+	} else {
+		printf(2);
+	}
+
+	func1();
+	func2(8);
+	printf(func3(9));
 }

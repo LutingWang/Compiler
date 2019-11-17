@@ -13,33 +13,32 @@
 #include "symtable/SymTable.h"
 
 #include "../include/errors.h"
-#include "../include/lexer.h"
+#include "../include/Lexer.h"
 
 #include "basics.h"
 #include "Expr.h"
 #include "Stat.h"
 
 #include "Func.h"
-using lexer::getsym;
 
 // <args> ::= [<type id><iden>{,<type id><iden>}]
 void Func::args(void) {
 	bool isInt;
 	if (!basics::typeId(isInt)) { return; } // empty is allowed 
 	assert(sym.is(symbol::Type::IDENFR));
-	SymTable::getTable().curFunc().pushArg(sym.str, isInt);
-	for (getsym(); sym.is(symbol::Type::DELIM, symbol::COMMA); getsym()) {
-		getsym();
+	SymTable::getTable().curFunc().pushArg(sym.str(), isInt);
+	for (Lexer::getsym(); sym.is(symbol::Type::DELIM, symbol::COMMA); Lexer::getsym()) {
+		Lexer::getsym();
 		assert(basics::typeId(isInt));
 		assert(sym.is(symbol::Type::IDENFR));
-		SymTable::getTable().curFunc().pushArg(sym.str, isInt);
+		SymTable::getTable().curFunc().pushArg(sym.str(), isInt);
 	}
 }
 
 // <func def> ::= '('<args>')'<block>
 void Func::def(void) {
 	assert(sym.is(symbol::Type::DELIM, symbol::LPARENT));
-	getsym();
+	Lexer::getsym();
 	args();
 	error::assertSymIsRPARENT();
 	Stat::block();
@@ -52,19 +51,19 @@ void Func::dec(void) {
 		assert(sym.is(symbol::Type::RESERVED));
 		if (!basics::typeId(isInt)) {
 			assert(sym.numIs(symbol::VOIDTK));
-			getsym();
+			Lexer::getsym();
 			if (!sym.is(symbol::Type::IDENFR)) { break; }
-			SymTable::getTable().pushFunc(sym.str);
+			SymTable::getTable().pushFunc(sym.str());
 		} else {
 			assert(sym.is(symbol::Type::IDENFR));
-			SymTable::getTable().pushFunc(sym.str, isInt);
+			SymTable::getTable().pushFunc(sym.str(), isInt);
 		}
-		getsym();
+		Lexer::getsym();
 		def();
 	}
 	assert(sym.is(symbol::Type::RESERVED, symbol::MAINTK));
 	SymTable::getTable().pushFunc();
-	getsym();
+	Lexer::getsym();
 	def();
 }
 
@@ -80,14 +79,14 @@ void Func::dec(void) {
 // match with the function declaration.
 const symtable::Entry* Func::argValues(const symtable::FuncTable* const functable) { 
 	assert(sym.is(symbol::Type::DELIM, symbol::LPARENT)); // ensured by outer function
-	getsym();
+	Lexer::getsym();
 
 	std::vector<const symtable::Entry*> argv;
 	if (!sym.is(symbol::Type::DELIM, symbol::RPARENT|symbol::SEMICN)) { // ')' might be missing
 		while (true) {
 			argv.push_back(Expr::expr());
 			if (!sym.is(symbol::Type::DELIM, symbol::COMMA)) { break; }
-			getsym();
+			Lexer::getsym();
 		}
 	}
 	error::assertSymIsRPARENT();

@@ -11,13 +11,12 @@
 #include "symtable/SymTable.h"
 
 #include "../include/errors.h"
-#include "../include/lexer.h"
+#include "../include/Lexer.h"
 
 #include "basics.h"
 #include "Func.h"
 
 #include "Expr.h"
-using lexer::getsym;
 
 // <integer> ::= [<add op>]<unsigned int>
 // input : inout parameter for the identified integer
@@ -26,22 +25,22 @@ bool Expr::integer(int& result) {
 	const symbol::Symbol lastSymbol = sym;
 	bool neg;
 	if (basics::add(neg) && !sym.is(symbol::Type::INTCON)) {
-		lexer::traceback(lastSymbol);
+		Lexer::traceback(lastSymbol);
 		return false;
 	}
 	if (!sym.is(symbol::Type::INTCON)) { return false; }
-	result = neg ? -((int) sym.num) : sym.num;
-	getsym();
+	result = neg ? -((int) sym.num()) : sym.num();
+	Lexer::getsym();
 	return true;
 }
 
 // <factor> ::= <iden>['['<expr>']']|'('<expr>')'|<integer>|<char>|<func call>
 const symtable::Entry* Expr::factor(void) {
 	const symtable::Entry* t0 = nullptr;
-	switch (sym.id) {
+	switch (sym.id()) {
 	case symbol::Type::DELIM: 
 		assert(sym.numIs(symbol::LPARENT));
-		getsym();
+		Lexer::getsym();
 		t0 = MidCode::genVar(true);
 		MidCode::gen(MidCode::Instr::ASSIGN, t0, expr(), nullptr);
 		error::assertSymIsRPARENT();
@@ -52,18 +51,18 @@ const symtable::Entry* Expr::factor(void) {
 		t0 = MidCode::genConst(true, num);
 		break;
 	case symbol::Type::CHARCON:
-		t0 = MidCode::genConst(false, sym.ch);
-		getsym();
+		t0 = MidCode::genConst(false, sym.ch());
+		Lexer::getsym();
 		break;
 	case symbol::Type::IDENFR: {
-			std::string name = sym.str;
-			getsym();
+			std::string name = sym.str();
+			Lexer::getsym();
 			if (sym.is(symbol::Type::DELIM, symbol::LPARENT)) {
                 t0 = Func::argValues(SymTable::getTable().findFunc(name));
 			} else if (sym.is(symbol::Type::DELIM, symbol::LBRACK)) {
 				const symtable::Entry* const t1 = SymTable::getTable().findSym(name);
                 assert(t1->isInvalid() || t1->isArray());
-				getsym();
+				Lexer::getsym();
 				const symtable::Entry* const t2 = expr();
 				if (!t2->isInt()) { error::raise(error::Code::ILLEGAL_IND); }
 				error::assertSymIsRBRACK();

@@ -11,13 +11,12 @@
 #include "symtable/SymTable.h"
 
 #include "../include/errors.h"
-#include "../include/lexer.h"
+#include "../include/Lexer.h"
 
 #include "basics.h"
 #include "Expr.h"
 
 #include "Const.h"
-using lexer::getsym;
 
 // <const def> ::= int<iden>=<integer>{,<iden>=<integer>}|char<iden>=<char>{,<iden>=<char>}
 void Const::def(void) {
@@ -27,22 +26,22 @@ void Const::def(void) {
 
 	// recursively identify identifier and its value
 	do {
-		getsym();
+		Lexer::getsym();
 		assert(sym.is(symbol::Type::IDENFR));
-		const std::string idenName = sym.str;
+		const std::string idenName = sym.str();
 
-		getsym();
+		Lexer::getsym();
 		assert(sym.is(symbol::Type::DELIM, symbol::ASSIGN));
 
-		getsym();
-		int num = sym.ch;
-		if (!isInt && sym.is(symbol::Type::CHARCON)) { getsym(); }
+		Lexer::getsym();
+		int num = sym.ch();
+		if (!isInt && sym.is(symbol::Type::CHARCON)) { Lexer::getsym(); }
 		// error happens if symbol is char or the value is not an integer
 		else if (!isInt || !Expr::integer(num)) {
 			error::raise(error::Code::EXPECTED_LITERAL);
 			// jump to the next ',' or ';'
 			while (!sym.is(symbol::Type::DELIM, symbol::COMMA|symbol::SEMICN)) {
-				getsym();
+				Lexer::getsym();
 			}
 		}
         SymTable::getTable().curTable().pushConst(idenName, isInt, num);
@@ -52,10 +51,8 @@ void Const::def(void) {
 // <const dec> ::= {const<const def>;}
 void Const::dec(void) {
 	while (sym.is(symbol::Type::RESERVED, symbol::CONSTTK)) {
-		getsym();
+		Lexer::getsym();
 		def();
 		error::assertSymIsSEMICN();
 	}
 }
-
-

@@ -29,6 +29,4 @@ public:
 	char get(void);
 };
 
-extern InputFile input;
-
 #endif /* INPUT_FILE_H */

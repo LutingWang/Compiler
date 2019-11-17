@@ -11,21 +11,20 @@
 #include "symtable/SymTable.h"
 
 #include "../include/errors.h"
-#include "../include/lexer.h"
+#include "../include/Lexer.h"
 
 #include "basics.h"
 
 #include "Var.h"
-using lexer::getsym;
 
 // <index> ::= '['<unsigned int>']'
 // output : identified length of array
 unsigned int Var::index(void) {
 	assert(sym.is(symbol::Type::DELIM, symbol::LBRACK)); // ensured by outer function
-	getsym();
+	Lexer::getsym();
 	assert(sym.is(symbol::Type::INTCON));
-	const unsigned int result = sym.num;
-	getsym();
+	const unsigned int result = sym.num();
+	Lexer::getsym();
 	error::assertSymIsRBRACK();
 	return result;
 }
@@ -37,28 +36,28 @@ unsigned int Var::index(void) {
 bool Var::def(const bool isInt) {
 	if (!sym.is(symbol::Type::IDENFR)) { return false; }
 	const symbol::Symbol lastSymbol = sym;
-	getsym();
+	Lexer::getsym();
 	if (!sym.is(symbol::Type::DELIM)) {
-		lexer::traceback(lastSymbol);
+		Lexer::traceback(lastSymbol);
 		return false;
 	}
 
-	std::string idenName = lastSymbol.str;
+	std::string idenName = lastSymbol.str();
 	if (sym.numIs(symbol::LBRACK)) {
         SymTable::getTable().curTable().pushArray(idenName, isInt, index());
 	} else if (sym.numIs(symbol::COMMA|symbol::SEMICN)) {
         SymTable::getTable().curTable().pushVar(idenName, isInt);
 	} else {
-		lexer::traceback(lastSymbol);
+		Lexer::traceback(lastSymbol);
 		return false;
 	}
 
 	// traceback = false
 	while (sym.is(symbol::Type::DELIM, symbol::COMMA)) {
-		getsym();
+		Lexer::getsym();
 		assert(sym.is(symbol::Type::IDENFR));
-		idenName = sym.str;
-		getsym();
+		idenName = sym.str();
+		Lexer::getsym();
 		assert(sym.is(symbol::Type::DELIM));
 		if (sym.numIs(symbol::LBRACK)) {
             SymTable::getTable().curTable().pushArray(idenName, isInt, index());
@@ -75,7 +74,7 @@ void Var::dec(void) {
 	bool isInt;
 	for (symbol::Symbol lastSymbol = sym; basics::typeId(isInt); lastSymbol = sym) {
 		if (!def(isInt)) {
-			lexer::traceback(lastSymbol);
+			Lexer::traceback(lastSymbol);
 			return;
 		}
 		error::assertSymIsSEMICN();

@@ -19,6 +19,12 @@ using namespace std;
 // TODO: change midcode naming to avoid conflict
 // TODO: scan iterations, add comment of type
 
+#if judge
+	#define TESTFILE_PATH "testfile.txt"
+#else
+	#define TESTFILE_PATH PROJECT_BASE_DIR "test/mips/instr/instr"
+#endif /* judge */
+
 // Latent streams for corresponding classes to use.
 // Do not expose in the headers!
 //
@@ -51,7 +57,7 @@ int main() {
 	cout << "compiler version " << COMPILER_VERSION_MAJOR 
 		<< "." << COMPILER_VERSION_MINOR << endl;
 
-	grammar::parse();
+	grammar::parse(TESTFILE_PATH);
 
 	if (error::happened) { goto exit; }
 

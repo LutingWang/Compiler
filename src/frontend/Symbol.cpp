@@ -11,14 +11,51 @@
 
 symbol::Symbol sym;
 
+int symbol::Symbol::lastLine(void) const {
+    return _lastLine;
+}
+
+symbol::Type symbol::Symbol::id(void) const {
+    return _id;
+}
+
+char symbol::Symbol::ch(void) const {
+    return _ch;
+}
+
+unsigned int symbol::Symbol::num(void) const {
+    return _num;
+}
+
+const std::string& symbol::Symbol::str(void) const {
+    return _str;
+}
+
+bool symbol::Symbol::is(const Type type) const noexcept {
+    return this->_id == type;
+}
+
+bool symbol::Symbol::is(const Type type, const unsigned int num) const noexcept {
+    return numIs(num) && is(type);
+}
+
+bool symbol::Symbol::numIs(const unsigned int num) const noexcept {
+    return this->_num & num;
+}
+
+void symbol::Symbol::set(const Type type, const unsigned int num) noexcept {
+    this->_id = type;
+    this->_num = num;
+}
+
 std::ostream& symbol::operator << (std::ostream& output, const Symbol& s) {
 	output << typeid(s).name() << '<';
-	switch (sym.id) {
+	switch (sym.id()) {
 #define CASE(id, info) case id: output << #id << ' ' << info; break
-	CASE(Type::IDENFR, sym.str); CASE(Type::INTCON, sym.num);
-	CASE(Type::CHARCON, sym.ch); CASE(Type::STRCON, sym.str);
+	CASE(Type::IDENFR, sym.str()); CASE(Type::INTCON, sym.num());
+	CASE(Type::CHARCON, sym.ch()); CASE(Type::STRCON, sym.str());
 	case Type::RESERVED:
-		switch (sym.num) {
+		switch (sym.num()) {
 		CASE(CONSTTK, "const"); CASE(INTTK, "int"); CASE(CHARTK, "char"); 
 		CASE(VOIDTK, "void"); CASE(MAINTK, "main"); CASE(IFTK, "if");
 		CASE(ELSETK, "else"); CASE(DOTK, "do"); CASE(WHILETK, "while"); 
@@ -27,19 +64,19 @@ std::ostream& symbol::operator << (std::ostream& output, const Symbol& s) {
 		}
 		break;
 	case Type::DELIM:
-		switch (sym.num) {
+		switch (sym.num()) {
 		CASE(ASSIGN, "="); CASE(SEMICN, ";"); CASE(COMMA, ","); 
 		CASE(LPARENT, "("); CASE(RPARENT, ")"); CASE(LBRACK, "["); 
 		CASE(RBRACK, "]"); CASE(LBRACE, "{"); CASE(RBRACE, "}");
 		}
 		break;
 	case Type::OPER:
-		switch (sym.num) {
+		switch (sym.num()) {
 		CASE(PLUS, "+"); CASE(MINU, "-"); CASE(MULT, "*"); CASE(DIV, "/");
 		}
 		break;
 	case Type::COMP:
-		switch (sym.num) {
+		switch (sym.num()) {
 		CASE(LSS, "<"); CASE(LEQ, "<="); CASE(GRE, ">"); 
 		CASE(GEQ, ">="); CASE(EQL, "=="); CASE(NEQ, "!=");
 		}
@@ -73,4 +110,3 @@ std::ostream& symbol::operator << (std::ostream& output, const NonTerminal& nt) 
 	output << '>';
 	return output;
 }
-

@@ -26,12 +26,10 @@ protected:
 	static const Sbss* global(void);
 public:
 	static void init(void);
-
 	static void deinit(void);
 
 private:
 	std::map<const symtable::Entry*, int> _syms;
-
 	int _size = 0;
 protected:
 	int size(void) const;
@@ -40,39 +38,34 @@ public:
 	Sbss(const std::set<const symtable::Entry*>& syms);
 
 	bool contains(const symtable::Entry*) const;
-
 	int locate(const symtable::Entry*) const;
 };
 
 class StackFrame : protected Sbss {
 	std::vector<ObjCode>& _output;
-
 	std::map<const symtable::Entry*, int> _args;
-
 	int _regBase;
-
 	int _size;
-
-	void _visit(const bool isLoad, const Reg);
-
-	void _visit(const bool isLoad, const Reg, const symtable::Entry* const);
 public:
+	int size(void) const;
+
 	StackFrame(std::vector<ObjCode>&, 
 			std::vector<const symtable::Entry*> argList, 
 			const std::set<const symtable::Entry*>& syms);
 
-	int size(void) const;
-
 	int operator [] (const symtable::Entry* const) const;
-
 	int operator [] (Reg) const;
 
+private:
+	void _visit(const bool isLoad, const Reg);
+public:
 	void store(Reg);
-
 	void load(Reg);
 
+private:
+	void _visit(const bool isLoad, const Reg, const symtable::Entry* const);
+public:
 	void store(Reg, const symtable::Entry* const);
-
 	void load(Reg, const symtable::Entry* const);
 };
 

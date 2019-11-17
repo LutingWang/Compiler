@@ -9,7 +9,7 @@
 #include "symtable/SymTable.h"
 
 #include "../include/errors.h"
-#include "../include/lexer.h"
+#include "../include/Lexer.h"
 
 #include "Const.h"
 #include "Func.h"
@@ -18,11 +18,13 @@
 #include "frontend.h"
 
 // <program> ::= <const dec><var dec><func dec>
-void grammar::parse(void) try {
-	lexer::getsym();
+void grammar::parse(const std::string& inputPath) try {
+	Lexer::init(inputPath);
+	Lexer::getsym();
 	Const::dec();
 	Var::dec();
 	Func::dec();
+	Lexer::deinit();
     SymTable::getTable().makeConst();
 } catch (error::Ueof& e) {
 	error::raise(error::Code::UNEXPECTED_EOF);

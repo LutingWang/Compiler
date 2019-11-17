@@ -5,12 +5,6 @@
 
 #define PROJECT_BASE_DIR "@CMAKE_SOURCE_DIR@/"
 
-#if judge
-	#define TESTFILE_PATH "testfile.txt"
-#else
-	#define TESTFILE_PATH PROJECT_BASE_DIR "test/testfile1"
-#endif /* judge */
-
 #define COMPILER_VERSION_MAJOR @Compiler_VERSION_MAJOR@
 #define COMPILER_VERSION_MINOR @Compiler_VERSION_MINOR@
 

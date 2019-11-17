@@ -5,11 +5,10 @@
     > Created Time: Mon Sep 30 08:18:53 2019
  **********************************************/
 
-#include "../include/lexer.h"
+#include "../include/Lexer.h"
 #include "../include/Symbol.h"
 
 #include "basics.h"
-using lexer::getsym;
 
 namespace {
 	// template para : type of desired and oppo symbol
@@ -26,7 +25,7 @@ namespace {
 		}
 		result = sym.numIs(desired);
 		if (result || sym.numIs(oppo)) {
-			getsym();
+			Lexer::getsym();
 			return true;
 		} else { return false; }
 	}

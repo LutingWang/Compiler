@@ -35,19 +35,9 @@ namespace error {
 
 	class Ueof : public std::exception {};
 
-	namespace {
-#ifdef ASSERT_DELIM
-	#error macro conflict
-#endif /* ASSERT_DELIM */
-#define ASSERT_DELIM(s) inline void assertSymIs##s(void) {				\
-	if (sym.is(symbol::Type::DELIM, symbol::s)) { lexer::getsym(); }	\
-	else { raise(Code::MISSING_##s); }									\
-}
-		ASSERT_DELIM(SEMICN)
-		ASSERT_DELIM(RPARENT)
-		ASSERT_DELIM(RBRACK)
-#undef ASSERT_DELIM
-	}
+	void assertSymIsSEMICN(void);
+	void assertSymIsRPARENT(void);
+	void assertSymIsRBRACK(void);
 }
 
 #endif /* ERRORS_H */

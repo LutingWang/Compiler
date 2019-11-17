@@ -9,6 +9,7 @@
 #include "compilerConfig.h"
 
 #include "./include/errors.h"
+#include "./include/Lexer.h"
 #include "./include/InputFile.h"
 
 extern std::ofstream error_output;
@@ -21,13 +22,13 @@ void error::raise(Code c) {
 	switch (c) {
 #if judge
 	#define CASE(id, msg) case Code::id:	\
-		error_output << input.line() << ' '	\
+		error_output << Lexer::input().line() << ' '	\
 			<< (char) ((int) c + 'a')		\
 			<< std::endl;					\
 		break
 #else
 	#define CASE(id, msg) case Code::id:	\
-		error_output << input.line()		\
+		error_output << Lexer::input().line()		\
 			<< ": " #msg << std::endl;		\
 		break
 #endif /* CASE */
@@ -53,7 +54,7 @@ void error::raise(Code c) {
 		break
 #else
 	#define CASE(id, msg) case Code::id:	\
-		error_output << sym.lastLine		\
+		error_output << sym.lastLine()		\
 			<< ": " #msg << std::endl;		\
 		break
 #endif /* CASE */
@@ -64,6 +65,15 @@ void error::raise(Code c) {
 	CASE(MISSING_WHILE, missing while in do-while statment);
 #undef CASE
 
-	default: error_output << input.line() << ": unknown error" << std::endl;
+    default: error_output << Lexer::input().line() << ": unknown error" << std::endl;
 	}
 }
+
+#define ASSERT_DELIM(s) void error::assertSymIs##s(void) {				\
+	if (sym.is(symbol::Type::DELIM, symbol::s)) { Lexer::getsym(); }	\
+	else { raise(Code::MISSING_##s); }									\
+}
+	ASSERT_DELIM(SEMICN)
+	ASSERT_DELIM(RPARENT)
+	ASSERT_DELIM(RBRACK)
+#undef ASSERT_DELIM
