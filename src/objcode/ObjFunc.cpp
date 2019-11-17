@@ -129,9 +129,9 @@ namespace {
             std::vector<bool>& write,
             std::vector<bool>& mask,
             const MidCode& midcode) {
-        switch (midcode.instr) {
+        switch (midcode.instr()) {
 #define PUSH(t, w, m) \
-            _seq.push_back(midcode.t); \
+            _seq.push_back(midcode.t()); \
             write.push_back(w); \
             mask.push_back(m)
 
@@ -143,12 +143,12 @@ namespace {
         CASE(LOAD_IND):
             PUSH(t2, false, false);
             PUSH(t0, true, false);
-            arrays.insert(midcode.t1);
+            arrays.insert(midcode.t1());
             break;
         CASE(STORE_IND):
             PUSH(t2, false, false);
             PUSH(t1, false, false);
-            arrays.insert(midcode.t0);
+            arrays.insert(midcode.t0());
             break;
         CASE(ASSIGN):
             PUSH(t1, false, false);
@@ -158,10 +158,10 @@ namespace {
             PUSH(t1, false, false);
             break;
         CASE(CALL):
-            if (midcode.t0 != nullptr) { PUSH(t0, true, false); }
+            if (midcode.t0() != nullptr) { PUSH(t0, true, false); }
             break;
         CASE(RET):
-            if (midcode.t1 != nullptr) { PUSH(t1, false, false); }
+            if (midcode.t1() != nullptr) { PUSH(t1, false, false); }
             break;
         CASE(INPUT):
             PUSH(t0, true, false);
@@ -175,7 +175,7 @@ namespace {
             break;
         CASE(BEQ): CASE(BNE):
             PUSH(t1, false, false);
-            if (midcode.t2 != nullptr) { PUSH(t2, false, true); }
+            if (midcode.t2() != nullptr) { PUSH(t2, false, true); }
             break;
         default: break;
 #undef PUSH
@@ -207,19 +207,19 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
             GEN(sw, t1, Reg::sp, noreg, (i - argNum) * 4, nolab);
         }
         
-        GEN(jal, noreg, noreg, noreg, noimm, basicblock.midcodes().back()->t3);
+        GEN(jal, noreg, noreg, noreg, noimm, basicblock.midcodes().back()->labelName());
         
         _stackframe->load(Reg::ra);
         for (Reg a : reg::a) {
             _stackframe->load(a);
         }
         
-        if (basicblock.midcodes().back()->t0 != nullptr) {
+        if (basicblock.midcodes().back()->t0() != nullptr) {
             t0 = REQ;
             GEN(move, t0, Reg::v0, noreg, noimm, nolab);
         }
     } else for (auto& midcode : basicblock.midcodes()){
-        switch (midcode->instr) {
+        switch (midcode->instr()) {
         CASE(ADD):
             t1 = REQ;
             t2 = REQ;
@@ -249,14 +249,14 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
             GEN(sll, Reg::t8, t2, noreg, 2, nolab);
             GEN(add, Reg::t8, Reg::t8, Reg::sp, noimm, nolab);
             t0 = REQ;
-            GEN(lw, t0, Reg::t8, noreg, (*_stackframe)[midcode->t1], nolab);
+            GEN(lw, t0, Reg::t8, noreg, (*_stackframe)[midcode->t1()], nolab);
             break;
         CASE(STORE_IND):
             t2 = REQ;
             GEN(sll, Reg::t8, t2, noreg, 2, nolab);
             GEN(add, Reg::t8, Reg::t8, Reg::sp, noimm, nolab);
             t1 = REQ;
-            GEN(sw, t1, Reg::t8, noreg, (*_stackframe)[midcode->t0], nolab);
+            GEN(sw, t1, Reg::t8, noreg, (*_stackframe)[midcode->t0()], nolab);
             break;
         CASE(ASSIGN):
             t1 = REQ;
@@ -266,7 +266,7 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
         CASE(PUSH_ARG): CASE(CALL):
             assert(0);
         CASE(RET):
-            if (midcode->t1 != nullptr) {
+            if (midcode->t1() != nullptr) {
                 t1 = REQ;
                 GEN(move, Reg::v0, t1, noreg, noimm, nolab);
             }
@@ -275,14 +275,14 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
             GEN(jr, Reg::ra, noreg, noreg, noimm, nolab);
             return;
         CASE(INPUT):
-            GEN(li, Reg::v0, noreg, noreg, midcode->t0->isInt() ? 5 : 12, nolab);
+            GEN(li, Reg::v0, noreg, noreg, midcode->t0()->isInt() ? 5 : 12, nolab);
             GEN(syscall, noreg, noreg, noreg, noimm, nolab);
             t0 = REQ;
             GEN(move, t0, Reg::v0, noreg, noimm, nolab);
             break;
         CASE(OUTPUT_STR):
             GEN(move, Reg::t8, Reg::a0, noreg, noimm, nolab);
-            GEN(la, Reg::a0, noreg, noreg, noimm,  strpool[midcode->t3]);
+            GEN(la, Reg::a0, noreg, noreg, noimm,  strpool[midcode->labelName()]);
             GEN(li, Reg::v0, noreg, noreg, 4, nolab);
             GEN(syscall, noreg, noreg, noreg, noimm, nolab);
             GEN(move, Reg::a0, Reg::t8, noreg, noimm, nolab);
@@ -290,7 +290,7 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
         CASE(OUTPUT_SYM):
             t1 = REQ;
             GEN(move, Reg::a0, t1, noreg, noimm, nolab);
-            GEN(li, Reg::v0, noreg, noreg, midcode->t1->isInt() ? 1 : 11, nolab);
+            GEN(li, Reg::v0, noreg, noreg, midcode->t1()->isInt() ? 1 : 11, nolab);
             GEN(syscall, noreg, noreg, noreg, noimm, nolab);
             GEN(move, Reg::a0, Reg::t8, noreg, noimm, nolab);
             break;
@@ -298,54 +298,54 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
             t1 = REQ;
             t2 = REQ;
             _regpool->clear(*_stackframe);
-            GEN(bgt, noreg, t1, t2, noimm, midcode->t3);
+            GEN(bgt, noreg, t1, t2, noimm, midcode->labelName());
             return;
         CASE(BGE):
             t1 = REQ;
             t2 = REQ;
             _regpool->clear(*_stackframe);
-            GEN(bge, noreg, t1, t2, noimm, midcode->t3);
+            GEN(bge, noreg, t1, t2, noimm, midcode->labelName());
             return;
         CASE(BLT):
             t1 = REQ;
             t2 = REQ;
             _regpool->clear(*_stackframe);
-            GEN(blt, noreg, t1, t2, noimm, midcode->t3);
+            GEN(blt, noreg, t1, t2, noimm, midcode->labelName());
             return;
         CASE(BLE):
             t1 = REQ;
             t2 = REQ;
             _regpool->clear(*_stackframe);
-            GEN(ble, noreg, t1, t2, noimm, midcode->t3);
+            GEN(ble, noreg, t1, t2, noimm, midcode->labelName());
             return;
         CASE(BEQ):
             t1 = REQ;
-            if (midcode->t2 == nullptr) {
+            if (midcode->t2() == nullptr) {
                 _regpool->clear(*_stackframe);
-                GEN(beqz, noreg, t1, noreg, noimm, midcode->t3);
+                GEN(beqz, noreg, t1, noreg, noimm, midcode->labelName());
             } else {
                 t2 = REQ;
                 _regpool->clear(*_stackframe);
-                GEN(beq, noreg, t1, t2, noimm, midcode->t3);
+                GEN(beq, noreg, t1, t2, noimm, midcode->labelName());
             }
             return;
         CASE(BNE):
             t1 = REQ;
-            if (midcode->t2 == nullptr) {
+            if (midcode->t2() == nullptr) {
                 _regpool->clear(*_stackframe);
-                GEN(bnez, noreg, t1, noreg, noimm, midcode->t3);
+                GEN(bnez, noreg, t1, noreg, noimm, midcode->labelName());
             } else {
                 t2 = REQ;
                 _regpool->clear(*_stackframe);
-                GEN(bne, noreg, t1, t2, noimm, midcode->t3);
+                GEN(bne, noreg, t1, t2, noimm, midcode->labelName());
             }
             return;
         CASE(GOTO):
             _regpool->clear(*_stackframe);
-            GEN(j, noreg, noreg, noreg, noimm, midcode->t3);
+            GEN(j, noreg, noreg, noreg, noimm, midcode->labelName());
             return;
         CASE(LABEL):
-            GEN(label, noreg, noreg, noreg, noimm, midcode->t3);
+            GEN(label, noreg, noreg, noreg, noimm, midcode->labelName());
             break;
         default: assert(0);
         }

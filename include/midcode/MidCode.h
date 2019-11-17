@@ -15,10 +15,7 @@ namespace symtable {
 	class FuncTable;
 }
 
-class Optim;
-
 class MidCode {
-	friend class Optim;
 public:
 	enum class Instr {
 		ADD,		// t0 = t1 + t2
@@ -48,30 +45,42 @@ public:
 	};
 
 private:
+	const Instr _instr;			// operation
+	const symtable::Entry* const _t0;	// result variable
+	const symtable::Entry* const _t1;	// operand1
+	const symtable::Entry* const _t2;	// operand2
+	const std::string* _t3;		// label name
+public:
+	Instr instr(void) const;
+	const symtable::Entry* t0(void) const;
+	const symtable::Entry* t1(void) const;
+	const symtable::Entry* t2(void) const;
+	const std::string& labelName(void) const;
+
+private:
 	MidCode(const Instr, 
 			const symtable::Entry* const, 
 			const symtable::Entry* const, 
 			const symtable::Entry* const, 
-			const std::string&);
+			const std::string* const);
 public:
 	~MidCode(void);
 
-public:
-	const Instr instr;			// operation
-	const symtable::Entry* const t0;	// result variable
-	const symtable::Entry* const t1;	// operand1
-	const symtable::Entry* const t2;	// operand2
-	const std::string t3;		// label name
-
 	bool is(const Instr) const;
-	// TODO: make all t's private
-	const std::string& labelName(void) const;
+
+private:
+	static void _gen(const MidCode* const);
+public:
+	static void gen(const Instr, 
+			const symtable::Entry* const, 
+			const symtable::Entry* const, 
+			const symtable::Entry* const);
 
 	static void gen(const Instr, 
 			const symtable::Entry* const, 
 			const symtable::Entry* const, 
 			const symtable::Entry* const, 
-			const std::string& = "");
+			const std::string&);
 
 	// naming convension:
 	//     #1		- temporary variable
@@ -83,9 +92,7 @@ public:
 	static std::string genLabel(void);
 
 private:
-	void print(void) const;
-	static void print(const symtable::Entry* const); // if `judge` is off, print nothing
-	static void print(const symtable::FuncTable* const);
+	void _print(void) const;
 public:
 	static void output(void);
 };

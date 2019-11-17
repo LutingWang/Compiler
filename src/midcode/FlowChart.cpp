@@ -44,7 +44,7 @@ void FlowChart::_init(const symtable::FuncTable* const functable) {
     //         2. a goto statement
     std::set<int> entrances;
     for (int i = 0; i < midcodes.size(); i++) {
-        switch (midcodes[i]->instr) {
+        switch (midcodes[i]->instr()) {
         case MidCode::Instr::PUSH_ARG:
         case MidCode::Instr::CALL:
             entrances.insert(i);
@@ -93,7 +93,7 @@ void FlowChart::_init(const symtable::FuncTable* const functable) {
     _tail = new BasicBlock();
     for (int i = 0; i < blocks().size(); i++) {
         const MidCode* exitcode = blocks()[i]->midcodes().back();
-        switch (exitcode->instr) {
+        switch (exitcode->instr()) {
         case MidCode::Instr::RET:
             blocks()[i]->_proceed(_tail);
             break;
