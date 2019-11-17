@@ -20,12 +20,12 @@ namespace symtable {
 class Action;
 
 class Simulator {
-	const std::vector<symtable::Entry*>& _reg_a;
-	const std::vector<symtable::Entry*>& _reg_s;
-	std::vector<symtable::Entry*> _reg_t;
+	const std::vector<const symtable::Entry*>& _reg_a;
+	const std::vector<const symtable::Entry*>& _reg_s;
+	std::vector<const symtable::Entry*> _reg_t;
 	std::vector<bool> _dirty;
 
-	const std::vector<symtable::Entry*> _seq;
+	const std::vector<const symtable::Entry*> _seq;
 	int _counter = 0;
 
 	// The first part of `_actions` consists of operations
@@ -34,9 +34,9 @@ class Simulator {
 	// that the basic block can exit safely.
 	std::vector<Action*>& _actions;
 public:
-	Simulator(const std::vector<symtable::Entry*>& reg_a, 
-			const std::vector<symtable::Entry*>& reg_s, 
-			const std::vector<symtable::Entry*>& _seq, 
+	Simulator(const std::vector<const symtable::Entry*>& reg_a, 
+			const std::vector<const symtable::Entry*>& reg_s, 
+			const std::vector<const symtable::Entry*>& _seq, 
 			std::vector<Action*>& actions);
 
 	void request(bool write, bool mask);

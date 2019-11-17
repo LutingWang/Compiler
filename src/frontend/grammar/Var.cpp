@@ -7,9 +7,11 @@
 
 #include <cassert>
 #include <string>
-#include "compiler.h"
-#include "error.h"
-#include "symtable.h"
+#include "symtable/table.h"
+#include "symtable/SymTable.h"
+
+#include "../include/errors.h"
+#include "../include/lexer.h"
 
 #include "basics.h"
 
@@ -22,7 +24,7 @@ unsigned int Var::index(void) {
 	assert(sym.is(symbol::Type::DELIM, symbol::LBRACK)); // ensured by outer function
 	getsym();
 	assert(sym.is(symbol::Type::INTCON));
-	unsigned int result = sym.num;
+	const unsigned int result = sym.num;
 	getsym();
 	error::assertSymIsRBRACK();
 	return result;
@@ -34,7 +36,7 @@ unsigned int Var::index(void) {
 // output : returned normally or as a result of traceback
 bool Var::def(const bool isInt) {
 	if (!sym.is(symbol::Type::IDENFR)) { return false; }
-	symbol::Symbol lastSymbol = sym;
+	const symbol::Symbol lastSymbol = sym;
 	getsym();
 	if (!sym.is(symbol::Type::DELIM)) {
 		lexer::traceback(lastSymbol);
@@ -43,9 +45,9 @@ bool Var::def(const bool isInt) {
 
 	std::string idenName = lastSymbol.str;
 	if (sym.numIs(symbol::LBRACK)) {
-		table.pushSym(idenName, false, isInt, index()); 
+        SymTable::getTable().curTable().pushArray(idenName, isInt, index());
 	} else if (sym.numIs(symbol::COMMA|symbol::SEMICN)) {
-		table.pushSym(idenName, false, isInt);
+        SymTable::getTable().curTable().pushVar(idenName, isInt);
 	} else {
 		lexer::traceback(lastSymbol);
 		return false;
@@ -58,8 +60,11 @@ bool Var::def(const bool isInt) {
 		idenName = sym.str;
 		getsym();
 		assert(sym.is(symbol::Type::DELIM));
-		if (sym.numIs(symbol::LBRACK)) { table.pushSym(idenName, false, isInt, index()); } 
-		else { table.pushSym(idenName, false, isInt); }
+		if (sym.numIs(symbol::LBRACK)) {
+            SymTable::getTable().curTable().pushArray(idenName, isInt, index());
+        } else {
+            SymTable::getTable().curTable().pushVar(idenName, isInt);
+        }
 	}
 	return true;
 }

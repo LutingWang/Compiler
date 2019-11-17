@@ -5,17 +5,46 @@
     > Created Time: Fri Nov  8 09:40:40 2019
  **********************************************/
 
+#include <cassert>
 #include <set>
 #include <vector>
-#include "midcode.h"
+#include "midcode/MidCode.h"
+#include "midcode/BasicBlock.h"
 
-BasicBlock::BasicBlock(const std::vector<MidCode*>& midcodes) : midcodes(midcodes) {}
+const std::vector<const MidCode*>& BasicBlock::midcodes(void) const {
+    return _midcodes;
+}
 
-void BasicBlock::proceed(BasicBlock* const successor) {
-	succ.insert(successor);
-	successor->prec.insert(this);
+bool BasicBlock::dirty(void) const {
+    return _dirty;
+}
+
+BasicBlock::BasicBlock(void) {}
+
+BasicBlock::BasicBlock(const std::vector<const MidCode*>::const_iterator first,
+        const std::vector<const MidCode*>::const_iterator last) :
+    _midcodes(first, last) {}
+
+BasicBlock::~BasicBlock(void) {
+    assert(!_dirty);
+}
+
+void BasicBlock::_proceed(BasicBlock* const successor) {
+	_succ.insert(successor);
+	successor->_prec.insert(this);
+}
+
+void BasicBlock::_unlink(void) {
+    assert(isolated());
+    for (auto successor : _succ) {
+        successor->_prec.erase(this);
+    }
 }
 
 bool BasicBlock::isFuncCall(void) const {
-	return midcodes.back()->instr == MidCode::Instr::CALL;
+	return _midcodes.back()->is(MidCode::Instr::CALL);
+}
+
+bool BasicBlock::isolated(void) const {
+    return _prec.empty();
 }

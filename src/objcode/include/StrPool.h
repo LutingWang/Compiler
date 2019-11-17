@@ -12,10 +12,7 @@
 #include <string>
 
 class StrPool {
-	std::map<std::string, std::string> _pool = {
-		{ "", "str_0" },
-		{ "\\n", "str_1" }
-	};
+	std::map<std::string, std::string> _pool;
 
 	bool _contains(const std::string&) const;
 

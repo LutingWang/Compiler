@@ -4,7 +4,12 @@
 #define judge 0
 
 #define PROJECT_BASE_DIR "@CMAKE_SOURCE_DIR@/"
-#define PROJECT_SRC_DIR PROJECT_BASE_DIR "src/"
+
+#if judge
+	#define TESTFILE_PATH "testfile.txt"
+#else
+	#define TESTFILE_PATH PROJECT_BASE_DIR "test/testfile1"
+#endif /* judge */
 
 #define COMPILER_VERSION_MAJOR @Compiler_VERSION_MAJOR@
 #define COMPILER_VERSION_MINOR @Compiler_VERSION_MINOR@

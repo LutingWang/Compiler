@@ -24,11 +24,11 @@ namespace symtable {
 // different meanings. Check the source code for 
 // further information.
 class Expr {
-	static symtable::Entry* factor(void);
-	static symtable::Entry* item(void);
+	static const symtable::Entry* factor(void);
+	static const symtable::Entry* item(void);
 public:
 	static bool integer(int&);
-	static symtable::Entry* expr(void);
+	static const symtable::Entry* expr(void);
 };
 
 #endif /* EXPR_H */

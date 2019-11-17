@@ -14,6 +14,7 @@
 
 namespace symtable {
 	class Entry;
+	class FuncTable;
 }
 
 class MidCode;
@@ -27,25 +28,21 @@ class ObjFunc {
 	static std::map<std::string, ObjFunc*> _func;
 public:
 	static void init(void);
-
 	static void output(void);
-
 	static void deinit(void);
 
 private:
 	RegPool* _regpool = nullptr;
 	StackFrame* _stackframe = nullptr;
-
-	std::set<symtable::Entry*> _storage;
-
+	std::set<const symtable::Entry*> _storage;
 	std::vector<ObjCode> _objcodes;
 
-	void _compileBlock(const BasicBlock&);
 public:
-	ObjFunc(const std::vector<MidCode*>&, 
-			const std::vector<symtable::Entry*>&);
-
+	ObjFunc(const symtable::FuncTable* const);
 	~ObjFunc(void);
+
+private:
+	void _compileBlock(const BasicBlock&);
 };
 
 #endif /* OBJ_FUNC_H */

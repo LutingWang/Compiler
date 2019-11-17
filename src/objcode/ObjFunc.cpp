@@ -10,8 +10,12 @@
 #include <fstream>
 #include <set>
 #include <string>
-#include "midcode.h"
-#include "symtable.h"
+#include "midcode/MidCode.h"
+#include "midcode/BasicBlock.h"
+#include "midcode/FlowChart.h"
+#include "symtable/table.h"
+#include "symtable/Entry.h"
+#include "symtable/SymTable.h"
 
 #include "./include/ObjCode.h"
 #include "./include/RegPool.h"
@@ -24,9 +28,9 @@ std::map<std::string, ObjFunc*> ObjFunc::_func;
 
 void ObjFunc::init(void) {
     std::set<const symtable::FuncTable*> funcs;
-    table.funcs(funcs);
+    SymTable::getTable().funcs(funcs);
     for (auto& functable : funcs) {
-        _func[functable->name()] = new ObjFunc(functable->midcodes(), functable->argList());
+        _func[functable->name()] = new ObjFunc(functable);
     }
 }
 
@@ -85,23 +89,8 @@ void ObjFunc::deinit(void) {
 // |            |                   | syscall           |
 // |            |                   | move t0, v0       |
 // | ---------- | ----------------- | ----------------- |
-// | OUTPUT     | printf(t3, t1)    | move t8, a0       |
+// | OUTPUT_STR | printf(t3)        | move t8, a0       |
 // |            |                   | la a0, t3         |
-// |            |                   | li v0, 4          |
-// |            |                   | syscall           |
-// |            |                   | move a0, t1       |
-// |            |                   | li v0, 1          |
-// |            |                   | syscall           |
-// |            |                   | la a0, "\n"       |
-// |            |                   | li v0, 4          |
-// |            |                   | syscall           |
-// |            |                   | move a0, t8       |
-// |            | ----------------- | ----------------- |
-// |            | printf(t3)        | move t8, a0       |
-// |            |                   | la a0, t3         |
-// |            |                   | li v0, 4          |
-// |            |                   | syscall           |
-// |            |                   | la a0, "\n"       |
 // |            |                   | li v0, 4          |
 // |            |                   | syscall           |
 // |            |                   | move a0, t8       |
@@ -109,9 +98,6 @@ void ObjFunc::deinit(void) {
 // |            | printf(t1)        | move t8, a0       |
 // |            |                   | move a0, t1       |
 // |            |                   | li v0, 1          |
-// |            |                   | syscall           |
-// |            |                   | la a0, "\n"       |
-// |            |                   | li v0, 4          |
 // |            |                   | syscall           |
 // |            |                   | move a0, t8       |
 // | ---------- | ----------------- | ----------------- |
@@ -138,8 +124,8 @@ void ObjFunc::deinit(void) {
 
 #define CASE(id) case MidCode::Instr::id
 namespace {
-    void requiredSyms(std::vector<symtable::Entry*>& _seq,
-            std::set<symtable::Entry*>& arrays,
+    void requiredSyms(std::vector<const symtable::Entry*>& _seq,
+            std::set<const symtable::Entry*>& arrays,
             std::vector<bool>& write,
             std::vector<bool>& mask,
             const MidCode& midcode) {
@@ -180,8 +166,8 @@ namespace {
         CASE(INPUT):
             PUSH(t0, true, false);
             break;
-        CASE(OUTPUT):
-            if (midcode.t1 != nullptr) { PUSH(t1, false, false); }
+        CASE(OUTPUT_SYM):
+            PUSH(t1, false, false);
             break;
         CASE(BGT): CASE(BGE): CASE(BLT): CASE(BLE):
             PUSH(t1, false, false);
@@ -211,7 +197,7 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
         }
         _stackframe->store(Reg::ra);
         
-        int argNum = basicblock.midcodes.size() - 1;
+        int argNum = basicblock.midcodes().size() - 1;
         for (int i = 0; i < argNum && i < 4; i++) {
             t1 = REQ;
             GEN(move, reg::a[i], t1, noreg, noimm, nolab);
@@ -221,18 +207,18 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
             GEN(sw, t1, Reg::sp, noreg, (i - argNum) * 4, nolab);
         }
         
-        GEN(jal, noreg, noreg, noreg, noimm, basicblock.midcodes.back()->t3);
+        GEN(jal, noreg, noreg, noreg, noimm, basicblock.midcodes().back()->t3);
         
         _stackframe->load(Reg::ra);
         for (Reg a : reg::a) {
             _stackframe->load(a);
         }
         
-        if (basicblock.midcodes.back()->t0 != nullptr) {
+        if (basicblock.midcodes().back()->t0 != nullptr) {
             t0 = REQ;
             GEN(move, t0, Reg::v0, noreg, noimm, nolab);
         }
-    } else for (auto& midcode : basicblock.midcodes){
+    } else for (auto& midcode : basicblock.midcodes()){
         switch (midcode->instr) {
         CASE(ADD):
             t1 = REQ;
@@ -289,26 +275,22 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
             GEN(jr, Reg::ra, noreg, noreg, noimm, nolab);
             return;
         CASE(INPUT):
-            GEN(li, Reg::v0, noreg, noreg, midcode->t0->isInt ? 5 : 12, nolab);
+            GEN(li, Reg::v0, noreg, noreg, midcode->t0->isInt() ? 5 : 12, nolab);
             GEN(syscall, noreg, noreg, noreg, noimm, nolab);
             t0 = REQ;
             GEN(move, t0, Reg::v0, noreg, noimm, nolab);
             break;
-        CASE(OUTPUT):
+        CASE(OUTPUT_STR):
             GEN(move, Reg::t8, Reg::a0, noreg, noimm, nolab);
-            if (midcode->t3 != "") {
-                GEN(la, Reg::a0, noreg, noreg, noimm,  strpool[midcode->t3]);
-                GEN(li, Reg::v0, noreg, noreg, 4, nolab);
-                GEN(syscall, noreg, noreg, noreg, noimm, nolab);
-            }
-            if (midcode->t1 != nullptr) {
-                t1 = REQ;
-                GEN(move, Reg::a0, t1, noreg, noimm, nolab);
-                GEN(li, Reg::v0, noreg, noreg, midcode->t1->isInt ? 1 : 11, nolab);
-                GEN(syscall, noreg, noreg, noreg, noimm, nolab);
-            }
-            GEN(la, Reg::a0, noreg, noreg, noimm,  strpool["\\n"]);
+            GEN(la, Reg::a0, noreg, noreg, noimm,  strpool[midcode->t3]);
             GEN(li, Reg::v0, noreg, noreg, 4, nolab);
+            GEN(syscall, noreg, noreg, noreg, noimm, nolab);
+            GEN(move, Reg::a0, Reg::t8, noreg, noimm, nolab);
+            break;
+        CASE(OUTPUT_SYM):
+            t1 = REQ;
+            GEN(move, Reg::a0, t1, noreg, noimm, nolab);
+            GEN(li, Reg::v0, noreg, noreg, midcode->t1->isInt() ? 1 : 11, nolab);
             GEN(syscall, noreg, noreg, noreg, noimm, nolab);
             GEN(move, Reg::a0, Reg::t8, noreg, noimm, nolab);
             break;
@@ -374,24 +356,26 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
 }
 #undef CASE
 
-ObjFunc::ObjFunc(const std::vector<MidCode*>& midcodes, 
-		const std::vector<symtable::Entry*>& args) {
+ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
+	auto& args = functable->argList();
+	auto& midcodes = functable->midcodes();
+
 	// initialize flow chart
-	FlowChart flowchart(midcodes);
+	FlowChart flowchart(functable);
 
 	// initialize register pool
-	std::vector<symtable::Entry*> reg_a(4, nullptr);
+	std::vector<const symtable::Entry*> reg_a(4, nullptr);
 	for (int i = 0; i < args.size() && i < 4; i++) {
 		reg_a[i] = args[i];
 	}
     _regpool = new RegPool(midcodes, reg_a);
 
 	// simulate temporary register allocation
-	for (auto& basicblock : flowchart.blocks) {
-		std::vector<symtable::Entry*> _seq;
+	for (auto& basicblock : flowchart.blocks()) {
+		std::vector<const symtable::Entry*> _seq;
 		std::vector<bool> write;
 		std::vector<bool> mask;
-		for (auto& midcode : basicblock->midcodes) {
+		for (auto& midcode : basicblock->midcodes()) {
 			requiredSyms(_seq, _storage, write, mask, *midcode);
 		}
 		_regpool->simulate(_seq, write, mask);
@@ -406,9 +390,8 @@ ObjFunc::ObjFunc(const std::vector<MidCode*>& midcodes,
 
     // prologue
 	_objcodes.emplace_back(ObjCode::Instr::subi, Reg::sp, Reg::sp, Reg::zero, _stackframe->size(), "");
-    
-    // jump the last empty block
-    for (auto& basicblock : flowchart.blocks) {
+
+    for (auto& basicblock : flowchart.blocks()) {
         _compileBlock(*basicblock);
     }
 }

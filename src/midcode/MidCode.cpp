@@ -12,13 +12,15 @@
 #include <string>
 #include "compilerConfig.h"
 #include "error.h"
-#include "midcode.h"
-#include "symtable.h"
+#include "midcode/MidCode.h"
+#include "symtable/table.h"
+#include "symtable/Entry.h"
+#include "symtable/SymTable.h"
 
 MidCode::MidCode(const Instr instr, 
-		symtable::Entry* const t0, 
-		symtable::Entry* const t1, 
-		symtable::Entry* const t2, 
+		const symtable::Entry* const t0,
+		const symtable::Entry* const t1,
+		const symtable::Entry* const t2,
 		const std::string& t3) : 
 	instr(instr), t0(t0), t1(t1), t2(t2), t3(t3) { 
 	int status = ((t0 != nullptr) << 3) 
@@ -49,8 +51,11 @@ MidCode::MidCode(const Instr instr,
 	case Instr::INPUT:
 		assert(status == 0b1000);
 		break;
-	case Instr::OUTPUT:
-		assert(status == 0b0101 || status == 0b0001 || status == 0b0100);
+	case Instr::OUTPUT_STR:
+        assert(status == 0b0001);
+        break;
+    case Instr::OUTPUT_SYM:
+		assert(status == 0b0100);
 		break;
 	case Instr::BGT:
 	case Instr::BGE:
@@ -71,6 +76,8 @@ MidCode::MidCode(const Instr instr,
 	}
 }
 
+MidCode::~MidCode(void) {}
+
 bool MidCode::is(const Instr instr) const {
 	return this->instr == instr;
 }
@@ -78,7 +85,8 @@ bool MidCode::is(const Instr instr) const {
 const std::string& MidCode::labelName(void) const {
 	switch (instr) {
 #define CASE(id) case Instr::id
-	CASE(CALL): CASE(OUTPUT):
+	CASE(CALL):
+    CASE(OUTPUT_STR): CASE(OUTPUT_SYM):
 	CASE(BGT): CASE(BGE):
 	CASE(BLT): CASE(BLE):
 	CASE(BEQ): CASE(BNE):
@@ -90,24 +98,28 @@ const std::string& MidCode::labelName(void) const {
 	return t3;
 }
 
-void MidCode::gen(const Instr instr, symtable::Entry* const t0, symtable::Entry* const t1, 
-			symtable::Entry* const t2, const std::string& t3) {
+void MidCode::gen(const Instr instr,
+        const symtable::Entry* const t0,
+        const symtable::Entry* const t1,
+        const symtable::Entry* const t2,
+        const std::string& t3) {
 	if (error::happened) { return; }
-	if (table.curFunc()->hasRet()) { return; }
-	if (instr == Instr::CALL && t3 == table.curFunc()->name()) {
-		table.curFunc()->_inline = false;
+	if (SymTable::getTable().curFunc().hasRet()) { return; }
+	if (instr == Instr::CALL && t3 == SymTable::getTable().curFunc().name()) {
+        SymTable::getTable().curFunc().setRecursive();
 	}
-	table.curFunc()->_midcode.push_back(new MidCode(instr, t0, t1, t2, t3));
+	SymTable::getTable().curFunc()._midcodes.push_back(new MidCode(instr, t0, t1, t2, t3));
 }
 
-symtable::Entry* MidCode::genVar(const bool isInt) {
+const symtable::Entry* MidCode::genVar(const bool isInt) {
 	static int counter = 1;
-	return table.curFunc()->push("#" + std::to_string(counter++), false, isInt);
+	return SymTable::getTable().curFunc().pushVar("#" + std::to_string(counter++), isInt);
 }
 
-symtable::Entry* MidCode::genConst(const bool isInt, const int value) {
+const symtable::Entry* MidCode::genConst(const bool isInt, const int value) {
 	std::string name = (isInt ? "int$" : "char$") + std::to_string(value);
-    return table.global().contains(name) ? table.global().find(name) : table._global.push(name, true, isInt, value);
+    return SymTable::getTable().global().contains(name) ? SymTable::getTable().global().find(name) :
+		SymTable::getTable().global().pushConst(name, isInt, value);
 }
 
 std::string MidCode::genLabel(void) {
@@ -170,15 +182,12 @@ void MidCode::print(void) const { // print this piece of mid code
 	case MidCode::Instr::INPUT:
 		midcode_output << "input " << t0->name();
 		break;
-	case MidCode::Instr::OUTPUT:
-		midcode_output << "output ";
-		if (t3 != "") {
-			midcode_output << '"' << t3 << "\" ";
-		}
-		if (t1 != nullptr) {
-			midcode_output << t1->name();
-		}
-		break;
+	case MidCode::Instr::OUTPUT_STR:
+		midcode_output << "output " << '"' << t3 << "\" ";
+        break;
+    case MidCode::Instr::OUTPUT_SYM:
+        midcode_output << "output " << t1->name();
+        break;
 
 #if judge
 	#define CASE(id, op) case MidCode::Instr::id:		\
@@ -225,7 +234,7 @@ void MidCode::print(void) const { // print this piece of mid code
 	midcode_output << std::endl;
 }
 
-void MidCode::print(symtable::Entry* const entry) {
+void MidCode::print(const symtable::Entry* const entry) {
 #if judge
 	if (entry == nullptr) { return; }
 	if (entry->isConst) {
@@ -267,7 +276,6 @@ void MidCode::print(const symtable::FuncTable* const functable) {
     functable->syms(syms);
 	for (auto& entry : syms) {
 		// exclude parameters
-		if (entry == nullptr) { continue; }
 		if (find(argv.begin(), argv.end(), entry) != argv.end()) { continue; }
 		print(entry);
 	}
@@ -279,15 +287,15 @@ void MidCode::print(const symtable::FuncTable* const functable) {
 }
 
 void MidCode::output(void) {
-    std::set<symtable::Entry*> globalSyms;
-    table.global().syms(globalSyms);
+    std::set<const symtable::Entry*> globalSyms;
+    SymTable::getTable().global().syms(globalSyms);
 	for (auto& entry : globalSyms) {
 		print(entry);
 	}
 	midcode_output << std::endl;
 
     std::set<const symtable::FuncTable*> funcs;
-    table.funcs(funcs);
+    SymTable::getTable().funcs(funcs);
 	for (auto& functable : funcs) {
 		print(functable);
 	}

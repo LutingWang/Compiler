@@ -30,7 +30,7 @@ class Stat {
 	static void read(void);
 	static void write(void);
 	static void ret(void);
-	static void assign(symtable::Entry* const);
+	static void assign(const symtable::Entry* const);
 	static bool stat(void);
 public:
 	// Since <block> can only show up in <func def>, it 

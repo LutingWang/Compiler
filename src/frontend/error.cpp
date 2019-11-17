@@ -7,8 +7,9 @@
 
 #include <fstream>
 #include "compilerConfig.h"
-#include "InputFile.h"
-#include "error.h"
+
+#include "./include/errors.h"
+#include "./include/InputFile.h"
 
 extern std::ofstream error_output;
 

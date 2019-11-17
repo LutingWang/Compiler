@@ -7,10 +7,13 @@
 
 #include <cassert>
 #include <vector>
-#include "compiler.h"
-#include "error.h"
-#include "midcode.h"
-#include "symtable.h"
+#include "midcode/MidCode.h"
+#include "symtable/table.h"
+#include "symtable/Entry.h"
+#include "symtable/SymTable.h"
+
+#include "../include/errors.h"
+#include "../include/lexer.h"
 
 #include "basics.h"
 #include "Expr.h"
@@ -24,12 +27,12 @@ void Func::args(void) {
 	bool isInt;
 	if (!basics::typeId(isInt)) { return; } // empty is allowed 
 	assert(sym.is(symbol::Type::IDENFR));
-	table.pushArg(sym.str, isInt);
+	SymTable::getTable().curFunc().pushArg(sym.str, isInt);
 	for (getsym(); sym.is(symbol::Type::DELIM, symbol::COMMA); getsym()) {
 		getsym();
 		assert(basics::typeId(isInt));
 		assert(sym.is(symbol::Type::IDENFR));
-		table.pushArg(sym.str, isInt);
+		SymTable::getTable().curFunc().pushArg(sym.str, isInt);
 	}
 }
 
@@ -51,16 +54,16 @@ void Func::dec(void) {
 			assert(sym.numIs(symbol::VOIDTK));
 			getsym();
 			if (!sym.is(symbol::Type::IDENFR)) { break; }
-			table.pushFunc(sym.str);
+			SymTable::getTable().pushFunc(sym.str);
 		} else {
 			assert(sym.is(symbol::Type::IDENFR));
-			table.pushFunc(sym.str, isInt);
+			SymTable::getTable().pushFunc(sym.str, isInt);
 		}
 		getsym();
 		def();
 	}
 	assert(sym.is(symbol::Type::RESERVED, symbol::MAINTK));
-	table.pushFunc();
+	SymTable::getTable().pushFunc();
 	getsym();
 	def();
 }
@@ -75,11 +78,11 @@ void Func::dec(void) {
 //
 // This function is obligated to check whether the arg values
 // match with the function declaration.
-symtable::Entry* Func::argValues(const symtable::FuncTable* const ft) { 
+const symtable::Entry* Func::argValues(const symtable::FuncTable* const functable) { 
 	assert(sym.is(symbol::Type::DELIM, symbol::LPARENT)); // ensured by outer function
 	getsym();
 
-	std::vector<symtable::Entry*> argv;
+	std::vector<const symtable::Entry*> argv;
 	if (!sym.is(symbol::Type::DELIM, symbol::RPARENT|symbol::SEMICN)) { // ')' might be missing
 		while (true) {
 			argv.push_back(Expr::expr());
@@ -89,18 +92,17 @@ symtable::Entry* Func::argValues(const symtable::FuncTable* const ft) {
 	}
 	error::assertSymIsRPARENT();
 
-	if (ft == nullptr) { 
-		error::raise(error::Code::NODEF); 
+	if (functable == nullptr) { 
 		return nullptr;
 	}
 
 	// check and push args
-	const std::vector<symtable::Entry*>& al = ft->argList();
-	if (argv.size() != al.size()) {
+	const std::vector<const symtable::Entry*>& arglist = functable->argList();
+	if (argv.size() != arglist.size()) {
 		error::raise(error::Code::MISMATCHED_ARG_NUM);
 	} else for (int i = 0; i < argv.size(); i++) {
-		assert(!al[i]->isConst); // ensured by symtable
-		if (argv[i]->isInt != al[i]->isInt) {
+		assert(!arglist[i]->isConst()); // ensured by symtable
+		if (argv[i]->isInt() != arglist[i]->isInt()) {
 			error::raise(error::Code::MISMATCHED_ARG_TYPE);
 			break;
 		}
@@ -108,8 +110,8 @@ symtable::Entry* Func::argValues(const symtable::FuncTable* const ft) {
 	}
 
 	// generate mid code
-	symtable::Entry* t0 = ft->isVoid ? nullptr : MidCode::genVar(ft->isInt);
-	MidCode::gen(MidCode::Instr::CALL, t0, nullptr, nullptr, ft->name());
+	const symtable::Entry* const t0 = functable->isVoid() ? nullptr : MidCode::genVar(functable->isInt());
+	MidCode::gen(MidCode::Instr::CALL, t0, nullptr, nullptr, functable->name());
 	return t0;
 }
 

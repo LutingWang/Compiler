@@ -2,18 +2,15 @@
     > File Name: error.h
     > Author: Luting Wang
     > Mail: 2457348692@qq.com 
-    > Created Time: Wed Oct  2 21:29:35 2019
+    > Created Time: Fri Nov 15 16:24:54 2019
  **********************************************/
+
+#ifdef ERRORS_H
+	#error global error.h cannot exist with local
+#endif /* ERRORS_H */
 
 #ifndef ERROR_H
 #define ERROR_H
-
-#include <exception>
-#include "Symbol.h"
-
-namespace lexer {
-	void getsym(void);
-}
 
 namespace error {
 	extern bool happened;
@@ -27,22 +24,6 @@ namespace error {
 	};
 
 	void raise(Code);
-
-	class Ueof : public std::exception {};
-
-	namespace {
-#ifdef ASSERT_DELIM
-	#error macro conflict
-#endif /* ASSERT_DELIM */
-#define ASSERT_DELIM(s) inline void assertSymIs##s(void) {				\
-	if (sym.is(symbol::Type::DELIM, symbol::s)) { lexer::getsym(); }	\
-	else { raise(Code::MISSING_##s); }									\
-}
-		ASSERT_DELIM(SEMICN)
-		ASSERT_DELIM(RPARENT)
-		ASSERT_DELIM(RBRACK)
-#undef ASSERT_DELIM
-	}
 }
 
 #endif /* ERROR_H */

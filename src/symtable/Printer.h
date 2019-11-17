@@ -8,6 +8,8 @@
 #ifndef PRINTER_H
 #define PRINTER_H
 
+#include <string>
+
 namespace symtable {
 	class Entry;
 	class Table;
@@ -15,7 +17,7 @@ namespace symtable {
 
 	class Printer {
 	public:
-		static void print(Entry&);
+		static void print(const Entry&);
 		static void print(const Table&);
 		static void print(const FuncTable&);
 	};

@@ -13,9 +13,9 @@
 
 #include "Simulator.h"
 
-Simulator::Simulator(const std::vector<symtable::Entry*>& reg_a,
-		const std::vector<symtable::Entry*>& reg_s, 
-		const std::vector<symtable::Entry*>& _seq, 
+Simulator::Simulator(const std::vector<const symtable::Entry*>& reg_a,
+		const std::vector<const symtable::Entry*>& reg_s, 
+		const std::vector<const symtable::Entry*>& _seq, 
 		std::vector<Action*>& actions) :
 	_reg_a(reg_a), 
 	_reg_s(reg_s), 
@@ -25,7 +25,7 @@ Simulator::Simulator(const std::vector<symtable::Entry*>& reg_a,
 	_actions(actions) {}
 
 void Simulator::request(bool write, bool mask) {
-    symtable::Entry* target = _seq[_counter];
+    const symtable::Entry* target = _seq[_counter];
 	_counter++;
 
 	// check a registers

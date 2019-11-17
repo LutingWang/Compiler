@@ -8,7 +8,9 @@
 #include <cassert>
 #include <set>
 #include <vector>
-#include "symtable.h"
+#include "symtable/table.h"
+#include "symtable/Entry.h"
+#include "symtable/SymTable.h"
 
 #include "../include/memory.h"
 
@@ -20,8 +22,8 @@ const Sbss* Sbss::global(void) {
 
 void Sbss::init(void) {
 	assert(_global == nullptr);
-	std::set<symtable::Entry*> globalSyms;
-	table.global().syms(globalSyms);
+	std::set<const symtable::Entry*> globalSyms;
+	SymTable::getTable().global().syms(globalSyms);
 	_global = new Sbss(globalSyms);
 }
 
@@ -34,21 +36,21 @@ int Sbss::size(void) const {
 	return _size;
 }
 
-Sbss::Sbss(const std::set<symtable::Entry*>& syms) {
+Sbss::Sbss(const std::set<const symtable::Entry*>& syms) {
 	for (auto& entry : syms) {
-		if (entry->isConst) { continue; }
+		if (entry->isConst()) { continue; }
 		if (global() != nullptr && // this may be the global
 				global()->contains(entry)) { continue; }
 		_syms[entry] = _size;
-		if (entry->value == -1) { _size += 4; } 
-		else { _size += entry->value * 4; }
+		if (!entry->isArray()) { _size += 4; } 
+		else { _size += entry->value() * 4; }
 	}
 }
 
-bool Sbss::contains(symtable::Entry* entry) const {
+bool Sbss::contains(const symtable::Entry* entry) const {
 	return _syms.count(entry);
 }
 
-int Sbss::locate(symtable::Entry* entry) const {
+int Sbss::locate(const symtable::Entry* entry) const {
 	return _syms.at(entry);
 }

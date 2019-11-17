@@ -26,8 +26,8 @@ class Action;
 
 class RegPool {
 	// global registers
-	std::vector<symtable::Entry*> _reg_a;
-	std::vector<symtable::Entry*> _reg_s;
+	std::vector<const symtable::Entry*> _reg_a;
+	std::vector<const symtable::Entry*> _reg_s;
 
 	// cached actions grouped by blocks
 	std::vector<std::vector<Action*>> _actionCache;
@@ -38,18 +38,18 @@ class RegPool {
 	void _execute(StackFrame&);
 public:
 	// assign global registers
-	RegPool(const std::vector<MidCode*>&, 
-			const std::vector<symtable::Entry*>& reg_a);
+	RegPool(const std::vector<const MidCode*>&, 
+			const std::vector<const symtable::Entry*>& reg_a);
     
     ~RegPool(void);
     
 	// simulate register assignment
-	void simulate(const std::vector<symtable::Entry*>&, 
+	void simulate(const std::vector<const symtable::Entry*>&, 
 			const std::vector<bool>& write, 
 			const std::vector<bool>& mask);
 
 	// which syms need to be stored in the stack
-	void storage(std::set<symtable::Entry*>&) const;
+	void storage(std::set<const symtable::Entry*>&) const;
 
 	// perform one operation and returns the register
 	Reg request(StackFrame&);

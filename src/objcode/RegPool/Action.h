@@ -19,10 +19,10 @@ namespace symtable {
 class Action {
 public:
 	const Reg reg;
-    symtable::Entry* const load; // sym to load to reg
-    symtable::Entry* const store; // sym to write back
+    const symtable::Entry* const load; // sym to load to reg
+    const symtable::Entry* const store; // sym to write back
 
-	Action(Reg reg, symtable::Entry* const load, symtable::Entry* const store) :
+	Action(Reg reg, const symtable::Entry* const load, const symtable::Entry* const store) :
 		reg(reg), load(load), store(store) {}
 };
 

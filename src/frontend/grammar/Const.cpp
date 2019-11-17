@@ -7,9 +7,11 @@
 
 #include <cassert>
 #include <string>
-#include "compiler.h"
-#include "error.h"
-#include "symtable.h"
+#include "symtable/table.h"
+#include "symtable/SymTable.h"
+
+#include "../include/errors.h"
+#include "../include/lexer.h"
 
 #include "basics.h"
 #include "Expr.h"
@@ -21,14 +23,13 @@ using lexer::getsym;
 void Const::def(void) {
 	// do not use `basics::typeId` or it will read a sym
 	assert(sym.is(symbol::Type::RESERVED, symbol::INTTK|symbol::CHARTK));
-	bool isInt = sym.numIs(symbol::INTTK); 
+	const bool isInt = sym.numIs(symbol::INTTK); 
 
 	// recursively identify identifier and its value
-	std::string idenName;
 	do {
 		getsym();
 		assert(sym.is(symbol::Type::IDENFR));
-		idenName = sym.str;
+		const std::string idenName = sym.str;
 
 		getsym();
 		assert(sym.is(symbol::Type::DELIM, symbol::ASSIGN));
@@ -44,7 +45,7 @@ void Const::def(void) {
 				getsym();
 			}
 		}
-		table.pushSym(idenName, true, isInt, num); 
+        SymTable::getTable().curTable().pushConst(idenName, isInt, num);
 	} while (sym.is(symbol::Type::DELIM, symbol::COMMA));
 }
 

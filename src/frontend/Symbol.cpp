@@ -6,7 +6,8 @@
  **********************************************/
 
 #include <typeinfo>
-#include "Symbol.h"
+
+#include "./include/Symbol.h"
 
 symbol::Symbol sym;
 

@@ -9,7 +9,6 @@
 #include <fstream>
 #include <map>
 #include <string>
-#include "symtable.h"
 
 #include "./include/ObjFunc.h"
 #include "./include/memory.h"
@@ -21,7 +20,6 @@ void mips::init(void) {
 	Sbss::init();
 	strpool.init();
     ObjFunc::init();
-	
 }
 
 void mips::deinit(void) {

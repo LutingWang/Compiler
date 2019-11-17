@@ -9,8 +9,9 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "symtable.h"
-#include "midcode.h"
+#include "symtable/table.h"
+#include "symtable/SymTable.h"
+#include "midcode/MidCode.h"
 
 #include "./include/StrPool.h"
 
@@ -32,10 +33,10 @@ void StrPool::_insert(const std::string& str) {
 
 void StrPool::init(void) {
 	std::set<const symtable::FuncTable*> funcs;
-	table.funcs(funcs);
+	SymTable::getTable().funcs(funcs);
 	for (auto& functable : funcs) {
 		for (auto& midcode : functable->midcodes()) {
-			if (midcode->is(MidCode::Instr::OUTPUT)) {
+			if (midcode->is(MidCode::Instr::OUTPUT_STR)) {
                 _insert(midcode->labelName());
 			}
 		}

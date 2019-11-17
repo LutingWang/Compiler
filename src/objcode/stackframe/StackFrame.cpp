@@ -10,7 +10,8 @@
 #include <map>
 #include <set>
 #include <vector>
-#include "symtable.h"
+#include "symtable/Entry.h"
+#include "symtable/SymTable.h"
 
 #include "../include/Reg.h"
 
@@ -18,8 +19,8 @@
 #include "../include/memory.h"
 
 StackFrame::StackFrame(std::vector<ObjCode>& output, 
-		std::vector<symtable::Entry*> argList, 
-		const std::set<symtable::Entry*>& syms) :
+		std::vector<const symtable::Entry*> argList, 
+		const std::set<const symtable::Entry*>& syms) :
 	Sbss(syms), _output(output) {
 
 	for (auto& entry : syms) {
@@ -39,7 +40,7 @@ int StackFrame::size(void) const {
 	return _size;
 }
 
-int StackFrame::operator [] (symtable::Entry* const entry) const {
+int StackFrame::operator [] (const symtable::Entry* const entry) const {
 	if (_args.count(entry)) { return _args.at(entry); }
 	if (contains(entry)) { return locate(entry); } 
 	else { return Sbss::global()->locate(entry); }
@@ -65,15 +66,15 @@ void StackFrame::_visit(const bool isLoad, const Reg reg) {
 			reg, Reg::sp, Reg::zero, operator[](reg), "");
 }
 
-void StackFrame::_visit(const bool isLoad, const Reg reg, symtable::Entry* const entry) {
+void StackFrame::_visit(const bool isLoad, const Reg reg, const symtable::Entry* const entry) {
     assert(entry != nullptr);
 	ObjCode::Instr instr = isLoad ? ObjCode::Instr::lw : ObjCode::Instr::sw;
 	Reg t1 = Reg::sp;
 	int imm;
-	if (entry->isConst) {
+	if (entry->isConst()) {
 		instr = ObjCode::Instr::li;
 		t1 = Reg::zero;
-		imm = entry->value;
+		imm = entry->value();
 	} else if (_args.count(entry)) {
 		imm = _args[entry];
 	} else if (contains(entry)) {
@@ -93,10 +94,10 @@ void StackFrame::load(Reg reg) {
    _visit(true, reg);
 }
 
-void StackFrame::store(Reg reg, symtable::Entry* const entry) {
+void StackFrame::store(Reg reg, const symtable::Entry* const entry) {
 	_visit(false, reg, entry);
 }
 
-void StackFrame::load(Reg reg, symtable::Entry* const entry) {
+void StackFrame::load(Reg reg, const symtable::Entry* const entry) {
 	_visit(true, reg, entry);
 }

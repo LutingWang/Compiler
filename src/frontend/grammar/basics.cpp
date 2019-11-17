@@ -5,8 +5,8 @@
     > Created Time: Mon Sep 30 08:18:53 2019
  **********************************************/
 
-#include "compiler.h"
-#include "Symbol.h"
+#include "../include/lexer.h"
+#include "../include/Symbol.h"
 
 #include "basics.h"
 using lexer::getsym;
@@ -19,7 +19,7 @@ namespace {
 	//		- oppo : undesired symbol
 	// output : whether the symbol is either desired or oppo
 	template<const symbol::Type type>
-	bool _template(bool& result, unsigned int desired, unsigned int oppo) {
+	bool _template(bool& result, const unsigned int desired, const unsigned int oppo) {
 		if (!sym.is(type)) { 
 			result = false;
 			return false; 

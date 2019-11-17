@@ -7,36 +7,39 @@
 
 #include <fstream>
 #include <iomanip>
-#include "symtable.h"
+#include "symtable/Entry.h"
+#include "symtable/table.h"
 
 #include "Printer.h"
 
 extern std::ofstream symtable_output;
 
-void symtable::Printer::print(Entry& e) {
-	symtable_output << std::setw(30) << typeid(e).name() << " : " 
-		<< std::setw(30) << e._name << '<';
-	if (e.isConst) {
+void symtable::Printer::print(const Entry& entry) {
+	symtable_output << std::setw(30) << typeid(entry).name() << " : "
+		<< std::setw(30) << entry.name() << '<';
+    if (entry.isInvalid()) {
+        symtable_output << "invalid";
+    } else if (entry.isConst()) {
 		symtable_output << "const ";
-		if (e.isInt) { symtable_output << "int("  << e.value << ')'; } 
-		else { symtable_output << "char('" << (char) e.value << "')"; }
+		if (entry.isInt()) { symtable_output << "int("  << entry.value() << ')'; }
+		else { symtable_output << "char('" << (char) entry.value() << "')"; }
 	} else {
-		symtable_output << (e.isInt ? "int" : "char");
-		if (e.value != -1) { symtable_output << '[' << e.value << ']'; }
+		symtable_output << (entry.isInt() ? "int" : "char");
+		if (entry.isArray()) { symtable_output << '[' << entry.value() << ']'; }
 	}
 	symtable_output << '>' << std::endl;
 }
 
-void symtable::Printer::print(const Table& t) {
-	symtable_output << std::setw(30) << typeid(t).name() << " : " 
-		<< std::setw(30) << t.name() << std::endl;
+void symtable::Printer::print(const Table& table) {
+	symtable_output << std::setw(30) << typeid(table).name() << " : "
+		<< std::setw(30) << table.name() << std::endl;
 }
 
-void symtable::Printer::print(const FuncTable& ft) {
-	symtable_output << std::setw(30) << typeid(ft).name() << " : " 
-		<< std::setw(30) << ft._name << '<';
-	if (ft.isVoid) { symtable_output << "void"; }
-	else if (ft.isInt) { symtable_output << "int"; }
+void symtable::Printer::print(const FuncTable& functable) {
+	symtable_output << std::setw(30) << typeid(functable).name() << " : "
+		<< std::setw(30) << functable.name() << '<';
+	if (functable.isVoid()) { symtable_output << "void"; }
+	else if (functable.isInt()) { symtable_output << "int"; }
 	else { symtable_output << "char"; }
 	symtable_output << '>' << std::endl;
 }

@@ -18,7 +18,7 @@ class Func {
 	static void def(void);
 public:
 	static void dec(void);
-	static symtable::Entry* argValues(const symtable::FuncTable* const);
+	static const symtable::Entry* argValues(const symtable::FuncTable* const);
 };
 
 #endif /* FUNC_H */

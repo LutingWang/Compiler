@@ -6,27 +6,18 @@
  **********************************************/
 
 #include <iostream>
+#include <fstream>
 #include <string>
-#include "compiler.h"
 #include "compilerConfig.h"
 #include "error.h"
-#include "midcode.h"
-#include "InputFile.h"
+#include "frontend.h"
+#include "midcode/MidCode.h"
 #include "mips.h"
 #include "Optim.h"
 using namespace std;
 
 // TODO: change midcode naming to avoid conflict
 // TODO: scan iterations, add comment of type
-
-// relative to this file, for debug use
-#define TESTFILE_PATH "../test/testfile1"
-
-#if judge
-InputFile input("testfile.txt");
-#else
-InputFile input(PROJECT_SRC_DIR TESTFILE_PATH);
-#endif /* judge */
 
 // Latent streams for corresponding classes to use.
 // Do not expose in the headers!
@@ -49,7 +40,7 @@ int main() {
 
 #define OPEN(id) if (OUTPUT_##id) {							\
 		id##_output.open(judge ? #id ".txt" :				\
-				PROJECT_SRC_DIR TESTFILE_PATH "." #id);		\
+				TESTFILE_PATH "." #id);		\
 		id##_output << std::left;							\
 	} else { id##_output.setstate(iostream::failbit); }
 
@@ -67,9 +58,9 @@ int main() {
 	MidCode::output();
 
 	// Optim::inlineExpan();
-	Optim::commonExprElim();
+	// Optim::commonExprElim();
 
-	MidCode::output();
+	// MidCode::output();
 
 	mips::init();
 	mips::output();

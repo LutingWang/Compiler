@@ -14,8 +14,6 @@
 class FlowChart;
 
 class Optim {
-	FlowChart* _mainFlow;
-
 	// <func name, func flow chart>
 	std::map<std::string, FlowChart*> _chart;
 

@@ -8,9 +8,11 @@
 #include <algorithm>
 #include <cassert>
 #include <vector>
-#include "compiler.h"
-#include "error.h"
-#include "InputFile.h"
+
+#include "./include/errors.h"
+#include "./include/InputFile.h"
+
+#include "./include/lexer.h"
 
 extern std::ofstream lexer_output;
 
