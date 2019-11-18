@@ -22,7 +22,7 @@ using namespace std;
 #if judge
 	#define TESTFILE_PATH "testfile.txt"
 #else
-	#define TESTFILE_PATH PROJECT_BASE_DIR "test/mips/instr/instr"
+	#define TESTFILE_PATH PROJECT_BASE_DIR "test/mips/integral/integral"
 #endif /* judge */
 
 // Latent streams for corresponding classes to use.

@@ -20,6 +20,7 @@ void printShift(int key,int s1,int s2){
 void printDefault(){
 	char c;
 	printShift(1,2,0);
+	c = 'd';
 	printf("abc", c);
 	return;
 }
