@@ -3,11 +3,13 @@ void func1() {
 }
 
 void func2(int a) {
-	printf(a);
+	int b, c;
+	scanf(a, b, c);
+	printf(a + b + c);
 }
 
 int func3(int a) {
-	printf("in");
+	printf ("in", a) ; printf ("def") ;
 	return(a);
 }
 

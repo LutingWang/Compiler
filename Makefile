@@ -2,7 +2,7 @@
 	cd ./build && \
 	cmake .. > log.txt
 
-.PHONY: run clean xcode
+.PHONY: run clean xcode test
 	
 rerun:
 	cd ./build && make clean

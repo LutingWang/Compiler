@@ -5,8 +5,10 @@ judge/
 include/compilerConfig.h
 test/**/*.error
 test/**/*.lexer
-test/**/*.grammar
 test/**/*.midcode
+test/**/*.mips
+test/**/*.out
+test/**/*.stat
 test/**/*.symtable
 
 .DS_Store
