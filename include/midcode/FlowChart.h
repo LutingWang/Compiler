@@ -29,9 +29,6 @@ public:
 	FlowChart(symtable::FuncTable* const);
 	~FlowChart(void);
 
-private:
-	bool _dirty(void) const;
-public:
 	void commit(void);
 };
 

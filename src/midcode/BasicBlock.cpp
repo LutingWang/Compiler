@@ -15,19 +15,13 @@ const std::vector<const MidCode*>& BasicBlock::midcodes(void) const {
     return _midcodes;
 }
 
-bool BasicBlock::dirty(void) const {
-    return _dirty;
-}
-
 BasicBlock::BasicBlock(void) {}
 
 BasicBlock::BasicBlock(const std::vector<const MidCode*>::const_iterator first,
         const std::vector<const MidCode*>::const_iterator last) :
     _midcodes(first, last) {}
 
-BasicBlock::~BasicBlock(void) {
-    assert(!_dirty);
-}
+BasicBlock::~BasicBlock(void) {}
 
 void BasicBlock::_proceed(BasicBlock* const successor) {
 	_succ.insert(successor);

@@ -12,6 +12,8 @@
 #include <set>
 #include <string>
 
+class Optim;
+
 namespace symtable {
 	class Entry;
 	class Table;
@@ -19,12 +21,17 @@ namespace symtable {
 }
 
 class SymTable {
+	friend class Optim;
+
 	symtable::Table* const _global;
 	std::map<std::string, symtable::FuncTable*> _funcs;
 	symtable::FuncTable* const _main;
 	symtable::FuncTable* _cur;
 public:
 	symtable::Table& global(void) const;
+private:
+	void funcs(std::set<symtable::FuncTable*>&, bool) const;
+public:
 	void funcs(std::set<const symtable::FuncTable*>&) const;
 	symtable::Table& curTable(void) const;
 	symtable::FuncTable& curFunc(void) const;

@@ -11,17 +11,15 @@
 #include <map>
 #include <string>
 
-class FlowChart;
+class BasicBlock;
+
+namespace symtable {
+	class FuncTable;
+}
 
 class Optim {
-	// <func name, func flow chart>
-	std::map<std::string, FlowChart*> _chart;
-
-	// build `_chart` from `table`
-	Optim(void);
-
-	// Write back to `table`
-	~Optim(void);
+	static const symtable::FuncTable* _calledFunc(const BasicBlock* const);
+	static void _clean(void);
 public:
 	static void inlineExpan(void);
 	static void commonExprElim(void);

@@ -15,7 +15,10 @@ namespace symtable {
 	class FuncTable;
 }
 
+class Optim;
+
 class MidCode {
+	friend class Optim;
 public:
 	enum class Instr {
 		ADD,		// t0 = t1 + t2
@@ -63,6 +66,7 @@ private:
 			const symtable::Entry* const, 
 			const symtable::Entry* const, 
 			const std::string* const);
+	MidCode(const MidCode&);
 public:
 	~MidCode(void);
 

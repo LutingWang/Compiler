@@ -145,26 +145,15 @@ FlowChart::FlowChart(symtable::FuncTable* const functable) :
 }
 
 FlowChart::~FlowChart(void) {
-    assert(!_dirty());
     for (auto& block : blocks()) {
         delete block;
     }
     delete _tail;
 }
 
-bool FlowChart::_dirty(void) const {
-    for (auto block : _blocks) {
-        if (block->dirty()) {
-            return true;
-        }
-    }
-    return false;
-}
-
 void FlowChart::commit(void) {
     _functable->_midcodes.clear();
     for (auto block : blocks()) {
-        block->_dirty = false;
 		_functable->_midcodes.insert(
 				_functable->_midcodes.end(), 
 				block->midcodes().begin(), 

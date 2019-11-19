@@ -16,6 +16,8 @@
 class MidCode;
 class FlowChart;
 
+class Optim;
+
 class SymTable;
 
 namespace symtable {
@@ -23,6 +25,7 @@ namespace symtable {
 
 	class Table {
 		friend class ::SymTable;
+		friend class ::Optim;
 
 		const std::string _name;
 		std::map<std::string, const Entry*> _syms;
@@ -63,6 +66,7 @@ namespace symtable {
 		friend class ::SymTable;
 		friend class ::MidCode;
 		friend class ::FlowChart;
+		friend class ::Optim;
 
 		bool _void, _int;
 		std::vector<const Entry*> _argList;

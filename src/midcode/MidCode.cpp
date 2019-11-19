@@ -47,7 +47,7 @@ MidCode::MidCode(const Instr instr,
 		const symtable::Entry* const t2,
 		const std::string* const t3) : 
 	_instr(instr), _t0(t0), _t1(t1), _t2(t2), _t3(t3) {
-	int status = ((t0 != nullptr) << 3) 
+	int status = ((t0 != nullptr) << 3)
 		+ ((t1 != nullptr) << 2) 
 		+ ((t2 != nullptr) << 1) 
 		+ (t3 != nullptr);
@@ -99,6 +99,13 @@ MidCode::MidCode(const Instr instr,
 		assert(0);
 	}
 }
+
+MidCode::MidCode(const MidCode& other) :
+    _instr(other._instr),
+    _t0(other._t0),
+    _t1(other._t1),
+    _t2(other._t2),
+    _t3(other._t3 == nullptr ? nullptr : new std::string(*other._t3)) {}
 
 MidCode::~MidCode(void) {
 	delete _t3;

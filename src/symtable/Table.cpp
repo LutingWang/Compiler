@@ -37,9 +37,6 @@ Table::Table(const std::string& name) :
 
 Table::~Table(void) {
 	assert(_const);
-	for (auto& entry : _syms) { 
-		delete entry.second; 
-	}
 }
 
 std::string Table::_rename(const std::string& symName) const {
@@ -95,8 +92,8 @@ void Table::operator << (const Table& source) {
 	assert(_const);
 	for (auto& pair : source._syms) {
 		if (_contains(pair.first)) {
-			continue;
+			assert(_find(pair.first) == pair.second);
 		}
-		_syms[pair.first] = new Entry(*(pair.second));
 	}
+    _syms.insert(source._syms.begin(), source._syms.end());
 }

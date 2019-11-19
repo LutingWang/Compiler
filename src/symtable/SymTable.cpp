@@ -6,6 +6,7 @@
  **********************************************/
 
 #include "error.h"
+#include "symtable/Entry.h"
 #include "symtable/table.h"
 
 #include "Printer.h"
@@ -15,6 +16,15 @@ using namespace std;
 
 symtable::Table& SymTable::global(void) const {
     return *_global;
+}
+
+void SymTable::funcs(std::set<symtable::FuncTable*>& functables, bool) const {
+    assert(functables.empty());
+    functables.insert(_main);
+    for (auto& pair : _funcs) {
+        auto result = functables.insert(pair.second);
+        assert(result.second);
+    }
 }
 
 void SymTable::funcs(std::set<const symtable::FuncTable*>& functables) const {
@@ -42,9 +52,17 @@ SymTable::SymTable(void) :
     _cur(nullptr) {}
 
 SymTable::~SymTable(void) {
+    std::set<const symtable::Entry*> syms;
+    _global->syms(syms);
     delete _global;
     for (auto& pair : _funcs) {
+        std::set<const symtable::Entry*> tmp;
+        pair.second->syms(tmp);
         delete pair.second;
+        syms.insert(tmp.begin(), tmp.end());
+    }
+    for (auto entry : syms) {
+        delete entry;
     }
     delete _main;
 }

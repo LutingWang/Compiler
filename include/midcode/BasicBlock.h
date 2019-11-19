@@ -11,19 +11,20 @@
 #include <set>
 #include <vector>
 
+class Optim;
+
 class MidCode;
 class FlowChart;
 
 class BasicBlock {
 	friend class FlowChart;
+	friend class Optim;
 
 	std::vector<const MidCode*> _midcodes;
 	std::set<BasicBlock*> _prec; // precursors
 	std::set<BasicBlock*> _succ; // successors
-	bool _dirty = false;
 public:
 	const std::vector<const MidCode*>& midcodes(void) const;
-	bool dirty(void) const;
 
 private:
 	BasicBlock(void);
