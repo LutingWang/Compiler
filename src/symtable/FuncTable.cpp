@@ -19,7 +19,6 @@ bool FuncTable::isInt(void) const {
 }
 
 const std::vector<const symtable::Entry*>& FuncTable::argList(void) const { 
-	assert(_const);
 	return _argList; 
 }
 

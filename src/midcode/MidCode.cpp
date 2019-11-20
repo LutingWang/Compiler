@@ -109,6 +109,7 @@ MidCode::MidCode(const MidCode& other) :
 
 MidCode::~MidCode(void) {
 	delete _t3;
+    _t3 = nullptr;
 }
 
 bool MidCode::is(const Instr instr) const {

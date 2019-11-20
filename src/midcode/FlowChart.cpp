@@ -126,22 +126,6 @@ FlowChart::FlowChart(const symtable::FuncTable* const functable) :
 FlowChart::FlowChart(symtable::FuncTable* const functable) :
     _functable(functable) {
     _init(functable);
-    
-    // iterate over and delete those blocks that can never be visited
-    for (int i = 1; i < blocks().size(); i++) {
-        if (!blocks()[i]->isolated()) { continue; }
-        blocks()[i]->_unlink();
-        for (auto& midcode : blocks()[i]->midcodes()) {
-            delete midcode;
-        }
-
-        // delete from `blocks`
-        delete blocks()[i];
-        _blocks.erase(blocks().begin() + i);
-
-        // re-examine all the remaining blocks
-        i = 0;
-    }
 }
 
 FlowChart::~FlowChart(void) {

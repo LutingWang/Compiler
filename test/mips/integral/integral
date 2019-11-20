@@ -31,6 +31,8 @@ void main(){
 	if (a > a) {
 		return;
 		a = 1;
+		a = 2;
+		c = 'd';
 	}
 	printDefault();
 	for(a=0;a>-5;a=a-1)

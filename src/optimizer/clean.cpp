@@ -44,6 +44,8 @@ void Optim::_clean(void) {
                 inserted = true;
                 funcs.insert(_calledFunc(basicblock));
             }
+            delete flowchart;
+            flowchart = nullptr;
         }
         if (!inserted) {
             break;
@@ -58,5 +60,29 @@ void Optim::_clean(void) {
             delete it->second;
             it = f.erase(it);
         }
+    }
+    
+    std::set<symtable::FuncTable*> calledFuncs;
+    SymTable::getTable().funcs(calledFuncs, false);
+    for (auto functable : calledFuncs) {
+        flowchart = new FlowChart(functable);
+        for (int i = 1; i < flowchart->blocks().size(); i++) {
+            auto basicblock = flowchart->blocks()[i];
+            if (basicblock->_prec.size() != 0) {
+                continue;
+            }
+            for (auto successor : basicblock->_succ) {
+                successor->_prec.erase(basicblock);
+            }
+            for (auto midcode : basicblock->midcodes()) {
+                delete midcode;
+            }
+            basicblock->_midcodes.clear();
+            basicblock->_prec.insert(nullptr);
+            i = 0;
+        }
+        flowchart->commit();
+        delete flowchart;
+        flowchart = nullptr;
     }
 }

@@ -1,0 +1,63 @@
+int rec1, rec2;
+
+void inline1() {
+	int a;
+	scanf(a);
+	if (a) {
+		printf("inline1 ", a);
+	} else {
+		printf("no input");
+	}
+	do {
+		printf("inline1 iter ", a);
+		a = a + 1;
+	} while (a < 10);
+}
+
+void recur1() {
+	rec1 = rec1 + 1;
+	if (rec1 > 10) {
+		printf("recur1 exit");
+		return;
+		rec1 = rec1 + 10;
+		printf("unreachable");
+		return;
+		recur1();
+		scanf(rec1);
+	}
+	printf("recur1 iter ", rec1);
+	recur1();
+	printf("recur1 return");
+}
+
+void recur2() {
+	rec2 = rec2 - 1;
+	if (rec2 < -20) {
+		printf("recur2 exit");
+		return;
+	}
+	recur2();
+	inline1();
+	return;
+	printf("unreachable");
+	recur2();
+	inline1();
+}
+
+int inline2(int a, char b, int c) {
+	a = 3;
+	b = 'f';
+	printf(a);
+	printf(b);
+	printf(c);
+	return(a);
+}
+
+void main() {
+	rec1 = 5;
+	rec2 = -11;
+	inline1();
+	recur1();
+	recur2();
+	printf(inline2(rec1, 'd', rec2));
+}

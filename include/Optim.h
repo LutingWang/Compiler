@@ -23,6 +23,7 @@ class Optim {
 public:
 	static void inlineExpan(void);
 	static void commonExprElim(void);
+	static void peephole(void);
 };
 
 #endif /* OPTIM_H */
