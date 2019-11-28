@@ -5,6 +5,8 @@
     > Created Time: Thu Nov 14 14:10:34 2019
  **********************************************/
 
+#include <cassert>
+
 #include "symtable/Entry.h"
 using namespace symtable;
 

@@ -198,13 +198,14 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
         _stackframe->store(Reg::ra);
         
         int argNum = basicblock.midcodes().size() - 1;
-        for (int i = 0; i < argNum && i < 4; i++) {
-            t1 = REQ;
-            GEN(move, reg::a[i], t1, noreg, noimm, nolab);
-        }
         for (int i = 4; i < argNum; i++) {
             t1 = REQ;
             GEN(sw, t1, Reg::sp, noreg, (i - argNum) * 4, nolab);
+        }
+        for (int i = 0; i < argNum && i < 4; i++) {
+			// FIXME: called args may conflict with original args
+            t1 = REQ;
+            GEN(move, reg::a[i], t1, noreg, noimm, nolab);
         }
         
         GEN(jal, noreg, noreg, noreg, noimm, basicblock.midcodes().back()->labelName());

@@ -28,10 +28,10 @@ rm ${jud_dir}/CMakeLists.txt
 
 for file in `ls ${jud_dir}/*.cpp ${jud_dir}/*.h`
 do
-	sed -i "" 's/".*\/include\/\(.*\)"/"\1"/g' $file
+	sed -i "" 's/#include ".*\/\([^\/]*\)"/#include "\1"/g' $file
 done
 
-cp ${cur_dir}/test/testfile1 ${jud_dir}/testfile.txt
+cp ${cur_dir}/test/mips/integral/integral ${jud_dir}/testfile.txt
 cd ${jud_dir}
 zip Archive.zip ./*
 clang++ *.cpp *.h -std=c++11

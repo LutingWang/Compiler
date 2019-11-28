@@ -22,7 +22,7 @@ using namespace std;
 #if judge
 	#define TESTFILE_PATH "testfile.txt"
 #else
-	#define TESTFILE_PATH PROJECT_BASE_DIR "test/mips/inline/inline"
+	#define TESTFILE_PATH PROJECT_BASE_DIR "test/testfile"
 #endif /* judge */
 
 // Latent streams for corresponding classes to use.
@@ -63,11 +63,13 @@ int main() {
 
 	MidCode::output();
 
+#if !judge
 	Optim::inlineExpan();
 	// Optim::commonExprElim();
     Optim::peephole();
 
 	MidCode::output();
+#endif /* judge */
 
 	mips::init();
 	mips::output();

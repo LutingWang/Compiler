@@ -10,6 +10,8 @@ test/**/*.mips
 test/**/*.out
 test/**/*.stat
 test/**/*.symtable
+test/**/*.exe
+test/**/*.cpp
 
 .DS_Store
 **/.DS_Store

@@ -48,7 +48,7 @@ void error::raise(Code c) {
 
 #if judge
 	#define CASE(id, msg) case Code::id:	\
-		error_output << sym.lastLine << ' '	\
+		error_output << sym.lastLine() << ' '	\
 			<< (char) ((int) c + 'a')		\
 			<< std::endl;					\
 		break

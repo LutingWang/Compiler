@@ -1,0 +1,29 @@
+const int const_int_1 = 12345679, const_int_2 = 0;
+const int const_int_3 = -0, const_int_4 = -12345679;
+const char const_char_1 = '9', const_char_2 = '_', const_char_3 = '+', const_char_4 = '*';
+int global_int_1,global_int_2;
+char global_char_1,global_char_2;
+int num5;
+void assignGlobal(int a,char b,int c,char d)
+{
+	global_int_1 = a;
+    global_char_1 = b;
+    global_int_2 = c;
+    global_char_2 = d;
+    return;
+}
+void testglobal()
+{
+	assignGlobal(const_int_1, const_char_1, const_int_4, const_char_4);
+}
+void main()
+{
+	testglobal();
+	printf(global_int_1);
+	printf(global_int_2);
+	printf(global_char_1);
+	printf(global_char_2);
+	num5=9;
+	for(num5=9;num5>=0;num5=num5-1) printf(num5);
+	return;
+}

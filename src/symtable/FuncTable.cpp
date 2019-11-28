@@ -5,6 +5,7 @@
     > Created Time: Thu Nov 14 14:10:50 2019
  **********************************************/
 
+#include <cassert>
 #include "midcode/MidCode.h"
 
 #include "symtable/table.h"

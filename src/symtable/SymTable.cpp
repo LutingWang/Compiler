@@ -5,6 +5,7 @@
     > Created Time: Tue Oct  1 11:09:08 2019
  **********************************************/
 
+#include <cassert>
 #include "error.h"
 #include "symtable/Entry.h"
 #include "symtable/table.h"
