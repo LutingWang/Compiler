@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 #include "midcode/MidCode.h"
+
 #include "midcode/BasicBlock.h"
 
 const std::vector<const MidCode*>& BasicBlock::midcodes(void) const {
@@ -28,17 +29,6 @@ void BasicBlock::_proceed(BasicBlock* const successor) {
 	successor->_prec.insert(this);
 }
 
-void BasicBlock::_unlink(void) {
-    assert(isolated());
-    for (auto successor : _succ) {
-        successor->_prec.erase(this);
-    }
-}
-
 bool BasicBlock::isFuncCall(void) const {
 	return _midcodes.back()->is(MidCode::Instr::CALL);
-}
-
-bool BasicBlock::isolated(void) const {
-    return _prec.empty();
 }

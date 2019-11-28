@@ -32,11 +32,13 @@ private:
 			const std::vector<const MidCode*>::const_iterator);
 	~BasicBlock(void);
 
+    // link another block to the back
 	void _proceed(BasicBlock* const);
-	void _unlink(void);
 public:
+    // A call block contains multiple `PUSH` statements and
+    // a single `CALL` statement. If a block is not a call
+    // block, then it cannot contain these two kinds of statements.
 	bool isFuncCall(void) const;
-	bool isolated(void) const;
 };
 
 #endif /* BASIC_BLOCK_H */

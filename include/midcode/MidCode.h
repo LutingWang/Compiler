@@ -48,31 +48,63 @@ public:
 	};
 
 private:
+	// All the fields that are stored as pointers must be
+    // assigned `nullptr`, including `_t3`. Note that no
+    // two `_t3`s should point to the same string, for the
+    // sake of avoiding redundent release.
 	const Instr _instr;			// operation
 	const symtable::Entry* const _t0;	// result variable
 	const symtable::Entry* const _t1;	// operand1
 	const symtable::Entry* const _t2;	// operand2
 	const std::string* _t3;		// label name
 public:
+    // The fields can only be visited when they are valid (
+    // not null), except for the `exceptions` listed in front
+    // of each field. The exceptions are instruction classes
+    // that can legally contain an invalid field.
 	Instr instr(void) const;
-	const symtable::Entry* t0(void) const;
-	const symtable::Entry* t1(void) const;
-	const symtable::Entry* t2(void) const;
+	const symtable::Entry* t0(void) const; // exceptions: CALL
+	const symtable::Entry* t1(void) const; // exceptions: RET
+	const symtable::Entry* t2(void) const; // exceptions: BEQ and BNE
 	const std::string& labelName(void) const;
 
 private:
+    // Upon construction, the initializer should check whether
+    // these arguments meets with the exact requirements of
+    // nullity. The requirements are listed in class `Instr`.
+    //
+    // Generaly, the initializer is called by `gen`, in order to
+    // lower the risk of violating nullity requirements. However
+    // `gen` also inserts the midcode into symtable, which is
+    // unwanted when optimizing the midcodes. Thus, `Optim` is
+    // declared as a friend class and should call this initializer
+    // with extra caution.
 	MidCode(const Instr, 
 			const symtable::Entry* const, 
 			const symtable::Entry* const, 
 			const symtable::Entry* const, 
 			const std::string* const);
+    
+    // Copy constructor of `MidCode` provided exclusively for
+    // `Optim`. Although `_t3` is allocated outside all the
+    // initializers, this field is considered under the regulation
+    // of `MidCode`. Thus, this initializer should check the nullity
+    // of `_t3` and if it is not null, deep clone.
 	MidCode(const MidCode&);
 public:
+    // The only attribute that needs to be released is `_t3`.
+    // Remember not to free the `Entry`s since they are still
+    // used in other `MidCode`s.
 	~MidCode(void);
 
 	bool is(const Instr) const;
 
 private:
+    // If error happened or the current function being parsed has
+    // already returned, do nothing. Otherwise push the `MidCode`
+    // into symtable.
+    //
+    // This function is also obligated to check for recursive function.
 	static void _gen(const MidCode* const);
 public:
 	static void gen(const Instr, 
@@ -96,8 +128,10 @@ public:
 	static std::string genLabel(void);
 
 private:
+    // print this piece of midcode
 	void _print(void) const;
 public:
+    // print all the midcodes in symtable, grouped by functions
 	static void output(void);
 };
 

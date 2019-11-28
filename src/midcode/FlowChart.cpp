@@ -12,8 +12,9 @@
 #include <vector>
 #include "midcode/MidCode.h"
 #include "midcode/BasicBlock.h"
-#include "midcode/FlowChart.h"
 #include "symtable/table.h"
+
+#include "midcode/FlowChart.h"
 
 const std::vector<BasicBlock*>& FlowChart::blocks(void) const {
     return _blocks;
@@ -22,7 +23,7 @@ const std::vector<BasicBlock*>& FlowChart::blocks(void) const {
 void FlowChart::_init(const symtable::FuncTable* const functable) {
     auto& midcodes = functable->midcodes();
     
-    // initialize <label name, label pos in mid code>
+    // initialize <label name, label pos in midcode>
     std::map<std::string, int> labels;
     for (int i = 0; i < midcodes.size(); i++) {
         if (midcodes[i]->is(MidCode::Instr::LABEL)) {
@@ -71,19 +72,19 @@ void FlowChart::_init(const symtable::FuncTable* const functable) {
     assert(*(entrances.rbegin()) == midcodes.size());
 
     // Divide the mid codes into blocks. If a block
-    // starts with a label, add it to the map to
+    // starts with a label, add it to `blockMap` to
     // enable other blocks to discover it.
     std::map<std::string, int> blockMap;
     int startIndex = 0;
-    for (auto& endIndex : entrances) {
+    for (auto endIndex : entrances) {
         if (midcodes[startIndex]->is(MidCode::Instr::LABEL)) {
             blockMap[midcodes[startIndex]->labelName()] = blocks().size();
         }
         _blocks.push_back(
-            new BasicBlock(
-                midcodes.begin() + startIndex,
-                midcodes.begin() + endIndex
-            )
+                new BasicBlock(
+                        midcodes.begin() + startIndex,
+                        midcodes.begin() + endIndex
+                )
         );
         startIndex = endIndex;
     }

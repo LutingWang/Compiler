@@ -13,10 +13,11 @@
 #include <string>
 #include "compilerConfig.h"
 #include "error.h"
-#include "midcode/MidCode.h"
-#include "symtable/table.h"
 #include "symtable/Entry.h"
+#include "symtable/table.h"
 #include "symtable/SymTable.h"
+
+#include "midcode/MidCode.h"
 
 MidCode::Instr MidCode::instr(void) const {
     return _instr;
@@ -119,10 +120,14 @@ bool MidCode::is(const Instr instr) const {
 void MidCode::_gen(const MidCode* const midcode) {
     if (error::happened) { return; }
     if (SymTable::getTable().curFunc().hasRet()) { return; }
+
+	// check for recursion
     if (midcode->is(Instr::CALL) &&
             midcode->labelName() == SymTable::getTable().curFunc().name()) {
         SymTable::getTable().curFunc().setRecursive();
     }
+
+	// push into symtable
     SymTable::getTable().curFunc()._midcodes.push_back(midcode);
 }
 
@@ -147,7 +152,7 @@ const symtable::Entry* MidCode::genVar(const bool isInt) {
 }
 
 const symtable::Entry* MidCode::genConst(const bool isInt, const int value) {
-	std::string name = (isInt ? "int$" : "char$") + std::to_string(value);
+	const std::string name = (isInt ? "int$" : "char$") + std::to_string(value);
     return SymTable::getTable().global().contains(name) ? SymTable::getTable().global().find(name) :
 		SymTable::getTable().global().pushConst(name, isInt, value);
 }
@@ -263,65 +268,67 @@ void MidCode::_print(void) const {
 	midcode_output << std::endl;
 }
 
-void print(const symtable::Entry* const entry) {
+namespace {
+	void print(const symtable::Entry* const entry) {
 #if judge
-	if (entry == nullptr) { return; }
-	if (entry->isConst()) {
-		midcode_output << "const ";
-		if (entry->isInt()) {
-			midcode_output << "int " << entry->name() << " = " << entry->value();
+		if (entry == nullptr) { return; }
+		if (entry->isConst()) {
+			midcode_output << "const ";
+			if (entry->isInt()) {
+				midcode_output << "int " << entry->name() << " = " << entry->value();
+			} else {
+				midcode_output << "char " << entry->name() << " = '" << (char) entry->value() << '\'';
+			}
 		} else {
-			midcode_output << "char " << entry->name() << " = '" << (char) entry->value() << '\'';
+			midcode_output << "var " << (entry->isInt() ? "int " : "char ") << entry->name();
+			if (entry->isArray()) {
+				midcode_output << '[' << entry->value() << ']';
+			}
 		}
-	} else {
-		midcode_output << "var " << (entry->isInt() ? "int " : "char ") << entry->name();
-		if (entry->isArray()) {
-			midcode_output << '[' << entry->value() << ']';
-		}
-	}
-	midcode_output << std::endl;
+		midcode_output << std::endl;
 #endif /* judge */
-}
-
-void print(const symtable::FuncTable* const functable) {
-	if (functable == nullptr) { return; }
+	}
+	
+	void print(const symtable::FuncTable* const functable) {
+		if (functable == nullptr) { return; }
 #if judge
-	if (functable->isVoid()) { midcode_output << "void"; }
-	else if (functable->isInt()) { midcode_output << "int"; }
-	else { midcode_output << "char"; }
+		if (functable->isVoid()) { midcode_output << "void"; }
+		else if (functable->isInt()) { midcode_output << "int"; }
+		else { midcode_output << "char"; }
 #else
-	midcode_output << "func";
+		midcode_output << "func";
 #endif /* judge */
-	midcode_output << ' ' << functable->name() << "()" << std::endl;
+		midcode_output << ' ' << functable->name() << "()" << std::endl;
 
 #if judge
-	const std::vector<const symtable::Entry*>& argv = functable->argList();
-	for (auto& entry : argv) {
-		midcode_output << "para " << (entry->isInt() ? "int " : "char ")
-			<< entry->name() << std::endl;
-	}
-    
-    std::set<const symtable::Entry*> syms;
-    functable->syms(syms);
-	for (auto& entry : syms) {
-		// exclude parameters
-		if (find(argv.begin(), argv.end(), entry) != argv.end()) { continue; }
-		print(entry);
-	}
+		const std::vector<const symtable::Entry*>& argv = functable->argList();
+		for (auto entry : argv) {
+			midcode_output << "para " << (entry->isInt() ? "int " : "char ")
+				<< entry->name() << std::endl;
+		}
+	    
+	    std::set<const symtable::Entry*> syms;
+	    functable->syms(syms);
+		for (auto entry : syms) {
+			// exclude parameters
+			if (find(argv.begin(), argv.end(), entry) != argv.end()) { continue; }
+			print(entry);
+		}
 #endif /* judge */
+	}
 }
 
 void MidCode::output(void) {
     std::set<const symtable::Entry*> globalSyms;
     SymTable::getTable().global().syms(globalSyms);
-	for (auto& entry : globalSyms) {
+	for (auto entry : globalSyms) {
 		print(entry);
 	}
 	midcode_output << std::endl;
 
     std::set<const symtable::FuncTable*> funcs;
     SymTable::getTable().funcs(funcs);
-	for (auto& functable : funcs) {
+	for (auto functable : funcs) {
 		print(functable);
         for (auto& midcode : functable->midcodes()) {
             midcode->_print();
