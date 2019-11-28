@@ -30,12 +30,14 @@ class SymTable {
 public:
 	symtable::Table& global(void) const;
 private:
+    // Interface overloading to retrieve mutable func set.
 	void funcs(std::set<symtable::FuncTable*>&, bool) const;
 public:
 	void funcs(std::set<const symtable::FuncTable*>&) const;
-	symtable::Table& curTable(void) const;
-	symtable::FuncTable& curFunc(void) const;
+	symtable::Table& curTable(void) const; // including `_global`
+	symtable::FuncTable& curFunc(void) const; // excluding `_global`
 
+    // Singleton design pattern.
 private:
 	static SymTable table;
 	SymTable(void);
@@ -45,6 +47,9 @@ public:
 
 	bool isGlobal(void) const;
 	bool isMain(void) const;
+    
+    // Searches through `this` then `_global`. If none of them
+    // contains the target sym, register an invalid entry for it.
 	const symtable::Entry* findSym(const std::string&) const;
 
 	bool contains(const std::string&) const;
@@ -53,14 +58,14 @@ public:
 private:	
 	void _pushFunc(const std::string&, symtable::FuncTable* const);
 public:
-	void pushFunc(const std::string&);
-	void pushFunc(const std::string&, const bool);
-	void pushFunc(void); // push main
+	void pushFunc(const std::string&); // void
+	void pushFunc(const std::string&, const bool isInt);
+	void pushFunc(void); // main
 	
 private:
 	bool _isConst(void) const;
 public:
-	void makeConst(void);
+	void makeConst(void); // seal the symtable
 };
 
 #endif /* SYM_TABLE_H */

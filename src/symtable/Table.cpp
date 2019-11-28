@@ -26,7 +26,7 @@ const std::string& Table::name(void) const {
 void Table::syms(std::set<const Entry*>& symList) const {
 	assert(_const);
 	assert(symList.empty());
-	for (auto& pair : _syms) {
+	for (auto& /* <renamed_symName: string, const Entry*> */ pair : _syms) {
 		auto result = symList.insert(pair.second);
 		assert(result.second);
 	}
@@ -91,7 +91,7 @@ const Entry* Table::pushVar(const std::string& symName, const bool isInt) {
 
 void Table::operator << (const Table& source) {
 	assert(_const);
-	for (auto& pair : source._syms) {
+	for (auto& /* <renamed_symName: string, const Entry*> */ pair : source._syms) {
 		if (_contains(pair.first)) {
 			assert(_find(pair.first) == pair.second);
 		}

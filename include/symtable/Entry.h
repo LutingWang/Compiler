@@ -11,12 +11,31 @@
 #include <string>
 
 namespace symtable {
+    // `Entry` depicts 7 classes of symbols in the source code. The
+    // classes and their corresponding value tuples are listed below
+    //     + type           _const      _int        _value
+    //     - const int      (true,      true,       int_val)
+    //     - const char     (true,      false,      char_val)
+    //     - int            (false,     true,       NOT_ARRAY)
+    //     - int[]          (false,     true,       array_len)
+    //     - char           (false,     false,      NOT_ARRAY)
+    //     - char[]         (false,     false,      array_len)
+    //     - invalid        (false,     true,       INVALID)
+    // Among them, `invalid` is reserved for error handling. `NOT_ARRAY`
+    // and `INVALID` are predefined constants to flag specific case.
+    // Their exact values are not concerned as long as they are negative.
+    //
+    // It would be helpful to introduce some terminologies here.
+    //     - const          const int / const char
+    //     - array          int[] / char[]
+    //     - non-array var  int / char
+    //     - var            non-array var / array
 	class Entry {
 		friend class Table;
 
 		const bool _const, _int;
 		const int _value; 
-		const std::string _name;
+		const std::string _name; // renamed names
 	public:
 		bool isConst(void) const;
 		bool isInt(void) const;
@@ -30,11 +49,11 @@ namespace symtable {
 				const bool isInt, 
 				const int);
 		
-		// single var
+		// non-array var
 		Entry(const std::string&, 
 				const bool isInt); 
 
-		// invalid var
+		// invalid
 		Entry(const std::string&); 
 
 	public:

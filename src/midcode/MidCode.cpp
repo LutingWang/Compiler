@@ -330,7 +330,7 @@ void MidCode::output(void) {
     SymTable::getTable().funcs(funcs);
 	for (auto functable : funcs) {
 		print(functable);
-        for (auto& midcode : functable->midcodes()) {
+        for (auto midcode : functable->midcodes()) {
             midcode->_print();
         }
         midcode_output << std::endl;

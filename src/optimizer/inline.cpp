@@ -77,7 +77,6 @@ void Optim::inlineExpan(void) {
                 }
                 basicblock->_midcodes.push_back(new MidCode(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, new std::string(end)));
                 
-                // deep clone syms
                 *functable << *calledFunc;
             }
             if (replaced) {

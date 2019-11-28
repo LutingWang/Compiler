@@ -130,7 +130,7 @@ FlowChart::FlowChart(symtable::FuncTable* const functable) :
 }
 
 FlowChart::~FlowChart(void) {
-    for (auto& block : blocks()) {
+    for (auto block : blocks()) {
         delete block;
     }
     delete _tail;

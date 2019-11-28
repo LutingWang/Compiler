@@ -22,7 +22,7 @@ symtable::Table& SymTable::global(void) const {
 void SymTable::funcs(std::set<symtable::FuncTable*>& functables, bool) const {
     assert(functables.empty());
     functables.insert(_main);
-    for (auto& pair : _funcs) {
+    for (auto& /* <string, const FuncTable*> */ pair : _funcs) {
         auto result = functables.insert(pair.second);
         assert(result.second);
     }
@@ -31,7 +31,7 @@ void SymTable::funcs(std::set<symtable::FuncTable*>& functables, bool) const {
 void SymTable::funcs(std::set<const symtable::FuncTable*>& functables) const {
     assert(functables.empty());
     functables.insert(_main);
-    for (auto& pair : _funcs) {
+    for (auto& /* <string, const FuncTable*> */ pair : _funcs) {
         auto result = functables.insert(pair.second);
         assert(result.second);
     }
@@ -53,18 +53,23 @@ SymTable::SymTable(void) :
     _cur(nullptr) {}
 
 SymTable::~SymTable(void) {
+	// Collect all syms while deallocating tables.
     std::set<const symtable::Entry*> syms;
     _global->syms(syms);
     delete _global;
-    for (auto& pair : _funcs) {
+    for (auto& /* <string, const FuncTable*> */ pair : _funcs) {
         std::set<const symtable::Entry*> tmp;
         pair.second->syms(tmp);
         delete pair.second;
         syms.insert(tmp.begin(), tmp.end());
     }
+
+	// Free all syms.
     for (auto entry : syms) {
         delete entry;
     }
+
+	// FIXME: deallocate syms in main
     delete _main;
 }
 

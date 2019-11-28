@@ -46,7 +46,7 @@ FuncTable::FuncTable(const std::string& name, const bool isInt) :
 
 symtable::FuncTable::~FuncTable(void) {
 	assert(_const);
-	for (auto& midcode : midcodes()) { 
+	for (auto midcode : midcodes()) { 
 		delete midcode; 
 	}
 }

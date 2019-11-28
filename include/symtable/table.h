@@ -31,21 +31,32 @@ namespace symtable {
 		std::map<std::string, const Entry*> _syms;
 	public:
 		const std::string& name(void) const;
-		void syms(std::set<const Entry*>&) const;
+		void syms(std::set<const Entry*>&) const; // can only be called after sealed
 
 	protected:
 		Table(const std::string&);
+        
+        // Do nothing. The `SymTable` will free all syms together.
 		virtual ~Table(void);
 
 	private:
+        // Add the name of this table as a prefix to the name
+        // of a sym. The modified name would be a unique id of
+        // the sym not only in this `Table`, but also other
+        // `Table`s in this compiler. This detour would be exceedingly
+        // helpful to the optimizer.
 		std::string _rename(const std::string&) const;
+        
+        // Performs query using modified names. 
         bool _contains(const std::string&) const;
         const Entry* _find(const std::string&) const;
-	public: 
+	public:
+        // Modify sym name and delegate up.
         bool contains(const std::string&) const;
         const Entry* find(const std::string&) const;
 
 	private:
+        // Checks for redef while inserting.
 		const Entry* _push(const Entry* const);
 		const Entry* _pushInvalid(const std::string&);
 	public:
@@ -54,11 +65,15 @@ namespace symtable {
 		const Entry* pushVar(const std::string&, const bool);
 
 	private:
-		// migration
+		// shallow copy of `_syms`
 		void operator << (const Table&);
 
 	protected:
 		bool _const = false;
+        
+        // Seal the table after parsing the corresponding code
+        // segmentation. Only friend classes could modify this
+        // table by then. A `Table` cannot be sealed twice.
 		void _makeConst(void);
 	};
 	
@@ -82,13 +97,15 @@ namespace symtable {
 		bool isInline(void) const;
 
 	protected:
-		FuncTable(const std::string&);
-		FuncTable(const std::string&, const bool);
+		FuncTable(const std::string&); // void
+		FuncTable(const std::string&, const bool isInt);
+        
+        // Deallocate midcodes.
 		virtual ~FuncTable(void);
 
 	public:
 		void setHasRet(void); // can only be called by `Stat::block`
-		void setRecursive(void);
+		void setRecursive(void); // `MidCode::gen` uses this
 		const Entry* pushArg(const std::string&, const bool isInt);
 	};
 }
