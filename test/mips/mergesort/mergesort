@@ -50,7 +50,6 @@ void inner_merge_sort(int start, int length) {
 
 void main() {
     int n, i, a;
-    printf("17373248");
     scanf(n);
     for (i = 0; i < n; i = i + 1) {
         scanf(a);

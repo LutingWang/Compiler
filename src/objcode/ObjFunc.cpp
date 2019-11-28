@@ -63,11 +63,11 @@ void ObjFunc::deinit(void) {
 // | DIV        | t0 = t1 / t2      | div t0, t1, t2    |
 // | ---------- | ----------------- | ----------------- |
 // | LOAD_IND   | t0 = t1[t2]       | sll t8, t2, 2     |
-// |            |                   | add t8, t8, sp    |
+// |            |                   | add t8, t8, sp/gp |
 // |            |                   | lw t0, t1(t8)     |
 // | ---------- | ----------------- | ----------------- |
 // | STORE_IND  | t0[t2] = t1       | sll t8, t2, 2     |
-// |            |                   | add t8, t8, sp    |
+// |            |                   | add t8, t8, sp/gp |
 // |            |                   | sw t1, t0(t8)     |
 // | ---------- | ----------------- | ----------------- |
 // | ASSIGN     | t0 = t1           | move t0, t1       |
@@ -198,14 +198,22 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
         _stackframe->store(Reg::ra);
         
         int argNum = basicblock.midcodes().size() - 1;
-        for (int i = 4; i < argNum; i++) {
+        for (int i = 0; i < argNum && i < reg::a.size(); i++) {
             t1 = REQ;
-            GEN(sw, t1, Reg::sp, noreg, (i - argNum) * 4, nolab);
+			if (std::find(reg::a.begin(), reg::a.end(), t1) == reg::a.end()) {
+				GEN(move, reg::a[i], t1, noreg, noimm, nolab);
+			} else {
+                GEN(lw, reg::a[i], Reg::sp, noreg, (*_stackframe)[t1], nolab);
+			}
         }
-        for (int i = 0; i < argNum && i < 4; i++) {
-			// FIXME: called args may conflict with original args
+        for (int i = reg::a.size(); i < argNum; i++) {
             t1 = REQ;
-            GEN(move, reg::a[i], t1, noreg, noimm, nolab);
+            if (std::find(reg::a.begin(), reg::a.end(), t1) == reg::a.end()) {
+                GEN(sw, t1, Reg::sp, noreg, (i - argNum) * 4, nolab);
+            } else {
+                GEN(lw, Reg::t8, Reg::sp, noreg, (*_stackframe)[t1], nolab);
+                GEN(sw, Reg::t8, Reg::sp, noreg, (i - argNum) * 4, nolab);
+            }
         }
         
         GEN(jal, noreg, noreg, noreg, noimm, basicblock.midcodes().back()->labelName());
@@ -248,14 +256,14 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
         CASE(LOAD_IND):
             t2 = REQ;
             GEN(sll, Reg::t8, t2, noreg, 2, nolab);
-            GEN(add, Reg::t8, Reg::t8, Reg::sp, noimm, nolab);
+            GEN(add, Reg::t8, Reg::t8, _stackframe->isLocal(midcode->t1()) ? Reg::sp : Reg::gp, noimm, nolab);
             t0 = REQ;
             GEN(lw, t0, Reg::t8, noreg, (*_stackframe)[midcode->t1()], nolab);
             break;
         CASE(STORE_IND):
             t2 = REQ;
             GEN(sll, Reg::t8, t2, noreg, 2, nolab);
-            GEN(add, Reg::t8, Reg::t8, Reg::sp, noimm, nolab);
+            GEN(add, Reg::t8, Reg::t8, _stackframe->isLocal(midcode->t0()) ? Reg::sp : Reg::gp, noimm, nolab);
             t1 = REQ;
             GEN(sw, t1, Reg::t8, noreg, (*_stackframe)[midcode->t0()], nolab);
             break;
@@ -365,8 +373,8 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
 	FlowChart flowchart(functable);
 
 	// initialize register pool
-	std::vector<const symtable::Entry*> reg_a(4, nullptr);
-	for (int i = 0; i < args.size() && i < 4; i++) {
+	std::vector<const symtable::Entry*> reg_a(reg::a.size(), nullptr);
+	for (int i = 0; i < args.size() && i < reg::a.size(); i++) {
 		reg_a[i] = args[i];
 	}
     _regpool = new RegPool(midcodes, reg_a);

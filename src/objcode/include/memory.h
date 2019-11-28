@@ -53,6 +53,7 @@ public:
 			std::vector<const symtable::Entry*> argList, 
 			const std::set<const symtable::Entry*>& syms);
 
+	bool isLocal(const symtable::Entry* const) const;
 	int operator [] (const symtable::Entry* const) const;
 	int operator [] (Reg) const;
 

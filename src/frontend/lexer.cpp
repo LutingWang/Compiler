@@ -133,6 +133,13 @@ void Lexer::_parseStr(void) {
 		}
 	} else { counter = i + 1; }
 
+	for (int i = 0; i < sym.str().size(); i++) {
+		if (sym.str()[i] == '\\') {
+            i++;
+            sym._str.insert(i, "\\");
+		}
+	}
+
 	// non-structural error
 	for (char c : sym.str()) {
 		if (c < 32 || c > 126) {

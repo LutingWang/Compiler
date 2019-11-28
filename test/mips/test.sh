@@ -22,14 +22,14 @@ do
 		cat $dir"/input" | ./${file}".exe" > ${file}".std"
 	fi
 	
-	#cat $dir"/input" | java -jar ./mars.jar ic nc 100000 ${file}".mips" > ${file}".out"
-	#tail -n 3 ${file}".out" > ${file}".stat"
-	#linenum=`cat ${file}".out" | wc -l`
-	#last3=`expr $linenum - 2`
-	#sed -i "" "$last3 , $linenum d" ${file}".out"
-	#
-	#diff ${file}".std" ${file}".out"
-	#if [ $? -eq 0 ]; then
-	#	echo $tname" passed"
-	#fi
+	cat $dir"/input" | java -jar ./mars.jar ic nc 100000 ${file}".mips" > ${file}".out"
+	tail -n 3 ${file}".out" > ${file}".stat"
+	linenum=`cat ${file}".out" | wc -l`
+	last3=`expr $linenum - 2`
+	sed -i "" "$last3 , $linenum d" ${file}".out"
+	
+	diff ${file}".std" ${file}".out"
+	if [ $? -eq 0 ]; then
+		echo $tname" passed"
+	fi
 done

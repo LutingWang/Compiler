@@ -15,5 +15,3 @@ test/**/*.cpp
 
 .DS_Store
 **/.DS_Store
-
-Mars.jar
