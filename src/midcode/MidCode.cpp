@@ -34,7 +34,7 @@ const symtable::Entry* MidCode::t1(void) const {
 }
 
 const symtable::Entry* MidCode::t2(void) const {
-    assert(_t2 != nullptr || is(Instr::BEQ) || is(Instr::BNE));
+    assert(_t2 != nullptr);
 	return _t2;
 }
 
@@ -86,11 +86,9 @@ MidCode::MidCode(const Instr instr,
 	case Instr::BGE:
 	case Instr::BLT:
 	case Instr::BLE:
-		assert(status == 0b0111);
-		break;
 	case Instr::BEQ:
 	case Instr::BNE:
-		assert(status == 0b0111 || status == 0b0101);
+		assert(status == 0b0111);
 		break;
 	case Instr::GOTO:
 	case Instr::LABEL:
@@ -114,7 +112,33 @@ MidCode::~MidCode(void) {
 }
 
 bool MidCode::is(const Instr instr) const {
-    return this->_instr == instr;
+    return this->instr() == instr;
+}
+
+bool MidCode::isCalc(void) const {
+    switch (this->instr()) {
+    case Instr::ADD:
+    case Instr::SUB:
+    case Instr::MULT:
+    case Instr::DIV:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool MidCode::isBranch(void) const {
+    switch (this->instr()) {
+    case Instr::BGT:
+    case Instr::BGE:
+    case Instr::BLT:
+    case Instr::BLE:
+    case Instr::BEQ:
+    case Instr::BNE:
+        return true;
+    default:
+        return false;
+    }
 }
 
 void MidCode::_gen(const MidCode* const midcode) {
@@ -238,22 +262,7 @@ void MidCode::_print(void) const {
 		break
 #endif /* judge */
 	CASE(BGT, >); CASE(BGE, >=); CASE(BLT, <); CASE(BLE, <=);
-#undef CASE
-
-#if judge
-	#define CASE(id, op) case MidCode::Instr::id:		\
-		midcode_output << "if " << t1()->name() << " " #op " "			\
-			<< ((_t2 == nullptr) ? "0" : t2()->name())		\
-			<< " BNZ " << labelName();		\
-		break
-#else
-	#define CASE(id, op) case MidCode::Instr::id:		\
-		midcode_output << "if " << t1()->name() << " " #op " "			\
-			<< ((_t2 == nullptr) ? "0" : t2()->name())		\
-			<< " branch to \"" << labelName() << '"';		\
-		break
-#endif /* judge */
-	CASE(BEQ, ==); CASE(BNE, !=);
+    CASE(BEQ, ==); CASE(BNE, !=);
 #undef CASE
 
 	case MidCode::Instr::GOTO:

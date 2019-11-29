@@ -22,7 +22,7 @@ using namespace std;
 #if judge
 	#define TESTFILE_PATH "testfile.txt"
 #else
-	#define TESTFILE_PATH PROJECT_BASE_DIR "test/mips/qsort/qsort"
+	#define TESTFILE_PATH PROJECT_BASE_DIR "test/mips/symprop/symprop"
 #endif /* judge */
 
 // Latent streams for corresponding classes to use.
@@ -62,10 +62,12 @@ int main() {
 	if (error::happened) { goto exit; }
 
 	MidCode::output();
+    midcode_output << "----------------------" << endl;
 
-	Optim::inlineExpan();
+	// Optim::inlineExpan();
 	// Optim::commonExprElim();
-    Optim::peephole();
+    Optim::symProp();
+    // Optim::peephole();
 
 	MidCode::output();
 

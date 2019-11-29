@@ -41,8 +41,8 @@ public:
 		BGE,		// branch to t3 if t1 >= t2
 		BLT,		// branch to t3 if t1 < t2
 		BLE,		// branch to t3 if t1 <= t2
-		BEQ,		// branch to t3 if t1 == t2(nullable)
-		BNE,		// branch to t3 if t1 != t2(nullable)
+		BEQ,		// branch to t3 if t1 == t2
+		BNE,		// branch to t3 if t1 != t2
 		GOTO,		// goto t3
 		LABEL		// lab t3
 	};
@@ -65,7 +65,7 @@ public:
 	Instr instr(void) const;
 	const symtable::Entry* t0(void) const; // exceptions: CALL
 	const symtable::Entry* t1(void) const; // exceptions: RET
-	const symtable::Entry* t2(void) const; // exceptions: BEQ and BNE
+	const symtable::Entry* t2(void) const;
 	const std::string& labelName(void) const;
 
 private:
@@ -97,7 +97,16 @@ public:
     // used in other `MidCode`s.
 	~MidCode(void);
 
-	bool is(const Instr) const;
+	// Instructions can be categorized. Knowing which class this
+    // midcode belongs to can help user determine which attribute
+    // he should visit. The categories are listed below
+    //     - calc       ADD / SUB / MULT / DIV
+    //     - branch     BGT / BGE / BLT / BLE / BEQ / BNE
+    // Other instructions that is not categorized should be judged
+    // by user though `is`.
+    bool is(const Instr) const;
+	bool isCalc(void) const;
+	bool isBranch(void) const;
 
 private:
     // If error happened or the current function being parsed has

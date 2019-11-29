@@ -11,19 +11,30 @@
 #include <map>
 #include <string>
 
+class MidCode;
 class BasicBlock;
 
 namespace symtable {
+    class Entry;
 	class FuncTable;
 }
+
+class VarMatch;
 
 class Optim {
 	static const symtable::FuncTable* _calledFunc(const BasicBlock* const);
 	static void _clean(void);
 public:
 	static void inlineExpan(void);
+    
 	static void commonExprElim(void);
+    
+private:
+    static bool _constProp(const MidCode*&);
+    static bool _varProp(const MidCode*&, VarMatch&);
+public:
 	static void symProp(void);
+    
 	static void peephole(void);
 };
 

@@ -52,7 +52,8 @@ void Stat::Cond::cond(const bool branchIfNot, const std::string& labelName) {
 		if (!t2->isInt()) { error::raise(error::Code::MISMATCHED_COND_TYPE); }
 		MidCode::gen(comp, nullptr, t1, t2, labelName);
 	} else {
-		MidCode::gen(branchIfNot ? MidCode::Instr::BEQ : MidCode::Instr::BNE, nullptr, t1, nullptr, labelName);
+		MidCode::gen(branchIfNot ? MidCode::Instr::BEQ : MidCode::Instr::BNE, nullptr,
+                t1, MidCode::genConst(true, 0), labelName);
 	}
 }
 
