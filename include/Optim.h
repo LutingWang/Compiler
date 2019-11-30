@@ -21,8 +21,6 @@ namespace symtable {
 
 class VarMatch;
 
-const symtable::FuncTable* _calledFunc(const BasicBlock* const);
-
 class Optim {
     static void _cleanFuncs(void);
     static void _cleanBlocks(symtable::FuncTable* const);

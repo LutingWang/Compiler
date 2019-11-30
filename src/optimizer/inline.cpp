@@ -19,7 +19,8 @@
 
 const symtable::FuncTable* Optim::_repaceBlock(BasicBlock* const basicblock) {
     if (!basicblock->isFuncCall()) { return nullptr; }
-    const symtable::FuncTable* const calledFunc = _calledFunc(basicblock);
+    const symtable::FuncTable* const calledFunc = SymTable::getTable().findFunc(
+            basicblock->midcodes().back()->labelName());
     if (!calledFunc->isInline()) { return nullptr; }
     
     // iterate over all push statements and convert to assign

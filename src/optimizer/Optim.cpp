@@ -14,11 +14,6 @@
 
 #include "Optim.h"
 
-const symtable::FuncTable* _calledFunc(const BasicBlock* const basicblock) {
-    assert(basicblock->isFuncCall());
-    return SymTable::getTable().findFunc(basicblock->midcodes().back()->labelName());
-}
-
 bool Optim::peephole(void) {
     bool result = false;
     
