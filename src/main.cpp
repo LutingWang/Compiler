@@ -51,10 +51,14 @@ int main(int argc, char* argv[]) {
 	cout << "finished" << endl;
 
 	cout << "optimization processing ... ";
-    Optim::inlineExpan();
-    // Optim::commonExprElim();
-    Optim::symProp();
-    Optim::peephole();
+    for (bool updated = true; updated; ) {
+        updated = false;
+        updated = Optim::inlineExpan() || updated;
+        // updated = Optim::commonExprElim() || updated;
+        updated = Optim::symProp() || updated;
+        updated = Optim::peephole() || updated;
+        Optim::clean();
+    }
 	cout << "finished" << endl;
 
 	cout << "optimized midcode generating ... ";

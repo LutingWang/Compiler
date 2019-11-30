@@ -39,8 +39,12 @@ int Sbss::size(void) const {
 Sbss::Sbss(const std::set<const symtable::Entry*>& syms) {
 	for (auto& entry : syms) {
 		if (entry->isConst()) { continue; }
-		if (global() != nullptr && // `this` may be the global
-				global()->contains(entry)) { continue; }
+        if (global() == nullptr) { // `this` is the global
+            assert(entry->isGlobal());
+        } else if (global()->contains(entry)) {
+            assert(entry->isGlobal());
+            continue;
+        } else { assert(!entry->isGlobal()); }
 		_syms[entry] = _size;
 		if (!entry->isArray()) { _size += 4; } 
 		else { _size += entry->value() * 4; }

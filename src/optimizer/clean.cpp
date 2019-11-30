@@ -5,8 +5,11 @@
     > Created Time: Tue Nov 19 10:10:57 2019
  **********************************************/
 
+#include <algorithm>
+#include <cassert>
 #include <set>
 #include <string>
+#include <vector>
 #include "midcode/MidCode.h"
 #include "midcode/FlowChart.h"
 #include "midcode/BasicBlock.h"
@@ -15,74 +18,82 @@
 
 #include "Optim.h"
 
-void Optim::_clean(void) {
+void Optim::_cleanFuncs(void) {
+    // bfs search all called functions
     std::set<const symtable::FuncTable*> funcs;
-    const symtable::FuncTable* const mainFunc = SymTable::getTable().findFunc("main");
-    FlowChart* flowchart = new FlowChart(mainFunc);
-    for (auto basicblock : flowchart->blocks()) {
-        if (!basicblock->isFuncCall()) {
-            continue;
-        }
-        funcs.insert(_calledFunc(basicblock));
-    }
-    delete flowchart;
-    flowchart = nullptr;
-    funcs.erase(mainFunc);
-    
-    bool inserted;
-    while (true) {
-        inserted = false;
-        for (auto functable : funcs) {
-            flowchart = new FlowChart(functable);
-            for (auto basicblock : flowchart->blocks()) {
-                if (!basicblock->isFuncCall()) {
-                    continue;
-                }
-                if (funcs.count(_calledFunc(basicblock))) {
-                    continue;
-                }
-                inserted = true;
-                funcs.insert(_calledFunc(basicblock));
-            }
-            delete flowchart;
-            flowchart = nullptr;
-        }
-        if (!inserted) {
-            break;
+    std::vector<const symtable::FuncTable*> queue { SymTable::getTable()._main };
+    for (int i = 0; i < queue.size(); i++) {
+        for (auto midcode : queue[i]->midcodes()) {
+            if (!midcode->is(MidCode::Instr::CALL)) { continue; }
+            const symtable::FuncTable* const functable = SymTable::getTable().findFunc(midcode->labelName());
+            auto result = funcs.insert(functable);
+            if (result.second) { queue.push_back(functable); }
         }
     }
     
+    // delete functions never called
     auto& f = SymTable::getTable()._funcs;
     for (auto it = f.begin(); it != f.end(); ) {
         if (funcs.count(it->second)) {
             it++;
         } else {
+            // FIXME: memory leak of syms in `it->second`
             delete it->second;
             it = f.erase(it);
         }
     }
-    
-    std::set<symtable::FuncTable*> calledFuncs;
-    SymTable::getTable().funcs(calledFuncs, false);
-    for (auto functable : calledFuncs) {
-        flowchart = new FlowChart(functable);
-        for (int i = 1; i < flowchart->blocks().size(); i++) {
-            auto basicblock = flowchart->blocks()[i];
-            if (basicblock->_prec.size() != 0) {
-                continue;
-            }
-            for (auto successor : basicblock->_succ) {
-                successor->_prec.erase(basicblock);
-            }
-            for (auto midcode : basicblock->midcodes()) {
-                delete midcode;
-            }
-            basicblock->_midcodes.clear();
-            basicblock->_prec.insert(nullptr);
-            i = 0;
+}
+
+void Optim::_cleanBlocks(symtable::FuncTable* const functable) {
+    FlowChart flowchart(functable);
+    for (int i = 1; i < flowchart.blocks().size(); i++) {
+        auto basicblock = flowchart.blocks()[i];
+        
+        // skip basic blocks that can be reached
+        if (basicblock->_prec.size() != 0) { continue; }
+        
+        // successors cannot be reached through this block
+        for (auto successor : basicblock->_succ) {
+            successor->_prec.erase(basicblock);
         }
-        flowchart->commit();
-        delete flowchart;
-        flowchart = nullptr;
+        
+        // delete all the midcodes so that they won't be written back
+        for (auto midcode : basicblock->midcodes()) {
+            delete midcode;
+        }
+        basicblock->_midcodes.clear();
+        
+        // pretend to be reachable to avoid dead loop
+        basicblock->_prec.insert(nullptr);
+        
+        // restart scanning from begin
+        i = 0;
+    }
+    flowchart.commit();
+}
+
+void Optim::_cleanLabels(symtable::FuncTable* const functable) {
+    std::set<std::string> usedLabels;
+    for (auto midcode : functable->midcodes()) {
+        if (midcode->isBranch() || midcode->is(MidCode::Instr::GOTO)) {
+            usedLabels.insert(midcode->labelName());
+        }
+    }
+    
+    auto& midcodes = functable->_midcodes;
+    for (auto it = midcodes.begin(); it != midcodes.end(); ) {
+        if ((*it)->is(MidCode::Instr::LABEL) && usedLabels.count((*it)->labelName()) == 0) {
+            it = midcodes.erase(it);
+        } else { it++; }
+    }
+}
+
+void Optim::clean(void) {
+    _cleanFuncs();
+    std::set<symtable::FuncTable*> funcs;
+    SymTable::getTable().funcs(funcs, false);
+    for (auto functable : funcs) {
+        _cleanBlocks(functable);
+        _cleanLabels(functable);
     }
 }

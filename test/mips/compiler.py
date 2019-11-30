@@ -5,6 +5,7 @@ import sys
 assert len(sys.argv) == 3
 f = open(sys.argv[1])
 file = f.read()
+file = re.sub('("[^"]*")', lambda m: "\\\\".join(m.group(1).split('\\')), file)
 file = re.sub('([^_0-9\w])printf\s*\(\s*("[^"]*")\s*,\s*([^;]*)\s*\)\s*;', 
               lambda m: m.group(1) + "std::cout<<" + m.group(2) + "<<" + m.group(3) + "<<std::endl;", file)
 file = re.sub('([^_0-9\w])printf\s*\(\s*("[^"]*")\s*\)\s*;', 

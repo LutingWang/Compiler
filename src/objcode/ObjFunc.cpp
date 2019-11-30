@@ -244,14 +244,14 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
         case MidCode::Instr::LOAD_IND:
             t2 = REQ;
             GEN(sll, Reg::t8, t2, noreg, 2, nolab);
-            GEN(add, Reg::t8, Reg::t8, _stackframe->isLocal(midcode->t1()) ? Reg::sp : Reg::gp, noimm, nolab);
+            GEN(add, Reg::t8, Reg::t8, midcode->t1()->isGlobal() ? Reg::gp : Reg::sp, noimm, nolab);
             t0 = REQ;
             GEN(lw, t0, Reg::t8, noreg, (*_stackframe)[midcode->t1()], nolab);
             break;
         case MidCode::Instr::STORE_IND:
             t2 = REQ;
             GEN(sll, Reg::t8, t2, noreg, 2, nolab);
-            GEN(add, Reg::t8, Reg::t8, _stackframe->isLocal(midcode->t0()) ? Reg::sp : Reg::gp, noimm, nolab);
+            GEN(add, Reg::t8, Reg::t8, midcode->t0()->isGlobal() ? Reg::gp : Reg::sp, noimm, nolab);
             t1 = REQ;
             GEN(sw, t1, Reg::t8, noreg, (*_stackframe)[midcode->t0()], nolab);
             break;

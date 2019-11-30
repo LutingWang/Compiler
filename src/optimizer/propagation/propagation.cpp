@@ -16,7 +16,9 @@
 
 #include "Optim.h"
 
-void Optim::symProp(void) {
+bool Optim::symProp(void) {
+    bool result = false;
+    
     std::set<symtable::FuncTable*> funcs;
     SymTable::getTable().funcs(funcs, false);
     for (auto functable : funcs) {
@@ -44,6 +46,10 @@ void Optim::symProp(void) {
                 }
             }
             flowchart.commit();
+            
+            // some midcodes are changed
+            if (updated) { result = true; }
         }
 	}
+    return result;
 }

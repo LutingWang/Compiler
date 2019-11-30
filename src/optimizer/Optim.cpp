@@ -14,12 +14,14 @@
 
 #include "Optim.h"
 
-const symtable::FuncTable* Optim::_calledFunc(const BasicBlock* const basicblock) {
+const symtable::FuncTable* _calledFunc(const BasicBlock* const basicblock) {
     assert(basicblock->isFuncCall());
     return SymTable::getTable().findFunc(basicblock->midcodes().back()->labelName());
 }
 
-void Optim::peephole(void) {
+bool Optim::peephole(void) {
+    bool result = false;
+    
     std::set<symtable::FuncTable*> funcs;
     SymTable::getTable().funcs(funcs, false);
     for (auto functable : funcs) {
@@ -29,9 +31,11 @@ void Optim::peephole(void) {
 					(*(it + 1))->is(MidCode::Instr::LABEL) && 
 					(*it)->labelName() == (*(it + 1))->labelName()) {
                 it = functable->_midcodes.erase(it);
+                result = true;
             } else {
                 it++;
             }
         }
     }
+    return result;
 }

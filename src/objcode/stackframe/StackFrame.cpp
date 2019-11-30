@@ -40,13 +40,9 @@ int StackFrame::size(void) const {
 	return _size;
 }
 
-bool StackFrame::isLocal(const symtable::Entry* const entry) const {
-    return contains(entry);
-}
-
 int StackFrame::operator [] (const symtable::Entry* const entry) const {
 	if (_args.count(entry)) { return _args.at(entry); }
-	if (isLocal(entry)) { return locate(entry); }
+	if (!entry->isGlobal()) { return locate(entry); }
 	else { return Sbss::global()->locate(entry); }
 }
 
