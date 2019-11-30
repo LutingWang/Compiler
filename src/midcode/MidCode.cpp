@@ -144,14 +144,6 @@ bool MidCode::isBranch(void) const {
 void MidCode::_gen(const MidCode* const midcode) {
     if (error::happened) { return; }
     if (SymTable::getTable().curFunc().hasRet()) { return; }
-
-	// check for recursion
-    if (midcode->is(Instr::CALL) &&
-            midcode->labelName() == SymTable::getTable().curFunc().name()) {
-        SymTable::getTable().curFunc().setRecursive();
-    }
-
-	// push into symtable
     SymTable::getTable().curFunc()._midcodes.push_back(midcode);
 }
 

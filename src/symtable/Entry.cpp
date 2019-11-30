@@ -10,6 +10,10 @@
 #include "symtable/Entry.h"
 using namespace symtable;
 
+bool Entry::isGlobal(void) const {
+    return _global;
+}
+
 bool Entry::isConst(void) const {
 	return _const;
 }
@@ -33,19 +37,21 @@ namespace {
 }
 
 symtable::Entry::Entry(const std::string& symName,
+        const bool isGlobal,
         const bool isConst,
 		const bool isInt, 
 		const int value) : 
-	_const(isConst), _int(isInt), _value(value), _name(symName) {
+	_global(isGlobal), _const(isConst), _int(isInt), _value(value), _name(symName) {
 	assert(isConst || value > 0);
 }
 
 symtable::Entry::Entry(const std::string& symName,
+        const bool isGlobal,
         const bool isInt) :
-	_const(false), _int(isInt), _value(NOT_ARRAY), _name(symName) {}
+	_global(isGlobal), _const(false), _int(isInt), _value(NOT_ARRAY), _name(symName) {}
 
 symtable::Entry::Entry(const std::string& symName) :
-	_const(false), _int(true), _value(INVALID), _name(symName) {}
+	_global(false), _const(false), _int(true), _value(INVALID), _name(symName) {}
 
 bool symtable::Entry::isInvalid(void) const {
 	return !isConst() && _value == INVALID;

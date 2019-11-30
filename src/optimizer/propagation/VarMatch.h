@@ -23,9 +23,11 @@ public:
     
     const symtable::Entry* map(const symtable::Entry* const) const;
     
-    void update(const symtable::Entry* const, const symtable::Entry* const);
-    
     void erase(const symtable::Entry* const);
+    
+    void eraseGlobal(void);
+    
+    void match(const symtable::Entry* const, const symtable::Entry* const);
 };
 
 #endif /* VAR_MATCH_H */

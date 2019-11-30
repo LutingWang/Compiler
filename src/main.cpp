@@ -5,81 +5,69 @@
     > Created Time: Mon Sep 23 09:22:09 2019
  **********************************************/
 
+#include <cassert>
 #include <iostream>
-#include <fstream>
 #include <string>
+#include <vector>
 #include "compilerConfig.h"
 #include "error.h"
 #include "frontend.h"
 #include "midcode/MidCode.h"
 #include "mips.h"
 #include "Optim.h"
+
+#include "./files.h"
 using namespace std;
 
 // TODO: change midcode naming to avoid conflict
 // TODO: scan iterations, add comment of type
 
-#if judge
-	#define TESTFILE_PATH "testfile.txt"
-#else
-	#define TESTFILE_PATH PROJECT_BASE_DIR "test/mips/symprop/symprop"
-#endif /* judge */
-
-// Latent streams for corresponding classes to use.
-// Do not expose in the headers!
-//
-// Naming convensions:
-//     *_output		- ofstream
-//     OUTPUT_*		- bool			output switch
-ofstream error_output;
-ofstream symtable_output;
-ofstream lexer_output;
-ofstream midcode_output;
-ofstream mips_output;
-
-int main() {
-	bool OUTPUT_error = true;
-	bool OUTPUT_symtable = true;
-	bool OUTPUT_lexer = true;
-	bool OUTPUT_midcode = true;
-	bool OUTPUT_mips = true;
-
-#define OPEN(id) if (OUTPUT_##id) {							\
-		id##_output.open(judge ? #id ".txt" :				\
-				TESTFILE_PATH "." #id);		\
-		id##_output << std::left;							\
-	} else { id##_output.setstate(iostream::failbit); }
-
-	OPEN(error); OPEN(symtable); OPEN(lexer); OPEN(midcode); OPEN(mips);
-#undef OPEN
-
+int main(int argc, char* argv[]) {
 	// print compiler version info
 	cout << "compiler version " << COMPILER_VERSION_MAJOR 
 		<< "." << COMPILER_VERSION_MINOR << endl;
+    
+#if judge
+    assert(argc == 1);
+    const string testfile_path = "testfile.txt";
+    files::open();
+#else
+    assert(argc == 2);
+    const string testfile_path = PROJECT_BASE_DIR + string(argv[1]);
+    files::open(testfile_path);
+#endif /* judge */
+	
+	cout << "grammar analysis processing ... ";
+    grammar::parse(testfile_path);
+	cout << "finished" << endl;
 
-	grammar::parse(TESTFILE_PATH);
+    if (error::happened) { 
+		cout << "WARNING: error detected, aborting compilation" << endl;
+		goto exit; 
+	}
 
-	if (error::happened) { goto exit; }
+	cout << "midcode generating ... ";
+    MidCode::output();
+	cout << "finished" << endl;
 
-	MidCode::output();
-    midcode_output << "----------------------" << endl;
-
-	// Optim::inlineExpan();
-	// Optim::commonExprElim();
+	cout << "optimization processing ... ";
+    Optim::inlineExpan();
+    // Optim::commonExprElim();
     Optim::symProp();
-    // Optim::peephole();
+    Optim::peephole();
+	cout << "finished" << endl;
 
-	MidCode::output();
+	cout << "optimized midcode generating ... ";
+    MidCode::output();
+	cout << "finished" << endl;
 
-	mips::init();
-	mips::output();
-	mips::deinit();
+	cout << "mips code generating ... ";
+    mips::init();
+    mips::output();
+    mips::deinit();
+	cout << "finished" << endl;
 
 exit:
-	error_output.close();
-	symtable_output.close();
-	lexer_output.close();
-	midcode_output.close();
-	mips_output.close();
+    files::close();
 	return 0;
 }

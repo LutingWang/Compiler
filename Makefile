@@ -7,11 +7,11 @@
 rerun:
 	cd ./build && make clean
 	make -C ./build >> ./build/log.txt
-	./build/compiler
+	./test.sh mips
 
 run:
 	make -C ./build >> ./build/log.txt
-	./build/compiler
+	./test.sh mips
 
 clean:
 	-rm -r ./build/* ./include/compilerConfig.h ./judge/* ./Xcode/*

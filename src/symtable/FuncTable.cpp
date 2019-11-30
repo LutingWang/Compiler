@@ -11,6 +11,10 @@
 #include "symtable/table.h"
 using namespace symtable;
 
+bool FuncTable::isGlobal(void) const {
+    return false;
+}
+
 bool FuncTable::isVoid(void) const {
 	return _void;
 }
@@ -35,7 +39,12 @@ bool FuncTable::hasRet(void) const {
 
 bool FuncTable::isInline(void) const { 
 	assert(_const);
-	return _inline; 
+    for (auto midcode : _midcodes) {
+        if (midcode->is(MidCode::Instr::CALL) && midcode->labelName() == name()) {
+            return false;
+        }
+    }
+    return true;
 }
 
 FuncTable::FuncTable(const std::string& name) : 
@@ -44,21 +53,26 @@ FuncTable::FuncTable(const std::string& name) :
 FuncTable::FuncTable(const std::string& name, const bool isInt) : 
 	Table(name), _void(false), _int(isInt) {}
 
-symtable::FuncTable::~FuncTable(void) {
+FuncTable::~FuncTable(void) {
 	assert(_const);
 	for (auto midcode : midcodes()) { 
 		delete midcode; 
 	}
 }
 
-void symtable::FuncTable::setHasRet(void) {
-	assert(!_const);
-	_hasRet = true;
+void FuncTable::operator << (const FuncTable& source) {
+    assert(_const);
+    for (auto& /* <renamed_symName: string, const Entry*> */ pair : source._syms) {
+        if (_contains(pair.first)) {
+            assert(_find(pair.first) == pair.second);
+        }
+    }
+    _syms.insert(source._syms.begin(), source._syms.end());
 }
 
-void symtable::FuncTable::setRecursive(void) {
+void FuncTable::setHasRet(void) {
 	assert(!_const);
-	_inline = false;
+	_hasRet = true;
 }
 
 const Entry* FuncTable::pushArg(const std::string& symName, const bool isInt) {

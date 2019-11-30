@@ -112,8 +112,6 @@ private:
     // If error happened or the current function being parsed has
     // already returned, do nothing. Otherwise push the `MidCode`
     // into symtable.
-    //
-    // This function is also obligated to check for recursive function.
 	static void _gen(const MidCode* const);
 public:
 	static void gen(const Instr, 

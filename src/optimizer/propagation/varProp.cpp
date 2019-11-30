@@ -1,5 +1,5 @@
 /**********************************************
-    > File Name: var.cpp
+    > File Name: varProp.cpp
     > Author: Luting Wang
     > Mail: 2457348692@qq.com 
     > Created Time: Fri Nov 29 15:27:38 2019
@@ -41,7 +41,7 @@ bool Optim::_varProp(const MidCode*& midcode, VarMatch& match) {
         break;
     case MidCode::Instr::ASSIGN:
         t1 = match.map(t1);
-        match.update(t0, t1);
+        match.match(t0, t1);
         break;
     case MidCode::Instr::PUSH_ARG:
     case MidCode::Instr::RET:
@@ -49,6 +49,8 @@ bool Optim::_varProp(const MidCode*& midcode, VarMatch& match) {
         t1 = match.map(t1);
         break;
     case MidCode::Instr::CALL:
+        match.eraseGlobal(); // TODO: target those globals that would change in called func only
+        // fallthrough
     case MidCode::Instr::INPUT:
         match.erase(t0);
         break;

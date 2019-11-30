@@ -26,12 +26,14 @@ namespace symtable {
 	class Table {
 		friend class ::SymTable;
 		friend class ::Optim;
-
+	
 		const std::string _name;
+    protected:
 		std::map<std::string, const Entry*> _syms;
 	public:
 		const std::string& name(void) const;
 		void syms(std::set<const Entry*>&) const; // can only be called after sealed
+        virtual bool isGlobal(void) const;
 
 	protected:
 		Table(const std::string&);
@@ -46,7 +48,7 @@ namespace symtable {
         // `Table`s in this compiler. This detour would be exceedingly
         // helpful to the optimizer.
 		std::string _rename(const std::string&) const;
-        
+	protected:
         // Performs query using modified names. 
         bool _contains(const std::string&) const;
         const Entry* _find(const std::string&) const;
@@ -63,10 +65,6 @@ namespace symtable {
 		const Entry* pushConst(const std::string&, const bool, const int);
 		const Entry* pushArray(const std::string&, const bool, const int);
 		const Entry* pushVar(const std::string&, const bool);
-
-	private:
-		// shallow copy of `_syms`
-		void operator << (const Table&);
 
 	protected:
 		bool _const = false;
@@ -87,8 +85,8 @@ namespace symtable {
 		std::vector<const Entry*> _argList;
 		std::vector<const MidCode*> _midcodes;
 		bool _hasRet = false;
-		bool _inline = true;
 	public:
+        virtual bool isGlobal(void) const;
 		bool isVoid(void) const;
 		bool isInt(void) const;
 		const std::vector<const Entry*>& argList(void) const;
@@ -103,9 +101,11 @@ namespace symtable {
         // Deallocate midcodes.
 		virtual ~FuncTable(void);
 
+	private:
+		// shallow copy of `_syms`
+		void operator << (const FuncTable&);
 	public:
 		void setHasRet(void); // can only be called by `Stat::block`
-		void setRecursive(void); // `MidCode::gen` uses this
 		const Entry* pushArg(const std::string&, const bool isInt);
 	};
 }

@@ -33,6 +33,10 @@ void Table::syms(std::set<const Entry*>& symList) const {
     assert(symList.count(nullptr) == 0);
 }
 
+bool Table::isGlobal(void) const {
+    return true;
+}
+
 Table::Table(const std::string& name) : 
 	_name(name) {}
 
@@ -77,24 +81,15 @@ const Entry* Table::_pushInvalid(const std::string& symName) {
 
 const Entry* Table::pushConst(const std::string& symName, 
 		const bool isInt, const int value) {
-	return _push(new Entry(_rename(symName), true, isInt, value));
+	return _push(new Entry(_rename(symName), isGlobal(), true, isInt, value));
 }
 
 const Entry* Table::pushArray(const std::string& symName, 
 		const bool isInt, const int value) {
-	return _push(new Entry(_rename(symName), false, isInt, value));
+	return _push(new Entry(_rename(symName), isGlobal(), false, isInt, value));
 }
 
 const Entry* Table::pushVar(const std::string& symName, const bool isInt) {
-	return _push(new Entry(_rename(symName), isInt));
+	return _push(new Entry(_rename(symName), isGlobal(), isInt));
 }
 
-void Table::operator << (const Table& source) {
-	assert(_const);
-	for (auto& /* <renamed_symName: string, const Entry*> */ pair : source._syms) {
-		if (_contains(pair.first)) {
-			assert(_find(pair.first) == pair.second);
-		}
-	}
-    _syms.insert(source._syms.begin(), source._syms.end());
-}

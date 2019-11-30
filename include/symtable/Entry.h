@@ -22,7 +22,7 @@ namespace symtable {
     //     - char[]         (false,     false,      array_len)
     //     - invalid        (false,     true,       INVALID)
     // Among them, `invalid` is reserved for error handling. `NOT_ARRAY`
-    // and `INVALID` are predefined constants to flag specific case.
+    // and `INVALID` are predefined constants to flag specific cases.
     // Their exact values are not concerned as long as they are negative.
     //
     // It would be helpful to introduce some terminologies here.
@@ -33,10 +33,11 @@ namespace symtable {
 	class Entry {
 		friend class Table;
 
-		const bool _const, _int;
+		const bool _global, _const, _int;
 		const int _value; 
 		const std::string _name; // renamed names
 	public:
+		bool isGlobal(void) const;
 		bool isConst(void) const;
 		bool isInt(void) const;
 		int value(void) const;
@@ -45,12 +46,14 @@ namespace symtable {
 	private:
 		// const or array
 		Entry(const std::string&, 
+				const bool isGlobal,
 				const bool isConst, 
 				const bool isInt, 
 				const int);
 		
 		// non-array var
 		Entry(const std::string&, 
+				const bool isGlobal,
 				const bool isInt); 
 
 		// invalid
