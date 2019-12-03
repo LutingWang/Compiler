@@ -31,8 +31,14 @@ ObjCode::ObjCode( const Instr instr,
 	switch (instr) {
 #define CASE(id) case Instr::id
 	CASE(add): CASE(sub): 
-	CASE(mul): CASE(div):
+	CASE(mul): 
 		assert(status == 0b11100);
+		break;
+	CASE(div):
+		assert(status == 0b01100);
+		break;
+	CASE(mflo):
+		assert(status == 0b10000);
 		break;
 	CASE(addi): CASE(subi):
 	CASE(lw): CASE(sw):
@@ -74,7 +80,8 @@ std::ostream& operator << (std::ostream& output, const ObjCode::Instr instr) {
 	switch (instr) {
 #define CASE(id) case ObjCode::Instr::id: output << #id; break
 		CASE(add); CASE(addi); CASE(sub); CASE(subi);
-		CASE(mul); CASE(div); CASE(lw); CASE(sw);
+		CASE(mul); CASE(div); CASE(mflo);
+		CASE(lw); CASE(sw);
 		CASE(bgt); CASE(bge); CASE(blt); CASE(ble);
 		CASE(beq); CASE(beqz); CASE(bne); CASE(bnez);
 		CASE(jal); CASE(jr); CASE(j);
@@ -95,8 +102,14 @@ void ObjCode::output(void) const {
 	switch (instr) {
 #define CASE(id) case Instr::id
 	CASE(add): CASE(sub): 
-	CASE(mul): CASE(div):
+	CASE(mul): 
 		mips_output << t0 << ", " << t1 << ", " << t2 << std::endl;
+		break;
+	CASE(div):
+		mips_output << t1 << ", " << t2 << std::endl;
+		break;
+	CASE(mflo):
+		mips_output << t0 << std::endl;
 		break;
 	CASE(addi): CASE(subi):
 	CASE(sll):
@@ -114,8 +127,7 @@ void ObjCode::output(void) const {
 		mips_output << t1 << ", " << label << std::endl;
 		break;
 	CASE(jal): 
-		// TODO: uncomment
-		mips_output << /* "func_" << */ label << std::endl;
+		mips_output << label << std::endl;
 		break;
 	CASE(j): 
 		mips_output << label << std::endl;

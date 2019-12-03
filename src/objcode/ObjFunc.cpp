@@ -233,14 +233,31 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
         }
     } else for (auto midcode : basicblock.midcodes()){
         switch (midcode->instr()) {
-#define CASE(id, op) case MidCode::Instr::id: \
-            t1 = REQ; t2 = REQ; t0 = REQ; \
-            GEN(op, t0, t1, t2, noimm, nolab); \
-            break
-                
-        CASE(ADD, add); CASE(SUB, sub); CASE(MULT, mul); CASE(DIV, div);
-#undef CASE
-
+        case MidCode::Instr::ADD:
+            t1 = REQ;
+            t2 = REQ;
+            t0 = REQ;
+            GEN(add, t0, t1, t2, noimm, nolab);
+            break;
+        case MidCode::Instr::SUB:
+            t1 = REQ;
+            t2 = REQ;
+            t0 = REQ;
+            GEN(sub, t0, t1, t2, noimm, nolab);
+            break;
+        case MidCode::Instr::MULT:
+            t1 = REQ;
+            t2 = REQ;
+            t0 = REQ;
+            GEN(mul, t0, t1, t2, noimm, nolab);
+            break;
+        case MidCode::Instr::DIV:
+            t1 = REQ;
+            t2 = REQ;
+            GEN(div, noreg, t1, t2, noimm, nolab);
+            t0 = REQ;
+            GEN(mflo, t0, noreg, noreg, noimm, nolab);
+            break;
         case MidCode::Instr::LOAD_IND:
             t2 = REQ;
             GEN(sll, Reg::t8, t2, noreg, 2, nolab);

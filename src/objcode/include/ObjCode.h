@@ -24,7 +24,7 @@ public:
 	enum class Instr {
 		add, addi, 
 		sub, subi, 
-		mul, div,
+		mul, div, mflo,
 		lw, sw, 
 
 		bgt, bge, 

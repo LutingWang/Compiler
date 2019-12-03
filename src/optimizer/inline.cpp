@@ -33,7 +33,7 @@ const symtable::FuncTable* Optim::_repaceBlock(BasicBlock* const basicblock) {
         basicblock->_midcodes[i] = assign;
     }
     
-    // retrieve sym to save return value
+    // retrieve the sym to save return value
     const symtable::Entry* const retsym = basicblock->midcodes().back()->t0();
     assert((retsym == nullptr) == (calledFunc->isVoid()));
     delete basicblock->midcodes().back();
