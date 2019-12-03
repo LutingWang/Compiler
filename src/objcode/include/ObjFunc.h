@@ -11,14 +11,10 @@
 #include <map>
 #include <set>
 #include <vector>
-
-namespace symtable {
-	class Entry;
-	class FuncTable;
-}
-
-class MidCode;
-class BasicBlock;
+#include "midcode/MidCode.h"
+#include "midcode/BasicBlock.h"
+#include "symtable/Entry.h"
+#include "symtable/table.h"
 
 class ObjCode;
 class RegPool;
@@ -32,17 +28,11 @@ public:
 	static void deinit(void);
 
 private:
-	RegPool* _regpool = nullptr;
-	StackFrame* _stackframe = nullptr;
-	std::set<const symtable::Entry*> _storage;
-	std::vector<ObjCode> _objcodes;
+	std::vector<const ObjCode*> _objcodes;
 
 public:
 	ObjFunc(const symtable::FuncTable* const);
 	~ObjFunc(void);
-
-private:
-	void _compileBlock(const BasicBlock&);
 };
 
 #endif /* OBJ_FUNC_H */

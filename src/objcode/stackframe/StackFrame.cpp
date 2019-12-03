@@ -18,10 +18,9 @@
 #include "../include/ObjCode.h"
 #include "../include/memory.h"
 
-StackFrame::StackFrame(std::vector<ObjCode>& output, 
-		std::vector<const symtable::Entry*> argList, 
+StackFrame::StackFrame(std::vector<const symtable::Entry*> argList,
 		const std::set<const symtable::Entry*>& syms) :
-	Sbss(syms), _output(output) {
+	Sbss(syms) {
 
 	for (auto& entry : syms) {
         assert(std::find(argList.begin(), argList.end(), entry) == argList.end());
@@ -61,12 +60,12 @@ int StackFrame::operator [] (Reg reg) const {
 	return offset;
 }
            
-void StackFrame::_visit(const bool isLoad, const Reg reg) {
-    _output.emplace_back(isLoad ? ObjCode::Instr::lw : ObjCode::Instr::sw, 
+const ObjCode* StackFrame::_visit(const bool isLoad, const Reg reg) const {
+    return new ObjCode(isLoad ? ObjCode::Instr::lw : ObjCode::Instr::sw,
 			reg, Reg::sp, Reg::zero, operator[](reg), "");
 }
 
-void StackFrame::_visit(const bool isLoad, const Reg reg, const symtable::Entry* const entry) {
+const ObjCode* StackFrame::_visit(const bool isLoad, const Reg reg, const symtable::Entry* const entry) const {
     assert(entry != nullptr);
 	ObjCode::Instr instr = isLoad ? ObjCode::Instr::lw : ObjCode::Instr::sw;
 	Reg t1 = Reg::sp;
@@ -76,28 +75,28 @@ void StackFrame::_visit(const bool isLoad, const Reg reg, const symtable::Entry*
 		t1 = Reg::zero;
 		imm = entry->value();
 	} else if (_args.count(entry)) {
-		imm = _args[entry];
+		imm = _args.at(entry);
 	} else if (contains(entry)) {
 		imm = locate(entry);
 	} else {
         t1 = Reg::gp;
 		imm = global()->locate(entry);
 	}
-	_output.emplace_back(instr, reg, t1, Reg::zero, imm, "");
+	return new ObjCode(instr, reg, t1, Reg::zero, imm, "");
 }
 
-void StackFrame::store(Reg reg) {
-	_visit(false, reg);
+const ObjCode* StackFrame::store(Reg reg) const {
+	return _visit(false, reg);
 }
 
-void StackFrame::load(Reg reg) {
-   _visit(true, reg);
+const ObjCode* StackFrame::load(Reg reg) const {
+   return _visit(true, reg);
 }
 
-void StackFrame::store(Reg reg, const symtable::Entry* const entry) {
-	_visit(false, reg, entry);
+const ObjCode* StackFrame::store(Reg reg, const symtable::Entry* const entry) const {
+	return _visit(false, reg, entry);
 }
 
-void StackFrame::load(Reg reg, const symtable::Entry* const entry) {
-	_visit(true, reg, entry);
+const ObjCode* StackFrame::load(Reg reg, const symtable::Entry* const entry) const {
+	return _visit(true, reg, entry);
 }

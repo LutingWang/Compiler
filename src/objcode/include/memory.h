@@ -42,31 +42,29 @@ public:
 };
 
 class StackFrame : protected Sbss {
-	std::vector<ObjCode>& _output;
 	std::map<const symtable::Entry*, int> _args;
 	int _regBase;
 	int _size;
 public:
 	int size(void) const;
 
-	StackFrame(std::vector<ObjCode>&, 
-			std::vector<const symtable::Entry*> argList, 
+	StackFrame(std::vector<const symtable::Entry*> argList,
 			const std::set<const symtable::Entry*>& syms);
 
 	int operator [] (const symtable::Entry* const) const;
 	int operator [] (Reg) const;
 
 private:
-	void _visit(const bool isLoad, const Reg);
+	const ObjCode* _visit(const bool isLoad, const Reg) const;
 public:
-	void store(Reg);
-	void load(Reg);
+	const ObjCode* store(Reg) const;
+	const ObjCode* load(Reg) const;
 
 private:
-	void _visit(const bool isLoad, const Reg, const symtable::Entry* const);
+	const ObjCode* _visit(const bool isLoad, const Reg, const symtable::Entry* const) const;
 public:
-	void store(Reg, const symtable::Entry* const);
-	void load(Reg, const symtable::Entry* const);
+	const ObjCode* store(Reg, const symtable::Entry* const) const;
+	const ObjCode* load(Reg, const symtable::Entry* const) const;
 };
 
 #endif /* MEMORY_H */

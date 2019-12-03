@@ -23,7 +23,6 @@ void mips::init(void) {
 }
 
 void mips::deinit(void) {
-    ObjFunc::deinit();
     Sbss::deinit();
 }
 
