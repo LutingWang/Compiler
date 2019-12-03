@@ -16,79 +16,91 @@ ObjCode::ObjCode( const Instr instr,
 		const Reg t2,
 		const int imm,
 		const std::string& label) :
-	instr(instr), 
-	t0(t0), 
-	t1(t1), 
-	t2(t2), 
-	imm(imm), 
-	label(label) {
-
+	_instr(instr),
+	_t0(t0),
+	_t1(t1),
+	_t2(t2),
+	_imm(imm),
+	_label(label) {
 	int status = ((t0 != Reg::zero) << 4) +
 		((t1 != Reg::zero) << 3) + 
 		((t2 != Reg::zero) << 2) +
 		((imm != 0) << 1) +
 		(label != "");
 	switch (instr) {
-#define CASE(id) case Instr::id
-	CASE(add): CASE(sub): 
-	CASE(mul): 
+	case Instr::add: case Instr::sub: 
+	case Instr::mul: 
 		assert(status == 0b11100);
 		break;
-	CASE(div):
+	case Instr::div:
 		assert(status == 0b01100);
 		break;
-	CASE(mflo):
+	case Instr::mflo:
 		assert(status == 0b10000);
 		break;
-	CASE(addi): CASE(subi):
-	CASE(lw): CASE(sw):
-	CASE(sll):
+	case Instr::addi: case Instr::subi:
+	case Instr::lw: case Instr::sw:
 		assert(status == 0b11010 || status == 0b11000);
 		break;
-	CASE(bgt): CASE(bge):
-	CASE(blt): CASE(ble):
-	CASE(beq): CASE(bne):
+	case Instr::bgt: case Instr::bge:
+	case Instr::blt: case Instr::ble:
+	case Instr::beq: case Instr::bne:
 		assert(status == 0b01101);
 		break;
-	CASE(beqz): CASE(bnez):
+	case Instr::beqz: case Instr::bnez:
 		assert(status == 0b01001);
 		break;
-	CASE(jal): CASE(j): CASE(label):
+	case Instr::jal: case Instr::j: 
 		assert(status == 0b00001);
 		break;
-	CASE(jr):
+	case Instr::jr:
 		assert(status == 0b10000);
 		break;
-	CASE(la):
+	case Instr::la:
 		assert(status == 0b10001);
 		break;
-	CASE(li):
+	case Instr::li:
 		assert(status == 0b10010 || status == 0b10000);
 		break;
-	CASE(move):
+	case Instr::move:
 		assert(status == 0b11000);
 		break;
-	CASE(syscall):
+	case Instr::sll:
+		assert(status == 0b11010 || status == 0b11000);
+		break;
+	case Instr::syscall:
 		assert(status == 0b00000);
 		break;
+	case Instr::label:
+		assert(status == 0b00001);
+		break;
 	default: assert(0);
-#undef CASE
 	}
 }
 
 std::ostream& operator << (std::ostream& output, const ObjCode::Instr instr) {
 	switch (instr) {
 #define CASE(id) case ObjCode::Instr::id: output << #id; break
-		CASE(add); CASE(addi); CASE(sub); CASE(subi);
-		CASE(mul); CASE(div); CASE(mflo);
-		CASE(lw); CASE(sw);
-		CASE(bgt); CASE(bge); CASE(blt); CASE(ble);
-		CASE(beq); CASE(beqz); CASE(bne); CASE(bnez);
-		CASE(jal); CASE(jr); CASE(j);
-		CASE(la); CASE(li); CASE(move); CASE(sll);
-		CASE(syscall); CASE(label);
+	CASE(add); CASE(sub); 
+	CASE(mul); CASE(div); CASE(mflo);
+
+	CASE(addi); CASE(subi); 
+	CASE(lw); CASE(sw); 
+
+	CASE(bgt); CASE(bge); 
+	CASE(blt); CASE(ble); 
+	CASE(beq); CASE(bne); 
+	CASE(beqz); CASE(bnez);
+
+	CASE(jal); CASE(j); CASE(jr);
+
+	CASE(la); CASE(li); CASE(move); CASE(sll);
+
+	CASE(syscall);
+
+	CASE(label);
 #undef CASE
-		default: assert(0);
+	default: assert(0);
 	}
 	return output;
 }
@@ -96,61 +108,61 @@ std::ostream& operator << (std::ostream& output, const ObjCode::Instr instr) {
 extern std::ofstream mips_output;
 
 void ObjCode::output(void) const {
-	if (instr != ObjCode::Instr::label) {
-		mips_output << instr << ' ';
+	if (_instr != ObjCode::Instr::label) {
+		mips_output << _instr << ' ';
 	}
-	switch (instr) {
-#define CASE(id) case Instr::id
-	CASE(add): CASE(sub): 
-	CASE(mul): 
-		mips_output << t0 << ", " << t1 << ", " << t2 << std::endl;
+	switch (_instr) {
+	case Instr::add: case Instr::sub: 
+	case Instr::mul: 
+		mips_output << _t0 << ", " << _t1 << ", " << _t2 << std::endl;
 		break;
-	CASE(div):
-		mips_output << t1 << ", " << t2 << std::endl;
+	case Instr::div:
+		mips_output << _t1 << ", " << _t2 << std::endl;
 		break;
-	CASE(mflo):
-		mips_output << t0 << std::endl;
+	case Instr::mflo:
+		mips_output << _t0 << std::endl;
 		break;
-	CASE(addi): CASE(subi):
-	CASE(sll):
-		mips_output << t0 << ", " << t1 << ", " << imm << std::endl;
+	case Instr::addi: case Instr::subi:
+		mips_output << _t0 << ", " << _t1 << ", " << _imm << std::endl;
 		break;
-	CASE(lw): CASE(sw):
-		mips_output << t0 << ", " << imm << '(' << t1 << ')' << std::endl;
+	case Instr::lw: case Instr::sw:
+		mips_output << _t0 << ", " << _imm << '(' << _t1 << ')' << std::endl;
 		break;
-	CASE(bgt): CASE(bge):
-	CASE(blt): CASE(ble):
-	CASE(beq): CASE(bne):
-		mips_output << t1 << ", " << t2 << ", " << label << std::endl;
+	case Instr::bgt: case Instr::bge:
+	case Instr::blt: case Instr::ble:
+	case Instr::beq: case Instr::bne:
+		mips_output << _t1 << ", " << _t2 << ", " << _label << std::endl;
 		break;
-	CASE(beqz): CASE(bnez):
-		mips_output << t1 << ", " << label << std::endl;
+	case Instr::beqz: case Instr::bnez:
+		mips_output << _t1 << ", " << _label << std::endl;
 		break;
-	CASE(jal): 
-		mips_output << label << std::endl;
+	case Instr::jal: 
+		mips_output << _label << std::endl;
 		break;
-	CASE(j): 
-		mips_output << label << std::endl;
+	case Instr::j: 
+		mips_output << _label << std::endl;
 		break;
-	CASE(label):
-		mips_output << label << ':' << std::endl;
+	case Instr::jr:
+		mips_output << _t0 << std::endl;
 		break;
-	CASE(jr):
-		mips_output << t0 << std::endl;
+	case Instr::la:
+		mips_output << _t0 << ", " << _label << std::endl;;
 		break;
-	CASE(la):
-		mips_output << t0 << ", " << label << std::endl;;
+	case Instr::li:
+		mips_output << _t0 << ", " << _imm << std::endl;;
 		break;
-	CASE(li):
-		mips_output << t0 << ", " << imm << std::endl;;
+	case Instr::move:
+		mips_output << _t0 << ", " << _t1 << std::endl;;
 		break;
-	CASE(move):
-		mips_output << t0 << ", " << t1 << std::endl;;
+	case Instr::sll:
+		mips_output << _t0 << ", " << _t1 << ", " << _imm << std::endl;
 		break;
-	CASE(syscall):
+	case Instr::syscall:
         mips_output << std::endl;
 		break;
-#undef CASE
+	case Instr::label:
+		mips_output << _label << ':' << std::endl;
+		break;
 	default: assert(0);
 	}
 }

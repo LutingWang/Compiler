@@ -8,6 +8,7 @@
 #ifndef SIMULATOR_H
 #define SIMULATOR_H
 
+#include <queue>
 #include <set>
 #include <vector>
 
@@ -32,12 +33,12 @@ class Simulator {
 	// need to be done at each request, while the second
 	// part stores all the registers back to the stack, so
 	// that the basic block can exit safely.
-	std::vector<Action*>& _actions;
+	std::queue<Action*>& _actions;
 public:
 	Simulator(const std::vector<const symtable::Entry*>& reg_a, 
 			const std::vector<const symtable::Entry*>& reg_s, 
 			const std::vector<const symtable::Entry*>& _seq, 
-			std::vector<Action*>& actions);
+			std::queue<Action*>& actions);
 
 	void request(bool write, bool mask);
 

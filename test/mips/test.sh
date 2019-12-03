@@ -22,7 +22,7 @@ do
 		cat $dir"/input" | ./${file}".exe" > ${file}".std"
 	fi
 	
-	cat $dir"/input" | java -jar ./mars.jar ic nc 100000 ${file}".mips" > ${file}".out"
+	cat $dir"/input" | java -jar ./mars.jar ic nc 10000000 ${file}".mips" > ${file}".out"
 	tail -n 3 ${file}".out" > ${file}".stat"
 	linenum=`cat ${file}".out" | wc -l`
 	last3=`expr $linenum - 2`

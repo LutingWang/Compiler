@@ -17,12 +17,12 @@
 #include "symtable/Entry.h"
 #include "symtable/SymTable.h"
 
-#include "./include/ObjCode.h"
-#include "./include/RegPool.h"
-#include "./include/memory.h"
-#include "./include/StrPool.h"
+#include "../include/ObjCode.h"
+#include "../include/RegPool.h"
+#include "../include/memory.h"
+#include "../include/StrPool.h"
 
-#include "./include/ObjFunc.h"
+#include "../include/ObjFunc.h"
 
 std::map<std::string, ObjFunc*> ObjFunc::_func;
 
@@ -338,9 +338,14 @@ void ObjFunc::_compileBlock(const BasicBlock& basicblock) {
 ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
 	auto& args = functable->argList();
 	auto& midcodes = functable->midcodes();
-
-	// initialize flow chart
-	FlowChart flowchart(functable);
+    
+    // initialize stack frame
+    std::set<const symtable::Entry*> storage;
+    functable->syms(storage);
+    for (auto& arg : args) {
+        storage.erase(arg);
+    }
+    _stackframe = new StackFrame(_objcodes, args, storage);
 
 	// initialize register pool
 	std::vector<const symtable::Entry*> reg_a(reg::a.size(), nullptr);
@@ -349,28 +354,18 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
 	}
     _regpool = new RegPool(midcodes, reg_a);
 
-	// simulate temporary register allocation
-	for (auto& basicblock : flowchart.blocks()) {
-		std::vector<const symtable::Entry*> _seq;
-		std::vector<bool> write;
-		std::vector<bool> mask;
-		for (auto& midcode : basicblock->midcodes()) {
-			requiredSyms(_seq, _storage, write, mask, *midcode);
-		}
-		_regpool->simulate(_seq, write, mask);
-	}
-
-	// initialize stack frame
-	_regpool->storage(_storage);
-    for (auto& entry : args) {
-        _storage.erase(entry);
-    }
-    _stackframe = new StackFrame(_objcodes, args, _storage);
-
     // prologue
 	_objcodes.emplace_back(ObjCode::Instr::subi, Reg::sp, Reg::sp, Reg::zero, _stackframe->size(), "");
 
-    for (auto& basicblock : flowchart.blocks()) {
+    FlowChart flowchart(functable);
+    for (auto basicblock : flowchart.blocks()) {
+        std::vector<const symtable::Entry*> _seq;
+        std::vector<bool> write;
+        std::vector<bool> mask;
+        for (auto& midcode : basicblock->midcodes()) {
+            requiredSyms(_seq, _storage, write, mask, *midcode);
+        }
+        _regpool->simulate(_seq, write, mask);
         _compileBlock(*basicblock);
     }
 }

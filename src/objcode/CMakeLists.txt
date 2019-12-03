@@ -2,6 +2,9 @@ cmake_minimum_required (VERSION 3.7.1)
 
 project (objcode)
 
+add_subdirectory ("ObjFunc")
+set (LIBS ${LIBS} objfunc)
+
 add_subdirectory ("RegPool")
 set (LIBS ${LIBS} regpool)
 

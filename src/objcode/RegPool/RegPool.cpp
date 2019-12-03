@@ -26,58 +26,38 @@ RegPool::RegPool(const std::vector<const MidCode*>& midcode,
 	_reg_s = std::vector<const symtable::Entry*>(8, nullptr);
 }
 
-RegPool::~RegPool(void) {
-    for (auto& actions : _actionCache) {
-        for (auto& action : actions) {
-            delete action;
-        }
-    }
-}
-
 void RegPool::simulate(const std::vector<const symtable::Entry*>& _seq, 
 		const std::vector<bool>& write, 
 		const std::vector<bool>& mask) {
-    _actionCache.push_back({});
-	Simulator simu(_reg_a, _reg_s, _seq, _actionCache.back());
+    assert(_actionCache.empty());
+	Simulator simu(_reg_a, _reg_s, _seq, _actionCache);
 	for (int i = 0; i < _seq.size(); i++) {
 		simu.request(write[i], mask[i]);
 	}
 	simu.clear();
 }
 
-void RegPool::storage(std::set<const symtable::Entry*>& stack) const {
-	for (auto& actions : _actionCache) {
-		for (auto& action : actions) {
-            stack.insert(action->store);
-            stack.insert(action->load);
-		}
-	}
-	stack.erase(nullptr);
-}
-
 void RegPool::_execute(StackFrame& stackframe) {
-	Action* action = _actionCache[_blockCounter][_actionCounter];
+	const Action* const action = _actionCache.front();
+    _actionCache.pop();
     if (action->store != nullptr) {
         stackframe.store(action->reg, action->store);
 	}
     if (action->load != nullptr) {
         stackframe.load(action->reg, action->load);
 	}
+    delete action;
 }
 
 Reg RegPool::request(StackFrame& stackframe) {
+    const Reg result = _actionCache.front()->reg;
 	_execute(stackframe);
-	Action* action = _actionCache[_blockCounter][_actionCounter];
-	_actionCounter++;
-    return action->reg;
+    return result;
 }
 
 void RegPool::clear(StackFrame& stackframe) {
-	while (_actionCounter < _actionCache[_blockCounter].size()) {
-        assert(_actionCache[_blockCounter][_actionCounter]->load == nullptr);
+	while (!_actionCache.empty()) {
+        assert(_actionCache.front()->load == nullptr && _actionCache.front()->store != nullptr);
 		_execute(stackframe);
-		_actionCounter++;
 	}
-	_blockCounter++;
-    _actionCounter = 0;
 }

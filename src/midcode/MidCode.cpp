@@ -175,7 +175,7 @@ const symtable::Entry* MidCode::genConst(const bool isInt, const int value) {
 
 std::string MidCode::genLabel(void) {
 	static int counter = 1;
-	return "label_" + std::to_string(counter++);
+	return "label$" + std::to_string(counter++);
 }
 
 extern std::ofstream midcode_output;

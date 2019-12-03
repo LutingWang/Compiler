@@ -16,7 +16,7 @@
 Simulator::Simulator(const std::vector<const symtable::Entry*>& reg_a,
 		const std::vector<const symtable::Entry*>& reg_s, 
 		const std::vector<const symtable::Entry*>& _seq, 
-		std::vector<Action*>& actions) :
+		std::queue<Action*>& actions) :
 	_reg_a(reg_a), 
 	_reg_s(reg_s), 
 	_reg_t(reg::t.size(), nullptr), 
@@ -31,21 +31,21 @@ void Simulator::request(bool write, bool mask) {
 	// check a registers
 	int ind = std::find(_reg_a.begin(), _reg_a.end(), target) - _reg_a.begin();
 	if (ind != _reg_a.size()) {
-		_actions.push_back(new Action(reg::a[ind], nullptr, nullptr));
+		_actions.push(new Action(reg::a[ind], nullptr, nullptr));
 		return;
 	}
 
 	// check s registers
 	ind = std::find(_reg_s.begin(), _reg_s.end(), target) - _reg_s.begin();
     if (ind != _reg_s.size()) {
-        _actions.push_back(new Action(reg::s[ind], nullptr, nullptr));
+        _actions.push(new Action(reg::s[ind], nullptr, nullptr));
         return;
     }
 
 	// check temporary registers
     ind = std::find(_reg_t.begin(), _reg_t.end(), target) - _reg_t.begin();
     if (ind != _reg_t.size()) {
-        _actions.push_back(new Action(reg::t[ind], nullptr, nullptr));
+        _actions.push(new Action(reg::t[ind], nullptr, nullptr));
 		if (write) { _dirty[ind] = true; }
         return;
     }
@@ -53,7 +53,7 @@ void Simulator::request(bool write, bool mask) {
 	// try to find a nullptr in the temporary registers
     ind = std::find(_reg_t.begin(), _reg_t.end(), nullptr) - _reg_t.begin();
     if (ind != _reg_t.size()) {
-        _actions.push_back(new Action(reg::t[ind], write ? nullptr : target, nullptr));
+        _actions.push(new Action(reg::t[ind], write ? nullptr : target, nullptr));
         _reg_t[ind] = target;
         _dirty[ind] = write;
         return;
@@ -77,13 +77,15 @@ void Simulator::request(bool write, bool mask) {
     
     // find the register with latest usage
     ind = std::max_element(usage.begin(), usage.end()) - usage.begin();
-    _actions.push_back(new Action(reg::t[ind], write ? nullptr : target, _dirty[ind] ? _reg_t[ind] : nullptr));
+    _actions.push(new Action(reg::t[ind], write ? nullptr : target, _dirty[ind] ? _reg_t[ind] : nullptr));
     _reg_t[ind] = target;
     _dirty[ind] = write;
 }
 
 void Simulator::clear(void) {
 	for (int i = 0; i < _reg_t.size(); i++) {
-		if (_dirty[i]) { _actions.push_back(new Action(reg::t[i], nullptr, _reg_t[i])); }
+		if (_dirty[i]) {
+            _actions.push(new Action(reg::t[i], nullptr, _reg_t[i]));
+        }
 	}
 }

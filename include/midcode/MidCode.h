@@ -105,8 +105,8 @@ public:
     // Other instructions that is not categorized should be judged
     // by user though `is`.
     bool is(const Instr) const;
-	bool isCalc(void) const;
-	bool isBranch(void) const;
+	bool isCalc(void) const; // TODO: delete
+	bool isBranch(void) const; // TODO: delete
 
 private:
     // If error happened or the current function being parsed has
@@ -129,7 +129,7 @@ public:
 	//     #1		- temporary variable
 	//     int$0	- global int constant
 	//     char$0	- global int constant
-	//     label_1	- non-functional labels
+	//     label$1	- non-functional labels
 	static const symtable::Entry* genVar(const bool);
 	static const symtable::Entry* genConst(const bool, const int);
 	static std::string genLabel(void);

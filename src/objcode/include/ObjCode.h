@@ -22,17 +22,18 @@ class MidCode;
 class ObjCode {
 public:
 	enum class Instr {
-		add, addi, 
-		sub, subi, 
+		add, sub, 
 		mul, div, mflo,
+
+		addi, subi, 
 		lw, sw, 
 
 		bgt, bge, 
 		blt, ble, 
-		beq, beqz, 
-		bne, bnez,
+		beq, bne, 
+		beqz, bnez,
 
-		jal, jr, j,
+		jal, j, jr,
 
 		la, li, move, sll,
 
@@ -41,13 +42,14 @@ public:
 		label
 	};
 
-	const Instr instr;
-	const Reg t0;
-	const Reg t1;
-	const Reg t2;
-	const int imm;
-	const std::string label;
-
+private:
+	const Instr _instr;
+	const Reg _t0;
+	const Reg _t1;
+	const Reg _t2;
+	const int _imm;
+	const std::string _label;
+public:
 	ObjCode(const Instr, 
 			const Reg, 
 			const Reg, 
