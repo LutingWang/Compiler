@@ -10,7 +10,11 @@
 
 #include "./include/ObjCode.h"
 
-ObjCode::ObjCode( const Instr instr,
+const Reg ObjCode::noreg = Reg::zero;
+const int ObjCode::noimm = 0;
+const std::string ObjCode::nolab = "";
+
+ObjCode::ObjCode(const Instr instr,
 		const Reg t0,
 		const Reg t1,
 		const Reg t2,
@@ -22,11 +26,14 @@ ObjCode::ObjCode( const Instr instr,
 	_t2(t2),
 	_imm(imm),
 	_label(label) {
-	int status = ((t0 != Reg::zero) << 4) +
-		((t1 != Reg::zero) << 3) + 
-		((t2 != Reg::zero) << 2) +
-		((imm != 0) << 1) +
-		(label != "");
+        
+    // Be aware that it is legal for some instructions
+    // to have `imm` equal to `noimm`.
+	int status = ((t0 != noreg) << 4) +
+		((t1 != noreg) << 3) +
+		((t2 != noreg) << 2) +
+		((imm != noimm) << 1) +
+		(label != nolab);
 	switch (instr) {
 	case Instr::add: case Instr::sub: 
 	case Instr::mul: 

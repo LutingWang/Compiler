@@ -8,6 +8,7 @@
 #ifndef OBJ_CODE_H
 #define OBJ_CODE_H
 
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -41,6 +42,10 @@ public:
 
 		label
 	};
+    
+    static const Reg noreg;
+    static const int noimm;
+    static const std::string nolab;
 
 private:
 	const Instr _instr;
@@ -61,5 +66,7 @@ public:
 };
 
 std::ostream& operator << (std::ostream&, const ObjCode::Instr);
+
+using CodeGen = std::function<void(const ObjCode::Instr, const Reg, const Reg, const Reg, const int, const std::string&)>;
 
 #endif /* OBJ_CODE_H */

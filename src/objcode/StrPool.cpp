@@ -27,8 +27,7 @@ int StrPool::_size(void) const {
 
 void StrPool::_insert(const std::string& str) {
 	if (_contains(str)) { return; }
-	_pool.emplace(std::make_pair(str, 
-				"str_" + std::to_string(_size())));
+	_pool[str] = "str$" + std::to_string(_size());
 }
 
 void StrPool::init(void) {
@@ -50,7 +49,7 @@ const std::string& StrPool::operator [] (const std::string& str) const {
 extern std::ofstream mips_output;
 
 void StrPool::output(void) const {
-	for (auto& pair : _pool) {
+	for (auto& /* <str, label> */ pair : _pool) {
 		mips_output << pair.second << ": .asciiz \"" 
 			<< pair.first << '"' << std::endl;
 	}

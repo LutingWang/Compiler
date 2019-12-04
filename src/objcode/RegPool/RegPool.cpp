@@ -21,14 +21,13 @@ const StackFrame& RegPool::stackframe(void) const {
     return _stackframe;
 }
 
-RegPool::RegPool(std::vector<const ObjCode*>& output,
-        const std::vector<const MidCode*>& midcode,
-		const std::vector<const symtable::Entry*>& reg_a, const StackFrame& stackframe) :
-	_output(output), _reg_a(reg_a), _stackframe(stackframe) {
+RegPool::RegPool(const std::vector<const symtable::Entry*>& reg_a, const StackFrame& stackframe) :
+	_reg_a(reg_a), _reg_s(reg::s.size(), nullptr),  _stackframe(stackframe) {
 	assert(_reg_a.size() == reg::a.size());
+}
 
-	// TODO: assign saved registers
-	_reg_s = std::vector<const symtable::Entry*>(8, nullptr);
+void RegPool::assignSavedRegs(const symtable::FuncTable* const functable) {
+    assert(0);
 }
 
 void RegPool::simulate(const std::vector<const symtable::Entry*>& _seq, 
@@ -46,10 +45,10 @@ void RegPool::_execute(void) {
 	const Action* const action = _actionCache.front();
     _actionCache.pop();
     if (action->store != nullptr) {
-        _output.push_back(_stackframe.store(action->reg, action->store));
+        _stackframe.store(action->reg, action->store);
 	}
     if (action->load != nullptr) {
-        _output.push_back(_stackframe.load(action->reg, action->load));
+        _stackframe.load(action->reg, action->load);
 	}
     delete action;
 }

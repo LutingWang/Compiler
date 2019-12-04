@@ -16,7 +16,8 @@
 // | ---------- | ----------------- | ----------------- |
 // | MULT       | t0 = t1 * t2      | mul t0, t1, t2    |
 // | ---------- | ----------------- | ----------------- |
-// | DIV        | t0 = t1 / t2      | div t0, t1, t2    |
+// | DIV        | t0 = t1 / t2      | div t1, t2        |
+// |            |                   | mflo t0           |
 // | ---------- | ----------------- | ----------------- |
 // | LOAD_IND   | t0 = t1[t2]       | sll t8, t2, 2     |
 // |            |                   | add t8, t8, sp/gp |
@@ -113,6 +114,8 @@
 // constantly changing due to reconstruction. Check the
 // implementation of `_compileCallBlock` for further info.
 
+#include <functional>
+#include <string>
 #include <vector>
 #include "midcode/MidCode.h"
 #include "midcode/BasicBlock.h"
@@ -123,21 +126,17 @@
 #include "../include/RegPool.h"
 
 class Translator {
-    std::vector<const ObjCode*>& _output;
+    CodeGen& _output;
     RegPool& _regpool;
 public:
-    Translator(std::vector<const ObjCode*>&, RegPool&);
+    Translator(CodeGen&, RegPool&);
     
 private:
     void _requiredSyms(std::vector<const symtable::Entry*>&, 
 			std::vector<bool>& write, 
 			std::vector<bool>& mask, 
 			const MidCode&);
-public:
-    void requiredSyms(std::vector<const symtable::Entry*>&, 
-			const symtable::FuncTable* const);
-    
-private:
+
     void _compileCode(const MidCode&);
     void _compileCallBlock(const BasicBlock&);
 public:

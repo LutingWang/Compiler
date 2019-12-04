@@ -39,7 +39,7 @@ void ObjFunc::init(void) {
 extern std::ofstream mips_output;
 
 void ObjFunc::output(void) {
-	for (auto& pair : _func) {
+	for (auto& /* <funcName, objfunc> */ pair : _func) {
 		mips_output << std::endl
 			<< pair.first << ':' << std::endl;
         for (auto& objcode : pair.second->_objcodes) {
@@ -49,12 +49,19 @@ void ObjFunc::output(void) {
 }
 
 void ObjFunc::deinit(void) {
-    for (auto& pair : _func) {
+    for (auto& /* <funcName, objfunc> */ pair : _func) {
         delete pair.second;
     }
 }
 
 ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
+    CodeGen output = [this](const ObjCode::Instr instr,
+            const Reg t0, const Reg t1, const Reg t2,
+            const int imm, const std::string& label) {
+        this->_objcodes.push_back(
+                new ObjCode(instr, t0, t1, t2, imm, label));
+    };
+    
 	auto& args = functable->argList();
     
     // initialize stack frame
@@ -63,26 +70,26 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
     for (auto& arg : args) {
         storage.erase(arg);
     }
-    const StackFrame* const stackframe = new StackFrame(args, storage);
+    const StackFrame stackframe(output, args, storage);
+    
+    // prologue
+    output(ObjCode::Instr::subi, Reg::sp, Reg::sp, ObjCode::noreg, stackframe.size(), ObjCode::nolab);
 
 	// initialize register pool
 	std::vector<const symtable::Entry*> reg_a(reg::a.size(), nullptr);
 	for (int i = 0; i < args.size() && i < reg::a.size(); i++) {
 		reg_a[i] = args[i];
 	}
-    RegPool* regpool = new RegPool(_objcodes, functable->midcodes(), reg_a, *stackframe);
+    RegPool regpool(reg_a, stackframe);
+    // TODO: uncomment this
+    // regpool.assignSavedRegs(functable);
 
-    // prologue
-	_objcodes.push_back(new ObjCode(ObjCode::Instr::subi, Reg::sp, Reg::sp, Reg::zero, stackframe->size(), ""));
-
-    Translator translator(_objcodes, *regpool);
+    // start translation
+    Translator translator(output, regpool);
     FlowChart flowchart(functable);
     for (auto basicblock : flowchart.blocks()) {
         translator.compile(*basicblock);
     }
-    
-    delete regpool;
-    delete stackframe;
 }
 
 ObjFunc::~ObjFunc(void) {

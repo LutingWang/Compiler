@@ -9,11 +9,6 @@
 #define OBJ_FUNC_H
 
 #include <map>
-#include <set>
-#include <vector>
-#include "midcode/MidCode.h"
-#include "midcode/BasicBlock.h"
-#include "symtable/Entry.h"
 #include "symtable/table.h"
 
 class ObjCode;
@@ -29,7 +24,7 @@ public:
 
 private:
 	std::vector<const ObjCode*> _objcodes;
-
+    
 public:
 	ObjFunc(const symtable::FuncTable* const);
 	~ObjFunc(void);

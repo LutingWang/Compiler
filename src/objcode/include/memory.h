@@ -13,12 +13,11 @@
 #include <vector>
 
 #include "Reg.h"
+#include "ObjCode.h"
 
 namespace symtable {
 	class Entry;
 }
-
-class ObjCode;
 
 class Sbss {
 	static const Sbss* _global;
@@ -42,29 +41,31 @@ public:
 };
 
 class StackFrame : protected Sbss {
+    CodeGen& _output;
 	std::map<const symtable::Entry*, int> _args;
 	int _regBase;
 	int _size;
 public:
 	int size(void) const;
 
-	StackFrame(std::vector<const symtable::Entry*> argList,
+	StackFrame(CodeGen&, std::vector<const symtable::Entry*> argList,
 			const std::set<const symtable::Entry*>& syms);
 
 	int operator [] (const symtable::Entry* const) const;
 	int operator [] (Reg) const;
 
 private:
-	const ObjCode* _visit(const bool isLoad, const Reg) const;
+	void _visit(const ObjCode::Instr, const Reg) const;
 public:
-	const ObjCode* store(Reg) const;
-	const ObjCode* load(Reg) const;
+	void store(Reg) const;
+	void load(Reg) const;
 
 private:
-	const ObjCode* _visit(const bool isLoad, const Reg, const symtable::Entry* const) const;
+    // instr may alter for constants
+	void _visit(ObjCode::Instr, const Reg, const symtable::Entry* const) const;
 public:
-	const ObjCode* store(Reg, const symtable::Entry* const) const;
-	const ObjCode* load(Reg, const symtable::Entry* const) const;
+	void store(Reg, const symtable::Entry* const) const;
+	void load(Reg, const symtable::Entry* const) const;
 };
 
 #endif /* MEMORY_H */

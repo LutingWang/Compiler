@@ -8,9 +8,11 @@
 #ifndef REGPOOL_H
 #define REGPOOL_H
 
+#include <functional>
 #include <queue>
 #include <set>
 #include <vector>
+#include "symtable/table.h"
 
 #include "Reg.h"
 
@@ -26,8 +28,6 @@ class StackFrame;
 class Action;
 
 class RegPool {
-    std::vector<const ObjCode*>& _output;
-    
 	// global registers
 	std::vector<const symtable::Entry*> _reg_a;
 	std::vector<const symtable::Entry*> _reg_s;
@@ -44,11 +44,10 @@ private:
 	// execute the current action
 	void _execute(void);
 public:
-	// assign s registers
-	RegPool(std::vector<const ObjCode*>&,
-            const std::vector<const MidCode*>&,
-			const std::vector<const symtable::Entry*>& reg_a,
+	RegPool(const std::vector<const symtable::Entry*>& reg_a,
             const StackFrame&);
+    
+    void assignSavedRegs(const symtable::FuncTable* const);
     
 	// simulate register assignment
 	void simulate(const std::vector<const symtable::Entry*>&, 
