@@ -45,10 +45,10 @@ void RegPool::_execute(void) {
 	const Action* const action = _actionCache.front();
     _actionCache.pop();
     if (action->store != nullptr) {
-        _stackframe.store(action->reg, action->store);
+        _stackframe.storeSym(action->reg, action->store);
 	}
     if (action->load != nullptr) {
-        _stackframe.load(action->reg, action->load);
+        _stackframe.loadSym(action->reg, action->load);
 	}
     delete action;
 }
@@ -61,7 +61,8 @@ Reg RegPool::request(void) {
 
 void RegPool::clear(void) {
 	while (!_actionCache.empty()) {
-        assert(_actionCache.front()->load == nullptr && _actionCache.front()->store != nullptr);
+        assert(_actionCache.front()->load == nullptr);
+        assert(_actionCache.front()->store != nullptr);
 		_execute();
 	}
 }

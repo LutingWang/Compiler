@@ -20,6 +20,7 @@
 
 namespace {
     auto& noreg = ObjCode::noreg;
+    auto& noimm = ObjCode::noimm;
     auto& nolab = ObjCode::nolab;
 }
 
@@ -31,11 +32,11 @@ StackFrame::StackFrame(CodeGen& output, std::vector<const symtable::Entry*> argL
 	}
 
 	_regBase = Sbss::size();
-	_size = _regBase + (reg::s.size() + reg::t.size() + 1 /* ra */ + reg::a.size()) * 4;
+	_size = _regBase + (reg::s.size() + reg::t.size() + 1 /* ra */ + reg::a.size()) * WORD_SIZE;
 
-	for (int i = 4; i < argList.size(); i++) {
+	for (int i = reg::a.size(); i < argList.size(); i++) {
 		_args[argList[i]] = _size;
-		_size += 4;
+		_size += WORD_SIZE;
 	}
 }
 
@@ -43,13 +44,13 @@ int StackFrame::size(void) const {
 	return _size;
 }
 
-int StackFrame::operator [] (const symtable::Entry* const entry) const {
+int StackFrame::locate(const symtable::Entry* const entry) const {
+    assert(!entry->isGlobal());
 	if (_args.count(entry)) { return _args.at(entry); }
-	if (!entry->isGlobal()) { return locate(entry); }
-	else { return Sbss::global()->locate(entry); }
+	return Sbss::locate(entry);
 }
 
-int StackFrame::operator [] (Reg reg) const {
+int StackFrame::locate(const Reg reg) const {
 	static const std::vector<Reg> regs = {
 		Reg::s0, Reg::s1, Reg::s2, Reg::s3, Reg::s4, Reg::s5, Reg::s6, Reg::s7,
 		Reg::t0, Reg::t1, Reg::t2, Reg::t3, Reg::t4, Reg::t5, Reg::t6, Reg::t7,
@@ -59,46 +60,69 @@ int StackFrame::operator [] (Reg reg) const {
 
 	int offset = std::find(regs.begin(), regs.end(), reg) - regs.begin();
 	assert(offset < regs.size());
-	offset = _regBase + offset * 4;
+	offset = _regBase + offset * WORD_SIZE;
 	assert(offset < _size);
 	return offset;
 }
            
 void StackFrame::_visit(const ObjCode::Instr instr, const Reg reg) const {
-    _output(instr, reg, Reg::sp, noreg, operator[](reg), nolab);
+    _output(instr, reg, Reg::sp, noreg, locate(reg), nolab);
 }
 
 void StackFrame::_visit(ObjCode::Instr instr, const Reg reg, const symtable::Entry* const entry) const {
     assert(entry != nullptr);
-	Reg t1 = Reg::sp;
-	int imm;
-	if (entry->isConst()) {
-		instr = ObjCode::Instr::li;
-		t1 = noreg;
-		imm = entry->value();
-	} else if (_args.count(entry)) {
-		imm = _args.at(entry);
-	} else if (contains(entry)) {
-		imm = locate(entry);
-	} else {
+    Reg t1 = Reg::sp;
+    int imm;
+    if (entry->isConst()) {
+        instr = ObjCode::Instr::li;
+        t1 = noreg;
+        imm = entry->value();
+    } else if (entry->isGlobal()) {
         t1 = Reg::gp;
-		imm = global()->locate(entry);
-	}
-	_output(instr, reg, t1, noreg, imm, nolab);
+        imm = global()->locate(entry);
+    } else if (_args.count(entry)) {
+        imm = _args.at(entry);
+    } else {
+        imm = locate(entry);
+    }
+    _output(instr, reg, t1, noreg, imm, nolab);
 }
 
-void StackFrame::store(Reg reg) const {
+void StackFrame::_visit(const ObjCode::Instr instr, const Reg dst,
+        const symtable::Entry* const entry, const Reg ind) const {
+    Reg base;
+    int imm;
+    if (entry->isGlobal()) {
+        base = Reg::gp;
+        imm = global()->locate(entry);
+    } else {
+        base = Reg::sp;
+        imm = locate(entry);
+    }
+    _output(ObjCode::Instr::add, reg::stackframe_tmp, ind, base, noimm, nolab);
+    _output(instr, dst, reg::stackframe_tmp, noreg, imm, nolab);
+}
+
+void StackFrame::storeReg(const Reg reg) const {
     _visit(ObjCode::Instr::sw, reg);
 }
 
-void StackFrame::load(Reg reg) const {
+void StackFrame::loadReg(const Reg reg) const {
    _visit(ObjCode::Instr::lw, reg);
 }
 
-void StackFrame::store(Reg reg, const symtable::Entry* const entry) const {
+void StackFrame::storeSym(const Reg reg, const symtable::Entry* const entry) const {
 	_visit(ObjCode::Instr::sw, reg, entry);
 }
 
-void StackFrame::load(Reg reg, const symtable::Entry* const entry) const {
+void StackFrame::loadSym(const Reg reg, const symtable::Entry* const entry) const {
 	_visit(ObjCode::Instr::lw, reg, entry);
+}
+
+void StackFrame::storeInd(const Reg dst, const symtable::Entry* const entry, const Reg ind) const {
+    _visit(ObjCode::Instr::sw, dst, entry, ind);
+}
+
+void StackFrame::loadInd(const Reg dst, const symtable::Entry* const entry, const Reg ind) const {
+    _visit(ObjCode::Instr::lw, dst, entry, ind);
 }

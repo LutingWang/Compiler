@@ -41,18 +41,14 @@ Sbss::Sbss(const std::set<const symtable::Entry*>& syms) {
 		if (entry->isConst()) { continue; }
         if (global() == nullptr) { // `this` is the global
             assert(entry->isGlobal());
-        } else if (global()->contains(entry)) {
-            assert(entry->isGlobal());
+        } else if (entry->isGlobal()) {
+            assert(_global->_syms.count(entry));
             continue;
-        } else { assert(!entry->isGlobal()); }
+        }
 		_syms[entry] = _size;
-		if (!entry->isArray()) { _size += 4; } 
-		else { _size += entry->value() * 4; }
+		if (!entry->isArray()) { _size += WORD_SIZE; }
+		else { _size += entry->value() * WORD_SIZE; }
 	}
-}
-
-bool Sbss::contains(const symtable::Entry* entry) const {
-	return _syms.count(entry);
 }
 
 int Sbss::locate(const symtable::Entry* entry) const {

@@ -64,7 +64,7 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
     
 	auto& args = functable->argList();
     
-    // initialize stack frame
+    // initialize stackframe
     std::set<const symtable::Entry*> storage;
     functable->syms(storage);
     for (auto& arg : args) {

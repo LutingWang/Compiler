@@ -40,6 +40,9 @@ const std::vector<Reg> reg::s = {
 	Reg::s7
 };
 
+const Reg reg::compiler_tmp = Reg::t8;
+const Reg reg::stackframe_tmp = Reg::t9;
+
 std::ostream& operator << (std::ostream& output, const Reg reg) {
 	switch (reg) {
 #define CASE(id) case Reg::id: output << "$" #id; break

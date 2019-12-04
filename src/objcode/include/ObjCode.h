@@ -11,14 +11,13 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include "midcode/MidCode.h"
+#include "symtable/Entry.h"
 
-#include "Reg.h"
+#include "./Reg.h"
 
-namespace symtable {
-	class Entry;
-}
-
-class MidCode;
+#define WORD_SIZE 4
+#define LOG_WORD_SIZE 2
 
 class ObjCode {
 public:
