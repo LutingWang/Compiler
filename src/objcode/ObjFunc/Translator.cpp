@@ -7,8 +7,8 @@
 
 #include "./Translator.h"
 
-Translator::Translator(CodeGen& output, RegPool& regpool) :
-    _output(output), _regpool(regpool) {}
+Translator::Translator(CodeGen& output, RegPool& regpool, const StackFrame& stackframe) :
+    _output(output), _regpool(regpool), _stackframe(stackframe) {}
     
 void Translator::_requiredSyms(std::vector<const symtable::Entry*>& _seq,
         std::vector<bool>& write,
@@ -76,6 +76,7 @@ void Translator::compile(const BasicBlock& basicblock) {
         _requiredSyms(_seq, write, mask, *midcode);
     }
     _regpool.simulate(_seq, write, mask);
+    
     if (basicblock.isFuncCall()) {
         _compileCallBlock(basicblock);
     } else for (auto midcode : basicblock.midcodes()) {

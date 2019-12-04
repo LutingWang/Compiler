@@ -12,15 +12,11 @@
 #include <queue>
 #include <set>
 #include <vector>
+#include "midcode/MidCode.h"
+#include "symtable/Entry.h"
 #include "symtable/table.h"
 
 #include "Reg.h"
-
-namespace symtable {
-	class Entry;
-}
-
-class MidCode;
 
 class ObjCode;
 class StackFrame;
@@ -28,21 +24,11 @@ class StackFrame;
 class Action;
 
 class RegPool {
-	// global registers
 	std::vector<const symtable::Entry*> _reg_a;
 	std::vector<const symtable::Entry*> _reg_s;
-    
     const StackFrame& _stackframe;
+	std::queue<Action*> _actionCache; // within one block
 
-	// cached actions within one block
-	std::queue<Action*> _actionCache;
-    
-public:
-    const StackFrame& stackframe(void) const;
-
-private:
-	// execute the current action
-	void _execute(void);
 public:
 	RegPool(const std::vector<const symtable::Entry*>& reg_a,
             const StackFrame&);
@@ -54,7 +40,11 @@ public:
 			const std::vector<bool>& write, 
 			const std::vector<bool>& mask);
 
-	// perform one operation and returns the register
+private:
+    // execute the current action
+    void _execute(void);
+public:
+	// perform one operation and return the register
 	Reg request(void);
 
 	// finish up all the remaining operations in this block

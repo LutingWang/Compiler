@@ -14,9 +14,7 @@
 
 namespace mips {
 	void init(void);
-
 	void deinit(void);
-
 	void output(void);
 };
 

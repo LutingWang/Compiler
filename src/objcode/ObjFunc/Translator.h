@@ -115,8 +115,8 @@
 // implementation of `_compileCallBlock` for further info.
 
 #include <functional>
+#include <queue>
 #include <string>
-#include <vector>
 #include "midcode/MidCode.h"
 #include "midcode/BasicBlock.h"
 #include "symtable/Entry.h"
@@ -124,12 +124,14 @@
 
 #include "../include/ObjCode.h"
 #include "../include/RegPool.h"
+#include "../include/memory.h"
 
 class Translator {
     CodeGen& _output;
     RegPool& _regpool;
+    const StackFrame& _stackframe;
 public:
-    Translator(CodeGen&, RegPool&);
+    Translator(CodeGen&, RegPool&, const StackFrame&);
     
 private:
     void _requiredSyms(std::vector<const symtable::Entry*>&, 
@@ -137,9 +139,13 @@ private:
 			std::vector<bool>& mask, 
 			const MidCode&);
 
+    // Translate midcodes but `push` and `call`.
     void _compileCode(const MidCode&);
+    
+    // Call blocks need to be translated as a whole.
     void _compileCallBlock(const BasicBlock&);
 public:
     void compile(const BasicBlock&);
 };
+
 #endif /* TRANSLATOR_H */

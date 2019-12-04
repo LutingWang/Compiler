@@ -39,9 +39,9 @@ int Sbss::size(void) const {
 Sbss::Sbss(const std::set<const symtable::Entry*>& syms) {
 	for (auto& entry : syms) {
 		if (entry->isConst()) { continue; }
-        if (global() == nullptr) { // `this` is the global
+        if (global() == nullptr) { // `this` is `_global`
             assert(entry->isGlobal());
-        } else if (entry->isGlobal()) {
+        } else if (entry->isGlobal()) { // `entry` included in `_global`
             assert(_global->_syms.count(entry));
             continue;
         }

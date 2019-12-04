@@ -20,7 +20,6 @@
 #include "../include/ObjCode.h"
 #include "../include/RegPool.h"
 #include "../include/memory.h"
-#include "../include/StrPool.h"
 
 #include "./Translator.h"
 
@@ -85,7 +84,7 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
     // regpool.assignSavedRegs(functable);
 
     // start translation
-    Translator translator(output, regpool);
+    Translator translator(output, regpool, stackframe);
     FlowChart flowchart(functable);
     for (auto basicblock : flowchart.blocks()) {
         translator.compile(*basicblock);

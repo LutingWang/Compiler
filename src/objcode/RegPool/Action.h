@@ -8,21 +8,18 @@
 #ifndef ACTION_H
 #define ACTION_H
 
+#include "symtable/Entry.h"
+
 #include "../include/Reg.h"
 
-namespace symtable {
-	class Entry;
-}
-
-// An action describes the operation upon request of a 
-// temporary register. 
+// An action describes the operation upon request of a temporary register.
 class Action {
 public:
 	const Reg reg;
     const symtable::Entry* const load; // sym to load to reg
     const symtable::Entry* const store; // sym to write back
 
-	Action(Reg reg, const symtable::Entry* const load, const symtable::Entry* const store) :
+	Action(const Reg reg, const symtable::Entry* const load, const symtable::Entry* const store) :
 		reg(reg), load(load), store(store) {}
 };
 

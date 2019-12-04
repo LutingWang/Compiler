@@ -17,10 +17,6 @@
 #include "../include/RegPool.h"
 #include "../include/memory.h"
 
-const StackFrame& RegPool::stackframe(void) const {
-    return _stackframe;
-}
-
 RegPool::RegPool(const std::vector<const symtable::Entry*>& reg_a, const StackFrame& stackframe) :
 	_reg_a(reg_a), _reg_s(reg::s.size(), nullptr),  _stackframe(stackframe) {
 	assert(_reg_a.size() == reg::a.size());
@@ -30,14 +26,17 @@ void RegPool::assignSavedRegs(const symtable::FuncTable* const functable) {
     assert(0);
 }
 
-void RegPool::simulate(const std::vector<const symtable::Entry*>& _seq, 
-		const std::vector<bool>& write, 
+void RegPool::simulate(const std::vector<const symtable::Entry*>& _seq,
+		const std::vector<bool>& write,
 		const std::vector<bool>& mask) {
+    assert(_seq.size() == write.size() && _seq.size() == mask.size());
     assert(_actionCache.empty());
-	Simulator simu(_reg_a, _reg_s, _seq, _actionCache);
-	for (int i = 0; i < _seq.size(); i++) {
-		simu.request(write[i], mask[i]);
-	}
+    ActionGen output = [this](const Reg reg, const symtable::Entry* const load, const symtable::Entry* const store)
+            { this->_actionCache.push(new Action(reg, load, store)); };
+    Simulator simu(output, _reg_a, _reg_s, _seq);
+    for (int i = 0; i < _seq.size(); i++) {
+        simu.request(write[i], mask[i]);
+    }
 	simu.clear();
 }
 

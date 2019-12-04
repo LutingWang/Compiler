@@ -38,8 +38,8 @@ namespace {
     _output(Instr::li, Reg::v0, noreg, noreg, (id), nolab); \
     _output(Instr::syscall, noreg, noreg, noreg, noimm, nolab);
 
+// NOTE: clear regpool right before ret, branch, or jump
 void Translator::_compileCode(const MidCode& midcode) {
-    const StackFrame& stackframe = _regpool.stackframe();
     const Instr* instr = nullptr;
     if (instrMap.count(midcode.instr())) {
         instr = &instrMap.at(midcode.instr());
@@ -66,13 +66,13 @@ void Translator::_compileCode(const MidCode& midcode) {
         t2 = REQ;
         _output(Instr::sll, reg::compiler_tmp, t2, noreg, LOG_WORD_SIZE, nolab);
         t0 = REQ;
-        stackframe.loadInd(t0, midcode.t1(), reg::compiler_tmp);
+        _stackframe.loadInd(t0, midcode.t1(), reg::compiler_tmp);
         break;
     case MidCode::Instr::STORE_IND:
         t2 = REQ;
         _output(Instr::sll, reg::compiler_tmp, t2, noreg, LOG_WORD_SIZE, nolab);
         t1 = REQ;
-        stackframe.storeInd(t1, midcode.t0(), reg::compiler_tmp);
+        _stackframe.storeInd(t1, midcode.t0(), reg::compiler_tmp);
         break;
     case MidCode::Instr::ASSIGN:
         t1 = REQ;
@@ -85,9 +85,9 @@ void Translator::_compileCode(const MidCode& midcode) {
             _output(Instr::move, Reg::v0, t1, noreg, noimm, nolab);
         }
         _regpool.clear();
-        _output(Instr::addi, Reg::sp, Reg::sp, noreg, stackframe.size(), nolab);
+        _output(Instr::addi, Reg::sp, Reg::sp, noreg, _stackframe.size(), nolab);
         _output(Instr::jr, Reg::ra, noreg, noreg, noimm, nolab);
-        return;
+        break;
     case MidCode::Instr::INPUT:
         SYSCALL(midcode.t0()->isInt() ? 5 : 12);
         t0 = REQ;
@@ -115,11 +115,11 @@ void Translator::_compileCode(const MidCode& midcode) {
         t2 = _regpool.request();
         _regpool.clear();
         _output(*instr, noreg, t1, t2, noimm, midcode.labelName());
-        return;
+        break;
     case MidCode::Instr::GOTO:
         _regpool.clear();
         _output(*instr, noreg, noreg, noreg, noimm, midcode.labelName());
-        return;
+        break;
     case MidCode::Instr::LABEL:
         _output(*instr, noreg, noreg, noreg, noimm, midcode.labelName());
         break;
@@ -129,40 +129,40 @@ void Translator::_compileCode(const MidCode& midcode) {
 
 void Translator::_compileCallBlock(const BasicBlock& basicblock) {
     assert(basicblock.isFuncCall());
-    const StackFrame& stackframe = _regpool.stackframe();
     Reg t0, t1;
     
-    for (Reg a : reg::a) {
-        stackframe.storeReg(a);
-    }
-    stackframe.storeReg(Reg::ra);
+    for (Reg a : reg::a) { _stackframe.storeReg(a); } // backup `reg::a`
+    _stackframe.storeReg(Reg::ra); // backup `Reg::ra`
     
+    // copy the first 4 parameters to `reg::a`
     int argNum = basicblock.midcodes().size() - 1;
     for (int i = 0; i < argNum && i < reg::a.size(); i++) {
         t1 = REQ;
         if (std::find(reg::a.begin(), reg::a.end(), t1) == reg::a.end()) {
             _output(Instr::move, reg::a[i], t1, noreg, noimm, nolab);
         } else {
-            _output(Instr::lw, reg::a[i], Reg::sp, noreg, stackframe.locate(t1), nolab);
+            _output(Instr::lw, reg::a[i], Reg::sp, noreg, _stackframe.locate(t1), nolab);
         }
     }
+    
+    // store the rest parameters to stack
     for (int i = reg::a.size(); i < argNum; i++) {
         t1 = REQ;
         if (std::find(reg::a.begin(), reg::a.end(), t1) == reg::a.end()) {
             _output(Instr::sw, t1, Reg::sp, noreg, (i - argNum) * WORD_SIZE, nolab);
         } else {
-            _output(Instr::lw, reg::compiler_tmp, Reg::sp, noreg, stackframe.locate(t1), nolab);
+            _output(Instr::lw, reg::compiler_tmp, Reg::sp, noreg, _stackframe.locate(t1), nolab);
             _output(Instr::sw, reg::compiler_tmp, Reg::sp, noreg, (i - argNum) * WORD_SIZE, nolab);
         }
     }
     
+    // jump to the func
     _output(Instr::jal, noreg, noreg, noreg, noimm, basicblock.midcodes().back()->labelName());
     
-    stackframe.loadReg(Reg::ra);
-    for (Reg a : reg::a) {
-        stackframe.loadReg(a);
-    }
+    _stackframe.loadReg(Reg::ra); // restore `Reg::ra`
+    for (Reg a : reg::a) { _stackframe.loadReg(a); } // restore `reg::a`
     
+    // retrieve retval
     if (basicblock.midcodes().back()->t0() != nullptr) {
         t0 = REQ;
         _output(Instr::move, t0, Reg::v0, noreg, noimm, nolab);

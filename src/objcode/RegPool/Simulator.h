@@ -8,15 +8,15 @@
 #ifndef SIMULATOR_H
 #define SIMULATOR_H
 
+#include <functional>
 #include <queue>
 #include <set>
 #include <vector>
+#include "symtable/Entry.h"
 
 #include "../include/Reg.h"
 
-namespace symtable {
-	class Entry;
-}
+using ActionGen = std::function<void(const Reg, const symtable::Entry* const, const symtable::Entry* const)>;
 
 class Action;
 
@@ -25,20 +25,17 @@ class Simulator {
 	const std::vector<const symtable::Entry*>& _reg_s;
 	std::vector<const symtable::Entry*> _reg_t;
 	std::vector<bool> _dirty;
+    
+    int _maskCache;
 
-	const std::vector<const symtable::Entry*> _seq;
-	int _counter = 0;
+    std::vector<const symtable::Entry*> _seq;
 
-	// The first part of `_actions` consists of operations
-	// need to be done at each request, while the second
-	// part stores all the registers back to the stack, so
-	// that the basic block can exit safely.
-	std::queue<Action*>& _actions;
+	ActionGen& _output;
 public:
-	Simulator(const std::vector<const symtable::Entry*>& reg_a, 
+	Simulator(ActionGen&,
+            const std::vector<const symtable::Entry*>& reg_a,
 			const std::vector<const symtable::Entry*>& reg_s, 
-			const std::vector<const symtable::Entry*>& _seq, 
-			std::queue<Action*>& actions);
+			const std::vector<const symtable::Entry*>& _seq);
 
 	void request(bool write, bool mask);
 

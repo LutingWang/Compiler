@@ -1,5 +1,5 @@
 /**********************************************
-    > File Name: Mips.cpp
+    > File Name: mips.cpp
     > Author: Luting Wang
     > Mail: 2457348692@qq.com 
     > Created Time: Mon Nov 11 15:40:01 2019
