@@ -10,6 +10,7 @@
 #include <fstream>
 #include <set>
 #include <string>
+#include "datastream/LiveVar.h"
 #include "midcode/MidCode.h"
 #include "midcode/BasicBlock.h"
 #include "midcode/FlowChart.h"
@@ -53,6 +54,7 @@ void ObjFunc::deinit(void) {
 }
 
 ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
+    // call back function to insert objcode
     CodeGen output = [this](const ObjCode::Instr instr,
             const Reg t0, const Reg t1, const Reg t2,
             const int imm, const std::string& label) {
@@ -61,6 +63,10 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
     };
     
 	auto& args = functable->argList();
+    
+    // initialize helpers
+    const FlowChart flowchart(functable);
+    LiveVar livevar(flowchart);
     
     // initialize stackframe
     std::set<const symtable::Entry*> storage;
@@ -85,7 +91,6 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
 
     // start translation
     Translator translator(output, regpool, stackframe);
-    FlowChart flowchart(functable);
     for (auto basicblock : flowchart.blocks()) {
         translator.compile(*basicblock);
     }

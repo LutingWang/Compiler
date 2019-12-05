@@ -8,28 +8,31 @@
 #ifndef LIVE_VAR_H
 #define LIVE_VAR_H
 
+#include <map>
 #include <set>
 #include <vector>
 
 class MidCode;
 class BasicBlock;
+class FlowChart;
 
 namespace symtable {
 	class Entry;
-	class FuncTable;
 }
 
 class LiveVar {
-	// in and out live variables for each midcode
-	std::vector<std::set<const symtable::Entry*>> _in;
-	std::vector<std::set<const symtable::Entry*>> _out;
+	// live variables for each basicblock, excluding global, const, or array
+	std::map<const BasicBlock*, std::set<const symtable::Entry*>> _out;
 public:
-	LiveVar(const symtable::FuncTable* const);
+	LiveVar(const FlowChart&);
 
+    // arrays are excluded
 	static void use(std::vector<const symtable::Entry*>&, const MidCode* const);
 	static void def(symtable::Entry const*&, const MidCode* const);
-	static void use(std::set<const symtable::Entry*>&, const BasicBlock* const);
-	static void def(std::set<const symtable::Entry*>&, const BasicBlock* const);
+    
+    // use and def are generated at the same time for basicblocks
+	static void analyze(std::set<const symtable::Entry*>& use,
+            std::set<const symtable::Entry*>& def, const BasicBlock* const);
 };
 
 #endif /* LIVE_VAR_H */

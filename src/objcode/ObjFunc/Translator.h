@@ -114,7 +114,6 @@
 // constantly changing due to reconstruction. Check the
 // implementation of `_compileCallBlock` for further info.
 
-#include <functional>
 #include <vector>
 #include <string>
 #include "midcode/MidCode.h"
@@ -125,6 +124,7 @@
 #include "../include/RegPool.h"
 #include "../include/memory.h"
 
+
 class Translator {
     CodeGen& _output;
     RegPool& _regpool;
@@ -133,11 +133,6 @@ public:
     Translator(CodeGen&, RegPool&, const StackFrame&);
     
 private:
-    void _requiredSyms(std::vector<const symtable::Entry*>&, 
-			std::vector<bool>& write, 
-			std::vector<bool>& mask, 
-			const MidCode* const);
-
     // Translate midcodes but `push` and `call`.
     void _compileCode(const MidCode&);
     
