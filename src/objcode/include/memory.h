@@ -11,13 +11,10 @@
 #include <map>
 #include <set>
 #include <vector>
+#include "symtable/Entry.h"
 
 #include "Reg.h"
 #include "ObjCode.h"
-
-namespace symtable {
-	class Entry;
-}
 
 // Small bss is originally a segment of memory specialized for storing global variables.
 // In this project, the meaning of `Sbss` is broadened, so that the segment of memory

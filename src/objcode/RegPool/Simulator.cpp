@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include <climits>
-#include "../include/Reg.h"
 
 #include "Action.h"
 

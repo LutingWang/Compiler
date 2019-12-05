@@ -5,25 +5,36 @@
     > Created Time: Sat Nov  9 00:00:58 2019
  **********************************************/
 
+#include <algorithm>
 #include <cassert>
-#include <set>
-#include <vector>
-#include "midcode/MidCode.h"
+#include "midcode/FlowChart.h"
 #include "symtable/SymTable.h"
+
+#include "../include/memory.h"
 
 #include "Action.h"
 #include "Simulator.h"
 
 #include "../include/RegPool.h"
-#include "../include/memory.h"
 
 RegPool::RegPool(const std::vector<const symtable::Entry*>& reg_a, const StackFrame& stackframe) :
 	_reg_a(reg_a), _reg_s(reg::s.size(), nullptr),  _stackframe(stackframe) {
 	assert(_reg_a.size() == reg::a.size());
 }
 
-void RegPool::assignSavedRegs(const symtable::FuncTable* const functable) {
-    assert(0);
+void RegPool::genPrologue(void) const {
+    for (int i = 0; i < reg::s.size(); i++) {
+        if (_reg_s[i] == nullptr) { continue; }
+        _stackframe.storeReg(reg::s[i]);
+        _stackframe.loadSym(reg::s[i], _reg_s[i]);
+    }
+}
+
+void RegPool::genEpilogue(void) const {
+    for (int i = 0; i < reg::s.size(); i++) {
+        if (_reg_s[i] == nullptr) { continue; }
+        _stackframe.loadReg(reg::s[i]);
+    }
 }
 
 void RegPool::simulate(const std::vector<const symtable::Entry*>& _seq,
@@ -43,6 +54,8 @@ void RegPool::simulate(const std::vector<const symtable::Entry*>& _seq,
 void RegPool::_execute(void) {
 	const Action* const action = _actionCache.front();
     _actionCache.pop();
+    
+    // store first!
     if (action->store != nullptr) {
         _stackframe.storeSym(action->reg, action->store);
 	}

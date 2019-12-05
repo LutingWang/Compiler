@@ -115,12 +115,11 @@
 // implementation of `_compileCallBlock` for further info.
 
 #include <functional>
-#include <queue>
+#include <vector>
 #include <string>
 #include "midcode/MidCode.h"
 #include "midcode/BasicBlock.h"
 #include "symtable/Entry.h"
-#include "symtable/table.h"
 
 #include "../include/ObjCode.h"
 #include "../include/RegPool.h"

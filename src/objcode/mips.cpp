@@ -5,10 +5,7 @@
     > Created Time: Mon Nov 11 15:40:01 2019
  **********************************************/
 
-#include <algorithm>
 #include <fstream>
-#include <map>
-#include <string>
 
 #include "./include/ObjFunc.h"
 #include "./include/memory.h"

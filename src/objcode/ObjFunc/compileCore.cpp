@@ -5,8 +5,9 @@
     > Created Time: Wed Dec  4 10:50:46 2019
  **********************************************/
 
+#include <algorithm>
+#include <cassert>
 #include <map>
-#include "../include/memory.h"
 #include "../include/StrPool.h"
 
 #include "./Translator.h"
@@ -85,6 +86,7 @@ void Translator::_compileCode(const MidCode& midcode) {
             _output(Instr::move, Reg::v0, t1, noreg, noimm, nolab);
         }
         _regpool.clear();
+        _regpool.genEpilogue();
         _output(Instr::addi, Reg::sp, Reg::sp, noreg, _stackframe.size(), nolab);
         _output(Instr::jr, Reg::ra, noreg, noreg, noimm, nolab);
         break;

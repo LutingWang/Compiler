@@ -1,0 +1,31 @@
+int mean(int n) {
+	const int MAX_N = 10000;
+	const int ERR = -1;
+	int i, tmp, result;
+	int num[10000];
+
+	if (n > MAX_N) {
+		printf("Too much input ", n);
+		return ERR;
+	}
+
+	for (i = 0; i < n; i = i + 1) {
+		scanf(tmp);
+		num[i] = tmp;
+	}
+
+	result = 0;
+	for (i = 0; i < n; i = i + 1) {
+		result = result + i;
+	}
+	result = result / n;
+	return result;
+}
+
+void main() {
+	int n;
+	scanf(n);
+	printf("please input numbers to calc mean");
+	n = mean(n);
+	printf("mean value is ", n);
+}

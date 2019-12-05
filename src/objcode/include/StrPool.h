@@ -14,8 +14,6 @@
 class StrPool {
 	std::map<std::string, std::string> _pool;
 
-	bool _contains(const std::string&) const;
-
 	int _size(void) const;
 
 	void _insert(const std::string&);

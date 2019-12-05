@@ -8,10 +8,6 @@
 #ifndef MIPS_H
 #define MIPS_H
 
-#include <map>
-#include <string>
-#include <vector>
-
 namespace mips {
 	void init(void);
 	void deinit(void);

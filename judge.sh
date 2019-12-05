@@ -34,4 +34,8 @@ done
 cp ${cur_dir}/test/mips/integral/integral ${jud_dir}/testfile.txt
 cd ${jud_dir}
 zip Archive.zip ./*
-clang++ *.cpp *.h -std=c++11 -w
+
+if [ "$2" = "-c" ]
+then
+	clang++ *.cpp *.h -std=c++11 -w
+fi

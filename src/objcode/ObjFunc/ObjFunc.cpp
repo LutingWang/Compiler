@@ -13,7 +13,6 @@
 #include "midcode/MidCode.h"
 #include "midcode/BasicBlock.h"
 #include "midcode/FlowChart.h"
-#include "symtable/table.h"
 #include "symtable/Entry.h"
 #include "symtable/SymTable.h"
 
@@ -70,9 +69,6 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
         storage.erase(arg);
     }
     const StackFrame stackframe(output, args, storage);
-    
-    // prologue
-    output(ObjCode::Instr::subi, Reg::sp, Reg::sp, ObjCode::noreg, stackframe.size(), ObjCode::nolab);
 
 	// initialize register pool
 	std::vector<const symtable::Entry*> reg_a(reg::a.size(), nullptr);
@@ -80,8 +76,11 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
 		reg_a[i] = args[i];
 	}
     RegPool regpool(reg_a, stackframe);
-    // TODO: uncomment this
-    // regpool.assignSavedRegs(functable);
+    regpool.assignSavedRegs(functable);
+    
+    // prologue
+    output(ObjCode::Instr::subi, Reg::sp, Reg::sp, ObjCode::noreg, stackframe.size(), ObjCode::nolab);
+    regpool.genPrologue();
 
     // start translation
     Translator translator(output, regpool, stackframe);

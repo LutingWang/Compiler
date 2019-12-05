@@ -25,6 +25,8 @@ class BasicBlock {
 	std::set<BasicBlock*> _succ; // successors
 public:
 	const std::vector<const MidCode*>& midcodes(void) const;
+    const std::set<BasicBlock*>& prec(void) const;
+    const std::set<BasicBlock*>& succ(void) const;
 
 private:
 	BasicBlock(void);

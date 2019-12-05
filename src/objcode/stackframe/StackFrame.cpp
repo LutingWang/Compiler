@@ -7,10 +7,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <map>
-#include <set>
-#include <vector>
-#include "symtable/Entry.h"
 #include "symtable/SymTable.h"
 
 #include "../include/Reg.h"

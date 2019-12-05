@@ -16,6 +16,14 @@ const std::vector<const MidCode*>& BasicBlock::midcodes(void) const {
     return _midcodes;
 }
 
+const std::set<BasicBlock*>& BasicBlock::prec(void) const {
+    return _prec;
+}
+
+const std::set<BasicBlock*>& BasicBlock::succ(void) const {
+    return _succ;
+}
+
 BasicBlock::BasicBlock(void) {}
 
 BasicBlock::BasicBlock(const std::vector<const MidCode*>::const_iterator first,

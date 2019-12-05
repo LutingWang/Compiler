@@ -34,6 +34,8 @@ public:
             const StackFrame&);
     
     void assignSavedRegs(const symtable::FuncTable* const);
+    void genPrologue(void) const; // backup s regs and load s regs for this func
+    void genEpilogue(void) const; // restore s regs
     
 	// simulate register assignment
 	void simulate(const std::vector<const symtable::Entry*>&, 

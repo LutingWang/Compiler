@@ -6,10 +6,7 @@
  **********************************************/
 
 #include <cassert>
-#include <set>
-#include <vector>
 #include "symtable/table.h"
-#include "symtable/Entry.h"
 #include "symtable/SymTable.h"
 
 #include "../include/memory.h"

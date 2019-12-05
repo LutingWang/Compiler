@@ -9,24 +9,20 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "midcode/MidCode.h"
 #include "symtable/table.h"
 #include "symtable/SymTable.h"
-#include "midcode/MidCode.h"
 
 #include "./include/StrPool.h"
 
 StrPool strpool;
-
-bool StrPool::_contains(const std::string& str) const {
-	return _pool.count(str);
-}
 
 int StrPool::_size(void) const {
 	return _pool.size();
 }
 
 void StrPool::_insert(const std::string& str) {
-	if (_contains(str)) { return; }
+	if (_pool.count(str)) { return; }
 	_pool[str] = "str$" + std::to_string(_size());
 }
 

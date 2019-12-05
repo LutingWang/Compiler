@@ -9,6 +9,7 @@
 #define OBJ_CODE_H
 
 #include <functional>
+#include <iostream>
 #include <string>
 #include <vector>
 #include "midcode/MidCode.h"
