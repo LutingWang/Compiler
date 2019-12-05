@@ -102,6 +102,7 @@ void Translator::_compileCode(const MidCode& midcode) {
         _output(Instr::move, Reg::a0, reg::compiler_tmp, noreg, noimm, nolab);
         break;
     case MidCode::Instr::OUTPUT_SYM:
+        _output(Instr::move, reg::compiler_tmp, Reg::a0, noreg, noimm, nolab);
         t1 = REQ;
         _output(Instr::move, Reg::a0, t1, noreg, noimm, nolab);
         SYSCALL(midcode.t1()->isInt() ? 1 : 11);

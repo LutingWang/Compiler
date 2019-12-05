@@ -54,10 +54,10 @@ int main(int argc, char* argv[]) {
     for (bool updated = true; updated; ) {
         updated = false;
         updated = Optim::inlineExpan() || updated;
-        updated = Optim::commonExprElim() || updated;
-        updated = Optim::symProp() || updated;
+        // updated = Optim::commonExprElim() || updated;
+        // updated = Optim::symProp() || updated;
         // updated = Optim::deadCodeDel() || updated;
-        updated = Optim::peephole() || updated;
+        // updated = Optim::peephole() || updated;
         Optim::clean();
     }
 	cout << "finished" << endl;
