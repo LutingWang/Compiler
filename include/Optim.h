@@ -40,6 +40,8 @@ private:
     static bool _varProp(const MidCode*&, VarMatch&);
 public:
 	static bool symProp(void);
+
+	static bool deadCodeDel(void);
     
 	static bool peephole(void);
 };

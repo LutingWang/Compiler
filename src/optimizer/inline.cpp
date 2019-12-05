@@ -81,7 +81,7 @@ bool Optim::inlineExpan(void) {
     
     std::set<symtable::FuncTable*> funcs;
     SymTable::getTable().funcs(funcs, false);
-    for (auto& functable : funcs) {
+    for (auto functable : funcs) {
         for (bool replaced = true; replaced; ) {
             replaced = false;
             FlowChart flowchart(functable);

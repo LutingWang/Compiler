@@ -35,7 +35,7 @@ std::ofstream OUTPUT_STREAM(error),
 		OPEN(error); 
 		OPEN(symtable); 
 		OPEN(lexer); 
-		OPEN(midcode); 
+		OPEN(midcode);
 		OPEN(mips);	
 	}
 

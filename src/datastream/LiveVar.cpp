@@ -14,6 +14,10 @@
 
 #include "datastream/LiveVar.h"
 
+bool isGlobalOrConst(const symtable::Entry* const entry) {
+    return entry->isGlobal() || entry->isConst();
+}
+
 LiveVar::LiveVar(const FlowChart& flowchart) {
     auto& blocks = flowchart.blocks();
     std::vector<std::set<const symtable::Entry*>> in(blocks.size()); // initiated as use
@@ -26,7 +30,7 @@ LiveVar::LiveVar(const FlowChart& flowchart) {
         
         // remove global or const
         for (auto it = useList.begin(); it != useList.end(); ) {
-            if ((*it)->isGlobal() || (*it)->isConst()) {
+            if (isGlobalOrConst(*it)) {
                 it = useList.erase(it);
             } else { it++; }
         }
@@ -34,7 +38,7 @@ LiveVar::LiveVar(const FlowChart& flowchart) {
         // no const permitted, so remove global only
         for (auto it = defList.begin(); it != defList.end(); ) {
             assert(!(*it)->isConst());
-            if ((*it)->isGlobal()) {
+            if (isGlobalOrConst(*it)) {
                 it = defList.erase(it);
             } else { it++; }
         }
@@ -58,6 +62,29 @@ LiveVar::LiveVar(const FlowChart& flowchart) {
                 auto result = in[i].insert(entry);
                 updated = updated || result.second;
             }
+        }
+    }
+}
+
+void LiveVar::backProp(std::vector<std::set<const symtable::Entry*>>& output, const BasicBlock* const basicblock) {
+    assert(output.empty());
+    output.resize(basicblock->midcodes().size());
+    auto out = _out[basicblock];
+    for (int i = output.size() - 1; i >= 0; i--) {
+        output[i] = out;
+        const MidCode* const midcode = basicblock->midcodes()[i];
+        
+        const symtable::Entry* defSym = nullptr;
+        def(defSym, midcode);
+        out.erase(defSym);
+        
+        std::vector<const symtable::Entry*> useSym;
+        use(useSym, midcode);
+        if (useSym.size() >= 1 && !isGlobalOrConst(useSym[0])) {
+            out.insert(useSym[0]);
+        }
+        if (useSym.size() >= 2 && !isGlobalOrConst(useSym[1])) {
+            out.insert(useSym[1]);
         }
     }
 }

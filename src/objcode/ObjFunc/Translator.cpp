@@ -16,7 +16,7 @@ Translator::Translator(CodeGen& output, RegPool& regpool, const StackFrame& stac
 
 using Pusher = std::function<void(const symtable::Entry* const, const bool, const bool)>;
 
-void _requiredSyms(Pusher& push, const MidCode* const midcode) {
+void requiredSyms(Pusher& push, const MidCode* const midcode) {
     std::vector<const symtable::Entry*> use;
     LiveVar::use(use, midcode);
     if (midcode->is(MidCode::Instr::STORE_IND)) {
@@ -42,13 +42,12 @@ void Translator::compile(const BasicBlock& basicblock) {
     std::vector<bool> write;
     std::vector<bool> mask;
     Pusher pusher = [&](const symtable::Entry* const entry, const bool w, const bool m) {
-        _seq.push_back(entry);
-        write.push_back(w);
-        mask.push_back(m);
+        _seq.push_back(entry); write.push_back(w); mask.push_back(m);
     };
     for (auto& midcode : basicblock.midcodes()) {
-        _requiredSyms(pusher, midcode);
+        requiredSyms(pusher, midcode);
     }
+    
     _regpool.simulate(_seq, write, mask);
     
     if (basicblock.isFuncCall()) {

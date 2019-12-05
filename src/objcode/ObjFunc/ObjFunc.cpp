@@ -66,7 +66,7 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
     
     // initialize helpers
     const FlowChart flowchart(functable);
-    LiveVar livevar(flowchart);
+    // LiveVar livevar(flowchart);
     
     // initialize stackframe
     std::set<const symtable::Entry*> storage;
