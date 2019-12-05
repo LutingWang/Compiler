@@ -5,6 +5,9 @@
     > Created Time: Tue Dec  3 18:48:16 2019
  **********************************************/
 
+#include <cassert>
+#include "datastream/LiveVar.h"
+
 #include "./Translator.h"
 
 Translator::Translator(CodeGen& output, RegPool& regpool, const StackFrame& stackframe) :
@@ -13,57 +16,27 @@ Translator::Translator(CodeGen& output, RegPool& regpool, const StackFrame& stac
 void Translator::_requiredSyms(std::vector<const symtable::Entry*>& _seq,
         std::vector<bool>& write,
         std::vector<bool>& mask,
-        const MidCode& midcode) {
-#define PUSH(t, w, m) \
-        _seq.push_back(midcode.t()); \
-        write.push_back(w); \
-        mask.push_back(m)
-    switch (midcode.instr()) {
-    case MidCode::Instr::ADD:
-    case MidCode::Instr::SUB:
-    case MidCode::Instr::MULT:
-    case MidCode::Instr::DIV:
-        PUSH(t1, false, false);
-        PUSH(t2, false, true);
-        PUSH(t0, true, false);
-        break;
-    case MidCode::Instr::LOAD_IND:
-        PUSH(t2, false, false);
-        PUSH(t0, true, false);
-        break;
-    case MidCode::Instr::STORE_IND:
-        PUSH(t2, false, false);
-        PUSH(t1, false, false);
-        break;
-    case MidCode::Instr::ASSIGN:
-        PUSH(t1, false, false);
-        PUSH(t0, true, false);
-        break;
-    case MidCode::Instr::PUSH_ARG:
-        PUSH(t1, false, false);
-        break;
-    case MidCode::Instr::CALL:
-        if (midcode.t0() != nullptr) { PUSH(t0, true, false); }
-        break;
-    case MidCode::Instr::RET:
-        if (midcode.t1() != nullptr) { PUSH(t1, false, false); }
-        break;
-    case MidCode::Instr::INPUT:
-        PUSH(t0, true, false);
-        break;
-    case MidCode::Instr::OUTPUT_SYM:
-        PUSH(t1, false, false);
-        break;
-    case MidCode::Instr::BGT:
-    case MidCode::Instr::BGE:
-    case MidCode::Instr::BLT:
-    case MidCode::Instr::BLE:
-    case MidCode::Instr::BEQ:
-    case MidCode::Instr::BNE:
-        PUSH(t1, false, false);
-        PUSH(t2, false, true);
-        break;
-    default: break;
+        const MidCode* const midcode) {
+#define PUSH(t, w, m) _seq.push_back(t); \
+    write.push_back(w); mask.push_back(m)
+    
+    std::vector<const symtable::Entry*> use;
+    LiveVar::use(use, midcode);
+    if (midcode->is(MidCode::Instr::STORE_IND)) {
+        assert(use.size() == 2);
+        PUSH(use[1], false, false);
+        PUSH(use[0], false, false);
+    } else if (use.size() == 2) {
+        PUSH(use[0], false, false);
+        PUSH(use[1], false, true);
+    } else if (use.size() == 1) {
+        PUSH(use[0], false, false);
+    }
+    
+    const symtable::Entry* def = nullptr;
+    LiveVar::def(def, midcode);
+    if (def != nullptr) {
+        PUSH(def, true, false);
     }
 #undef PUSH
 }
@@ -73,7 +46,7 @@ void Translator::compile(const BasicBlock& basicblock) {
     std::vector<bool> write;
     std::vector<bool> mask;
     for (auto& midcode : basicblock.midcodes()) {
-        _requiredSyms(_seq, write, mask, *midcode);
+        _requiredSyms(_seq, write, mask, midcode);
     }
     _regpool.simulate(_seq, write, mask);
     

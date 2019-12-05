@@ -23,22 +23,78 @@ MidCode::Instr MidCode::instr(void) const {
     return _instr;
 }
 
+bool MidCode::t0IsValid(void) const {
+    return _t0 != nullptr;
+}
+
+bool MidCode::t1IsValid(void) const {
+    return _t1 != nullptr;
+}
+
+bool MidCode::t2IsValid(void) const {
+    return _t2 != nullptr;
+}
+
+bool MidCode::labelIsValid(void) const {
+    return _t3 != nullptr;
+}
+
+bool MidCode::t0IsLegal(void) const {
+	static const std::set<Instr> legitimation {
+		Instr::ADD, Instr::SUB, Instr::MULT, Instr::DIV,
+    	Instr::LOAD_IND, Instr::STORE_IND, Instr::ASSIGN,
+    	Instr::CALL, Instr::INPUT
+	};
+    return legitimation.count(instr());
+}
+
+bool MidCode::t1IsLegal(void) const {
+	static const std::set<Instr> legitimation {
+		Instr::ADD, Instr::SUB, Instr::MULT, Instr::DIV,
+    	Instr::LOAD_IND, Instr::STORE_IND, Instr::ASSIGN,
+    	Instr::PUSH_ARG, Instr::RET, Instr::OUTPUT_SYM,
+    	Instr::BGT, Instr::BGE, Instr::BLT, Instr::BLE,
+    	Instr::BEQ, Instr::BNE
+	};
+    return legitimation.count(instr());
+}
+
+bool MidCode::t2IsLegal(void) const {
+	static const std::set<Instr> legitimation {
+		Instr::ADD, Instr::SUB, Instr::MULT, Instr::DIV,
+    	Instr::LOAD_IND, Instr::STORE_IND,
+    	Instr::BGT, Instr::BGE, Instr::BLT, Instr::BLE,
+    	Instr::BEQ, Instr::BNE
+	};
+    return legitimation.count(instr());
+}
+
+bool MidCode::labelIsLegal(void) const {
+	static const std::set<Instr> legitimation {
+		Instr::CALL, Instr::OUTPUT_STR,
+    	Instr::BGT, Instr::BGE, Instr::BLT, Instr::BLE,
+    	Instr::BEQ, Instr::BNE, Instr::GOTO, Instr::LABEL
+	};
+    return legitimation.count(instr());
+}
+
 const symtable::Entry* MidCode::t0(void) const {
-    assert(_t0 != nullptr || is(Instr::CALL));
-	return _t0;
+    assert(t0IsLegal());
+    return _t0;
 }
 
 const symtable::Entry* MidCode::t1(void) const {
-    assert(_t1 != nullptr || is(Instr::RET));
-	return _t1;
+    assert(t1IsLegal());
+    return _t1;
 }
 
 const symtable::Entry* MidCode::t2(void) const {
-    assert(_t2 != nullptr);
-	return _t2;
+    assert(t2IsLegal());
+    return _t2;
 }
 
 const std::string& MidCode::labelName(void) const {
+	assert(labelIsLegal());
 	return *_t3;
 }
 
@@ -48,55 +104,10 @@ MidCode::MidCode(const Instr instr,
 		const symtable::Entry* const t2,
 		const std::string* const t3) : 
 	_instr(instr), _t0(t0), _t1(t1), _t2(t2), _t3(t3) {
-	int status = ((t0 != nullptr) << 3)
-		+ ((t1 != nullptr) << 2) 
-		+ ((t2 != nullptr) << 1) 
-		+ (t3 != nullptr);
-	switch (instr) {
-	case Instr::ADD:
-	case Instr::SUB:
-	case Instr::MULT:
-	case Instr::DIV:
-	case Instr::LOAD_IND:
-	case Instr::STORE_IND:
-		assert(status == 0b1110);
-		break;
-	case Instr::ASSIGN:
-		assert(status == 0b1100);
-		break;
-	case Instr::PUSH_ARG:
-		assert(status == 0b0100);
-		break;
-	case Instr::CALL:
-		assert(status == 0b1001 || status == 0b0001);
-		break;
-	case Instr::RET:
-		assert(status == 0b0100 || status == 0b0000);
-		break;
-	case Instr::INPUT:
-		assert(status == 0b1000);
-		break;
-	case Instr::OUTPUT_STR:
-        assert(status == 0b0001);
-        break;
-    case Instr::OUTPUT_SYM:
-		assert(status == 0b0100);
-		break;
-	case Instr::BGT:
-	case Instr::BGE:
-	case Instr::BLT:
-	case Instr::BLE:
-	case Instr::BEQ:
-	case Instr::BNE:
-		assert(status == 0b0111);
-		break;
-	case Instr::GOTO:
-	case Instr::LABEL:
-		assert(status == 0b0001);
-		break;
-	default:
-		assert(0);
-	}
+        assert(t0IsLegal() == (t0IsValid() || is(Instr::CALL)));
+        assert(t1IsLegal() == (t1IsValid() || is(Instr::RET)));
+        assert(t2IsLegal() == t2IsValid());
+        assert(labelIsLegal() == labelIsValid());
 }
 
 MidCode::MidCode(const MidCode& other) :
@@ -104,7 +115,7 @@ MidCode::MidCode(const MidCode& other) :
     _t0(other._t0),
     _t1(other._t1),
     _t2(other._t2),
-    _t3(other._t3 == nullptr ? nullptr : new std::string(*other._t3)) {}
+    _t3(other.labelIsValid() ? new std::string(other.labelName()) : nullptr) {}
 
 MidCode::~MidCode(void) {
 	delete _t3;
@@ -115,6 +126,7 @@ bool MidCode::is(const Instr instr) const {
     return this->instr() == instr;
 }
 
+// TODO: delete these two functions
 bool MidCode::isCalc(void) const {
     switch (this->instr()) {
     case Instr::ADD:

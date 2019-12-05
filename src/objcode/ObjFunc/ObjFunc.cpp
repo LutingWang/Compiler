@@ -76,7 +76,8 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
 		reg_a[i] = args[i];
 	}
     RegPool regpool(reg_a, stackframe);
-    regpool.assignSavedRegs(functable);
+    // TODO: uncomment
+    // regpool.assignSavedRegs(functable);
     
     // prologue
     output(ObjCode::Instr::subi, Reg::sp, Reg::sp, ObjCode::noreg, stackframe.size(), ObjCode::nolab);

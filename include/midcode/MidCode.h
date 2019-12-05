@@ -58,13 +58,25 @@ private:
 	const symtable::Entry* const _t2;	// operand2
 	const std::string* _t3;		// label name
 public:
-    // The fields can only be visited when they are valid (
-    // not null), except for the `exceptions` listed in front
-    // of each field. The exceptions are instruction classes
-    // that can legally contain an invalid field.
 	Instr instr(void) const;
-	const symtable::Entry* t0(void) const; // exceptions: CALL
-	const symtable::Entry* t1(void) const; // exceptions: RET
+    
+    // The fields can only be visited when they are legal.
+    // Legitimation is a looser critic compaired to validity.
+    // Validity checker only checks if the field is null,
+    // while legitimation checker checks if the instr is
+    // exempted.
+    bool t0IsValid(void) const;
+    bool t1IsValid(void) const;
+    bool t2IsValid(void) const;
+    bool labelIsValid(void) const;
+    
+    bool t0IsLegal(void) const; // exceptions: CALL
+    bool t1IsLegal(void) const; // exceptions: RET
+    bool t2IsLegal(void) const;
+    bool labelIsLegal(void) const;
+    
+    const symtable::Entry* t0(void) const;
+    const symtable::Entry* t1(void) const;
 	const symtable::Entry* t2(void) const;
 	const std::string& labelName(void) const;
 

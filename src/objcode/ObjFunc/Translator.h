@@ -136,7 +136,7 @@ private:
     void _requiredSyms(std::vector<const symtable::Entry*>&, 
 			std::vector<bool>& write, 
 			std::vector<bool>& mask, 
-			const MidCode&);
+			const MidCode* const);
 
     // Translate midcodes but `push` and `call`.
     void _compileCode(const MidCode&);
