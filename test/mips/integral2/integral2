@@ -6,7 +6,7 @@ int mean(int n) {
 
 	if (n > MAX_N) {
 		printf("Too much input ", n);
-		return ERR;
+		return(ERR);
 	}
 
 	for (i = 0; i < n; i = i + 1) {
@@ -19,7 +19,7 @@ int mean(int n) {
 		result = result + i;
 	}
 	result = result / n;
-	return result;
+	return(result);
 }
 
 void main() {
