@@ -7,14 +7,14 @@
 
 #include <cassert>
 #include <string>
+#include "error.h"
 #include "midcode/MidCode.h"
 #include "symtable/Entry.h"
 #include "symtable/table.h"
 #include "symtable/SymTable.h"
 
-#include "./include/errors.h"
-#include "./include/Lexer.h"
-#include "./include/Symbol.h"
+#include "./Lexer.h"
+#include "./Symbol.h"
 
 #include "frontend.h"
 

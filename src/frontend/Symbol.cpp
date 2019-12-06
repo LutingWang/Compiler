@@ -8,7 +8,7 @@
 #include <typeinfo>
 #include "compilerConfig.h"
 
-#include "./include/Symbol.h"
+#include "./Symbol.h"
 
 symbol::Symbol sym;
 

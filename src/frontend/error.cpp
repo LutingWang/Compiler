@@ -7,9 +7,11 @@
 
 #include <fstream>
 
-#include "./include/errors.h"
-#include "./include/Lexer.h"
-#include "./include/InputFile.h"
+#include "./Lexer.h"
+#include "./InputFile.h"
+#include "./Symbol.h"
+
+#include "error.h"
 
 bool error::happened = false;
 
@@ -68,11 +70,11 @@ void error::raise(Code c) {
 	}
 }
 
-#define ASSERT_DELIM(s) void error::assertSymIs##s(void) {				\
-	if (sym.is(symbol::Type::DELIM, symbol::s)) { Lexer::getsym(); }	\
-	else { raise(Code::MISSING_##s); }									\
+#define ASSERT_DELIM(s) void error::assertSymIs##s(void) {                \
+    if (sym.is(symbol::Type::DELIM, symbol::s)) { Lexer::getsym(); }    \
+    else { raise(Code::MISSING_##s); }                                    \
 }
-	ASSERT_DELIM(SEMICN)
-	ASSERT_DELIM(RPARENT)
-	ASSERT_DELIM(RBRACK)
+ASSERT_DELIM(SEMICN)
+ASSERT_DELIM(RPARENT)
+ASSERT_DELIM(RBRACK)
 #undef ASSERT_DELIM

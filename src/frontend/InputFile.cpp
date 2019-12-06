@@ -8,9 +8,9 @@
 #include <cassert>
 #include <string>
 #include "compilerConfig.h"
+#include "error.h"
 
-#include "./include/errors.h"
-#include "./include/InputFile.h"
+#include "./InputFile.h"
 using namespace std;
 
 InputFile::InputFile(string path) : _input(path) {

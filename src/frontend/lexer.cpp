@@ -9,11 +9,12 @@
 #include <cassert>
 #include <vector>
 #include "compilerConfig.h"
+#include "error.h"
 
-#include "./include/errors.h"
-#include "./include/InputFile.h"
+#include "./InputFile.h"
+#include "./Symbol.h"
 
-#include "./include/Lexer.h"
+#include "./Lexer.h"
 
 InputFile* Lexer::_input = nullptr;
 
