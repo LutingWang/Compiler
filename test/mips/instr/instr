@@ -123,11 +123,7 @@ int funcif() {
 	}else{
 		printf("line23 n");
 	}
-	if(b!=c){
-		printf("b!=c");
-	}else{
-		printf("b==c");
-	}
+	return(a);
 }
 
 void funcloop(){
