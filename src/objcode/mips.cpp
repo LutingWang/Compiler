@@ -33,7 +33,7 @@ void mips::output(void) {
 	mips_output << std::endl 
 		<< ".text" << std::endl
 		<< "jal main" << std::endl
-		<< "li $v0 10" << std::endl
+		<< "li $v0, 10" << std::endl
 		<< "syscall" << std::endl;
 
     ObjFunc::output();

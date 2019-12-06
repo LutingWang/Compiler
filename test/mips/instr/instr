@@ -1,3 +1,15 @@
+const int a = 10, b = 20, c = -10 ,d = 0;
+const char aa = 'a', bb = 'b';
+const int io_a = 14, io_b = 28;
+const char io_c = 'c', io_d = 'd';
+int e;
+char f;
+int g[5];
+char h[5];
+int io_e,io_f;
+char io_g,io_h;
+int array_a[4];
+
 void func1() {
 	printf("def");
 }
@@ -13,7 +25,7 @@ int func3(int a) {
 	return(a);
 }
 
-void main() {
+void integral() {
 	const int a = 1;
 	int b[10], c;
 	printf("abc");
@@ -64,4 +76,145 @@ void main() {
 	func1();
 	func2(8);
 	printf(func3(9));
+}
+
+int funcif() {
+	const int a = 10;
+	const int b = 5;
+	char c;
+	c = '5';
+	if(a>b){
+		printf("a > b");
+	}else{
+		printf("a <= b");
+	}
+	if(a<b){
+
+	}else{
+		printf("a not less than b");
+	}
+
+	if(a>=a){
+		printf("1self yes");
+	}else{
+		printf("1self no");
+	}
+
+	if(b<=a){
+		printf("2222 yes");
+	}else{
+		printf("2222 no");
+	}
+
+	if(a-b<b-a){
+		printf("-aaa");
+	}else{
+		printf("-bbb");
+	}
+
+
+	if(-a>b){
+		printf("-a > b");
+	}else{
+		printf("-a <= b");
+	}
+	if(b==c-'0'){
+		printf("line21 y");
+	}else{
+		printf("line23 n");
+	}
+	if(b!=c){
+		printf("b!=c");
+	}else{
+		printf("b==c");
+	}
+}
+
+void funcloop(){
+	int i;
+	i = 10;
+	while(i>=0){
+		i=i-2;
+		printf(i);
+	}
+	while(i>10){
+		printf("w r o n g");
+	}
+	for(i=0;i<20;i=i+1){
+		printf(">>>",i);
+	}
+	for(i=20;i>=0;i=i-1){
+		printf("***", i);
+	}
+	i=1;
+	do{
+		printf(")))",i);
+		i = i+2;
+	}while(i<=1);
+	printf("end");
+}
+
+void funcio(){
+	int aa[3],i,sum,tmp;
+	io_e = 20;
+	io_f = 30;
+	io_g = 'g';
+	io_h = 'h';
+	printf("test1");
+	printf("test2",'g'+'h');
+	printf(io_g+io_h);
+	printf("test3",io_a*(io_b-(((io_c)))));
+	printf(io_a*(io_b-io_c));
+	printf("t e s t 4");
+
+	sum = 0;
+	for(i=0;i<3;i=i+1){
+		scanf(tmp);
+		aa[i] = tmp;
+		sum = sum+aa[i];
+	}
+	printf(sum);
+
+	printf(io_e+io_f);
+	scanf(io_e,io_f);
+	printf(io_e);
+	printf(io_f);
+	scanf(io_e,io_f,io_g,io_h);
+	printf(io_e);
+	printf(io_f);
+	printf(io_g);
+	printf(io_h);
+}
+
+void funcarray() {
+    int b[4];
+    
+    array_a[0] = 1;
+    b[array_a[0]-1] = 2;
+
+    array_a[b[array_a[0]-1]-1] = 3;
+    b[array_a[b[array_a[0]-1]-1]-2] = 4;
+    
+    array_a[b[array_a[b[array_a[0]-1]-1]-2]-2] = 5;
+    b[array_a[b[array_a[b[array_a[0]-1]-1]-2]-2]-3] = 6;
+    
+    array_a[b[array_a[b[array_a[b[array_a[0]-1]-1]-2]-2]-3]-3] = 7;
+    b[array_a[b[array_a[b[array_a[b[array_a[0]-1]-1]-2]-2]-3]-3]-4] = 8;
+    printf("array_a[0] = ", array_a[0]);
+    printf("array_a[1] = ", array_a[1]);
+    printf("array_a[2] = ", array_a[2]);
+    printf("array_a[3] = ", array_a[3]);
+    printf("b[0] = ", b[0]);
+    printf("b[1] = ", b[1]);
+    printf("b[2] = ", b[2]);
+    printf("b[3] = ", b[3]);
+    printf("e");
+}
+
+void main() {
+	integral();
+	funcif();
+	funcloop();
+	funcio();
+	funcarray();
 }

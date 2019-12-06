@@ -1,3 +1,106 @@
+test1:a
+test2:1
+test3:c
+test4:2
+test1 in ascii:97
+test2 in ascii:49
+test3 in ascii:99
+test4 in ascii:50
+sum of int array1:10
+sum of int array2:10
+char1:3
+char2:5
+char3:7
+char4:9
+char5:1
+remain:38
+not remain:7
+doublevar:8
+while finish
+doublevar:10
+while finish
+doublevar:12
+while finish
+doublevar:14
+while finish
+doublevar:16
+while finish
+doublevar:18
+while finish
+numb double:6
+triple:9
+square:9
+square:9
+square:9
+square:9
+square:9
+square:9
+square:9
+n:9
+doublevar:18
+triple:9
+square:9
+sum:36
+input globals
+input locals
+global
+1
+2
+3
+4
+local
+5
+6
+7
+8
+9
+new int:1
+doublevar:2
+char:a
+tmp:1
+sum:3
+sum:3
+pro:6
+fibo:2
+pro:24
+fibo:3
+pro:120
+fibo:5
+pro:720
+fibo:8
+pro:5040
+fibo:13
+pro:40320
+fibo:21
+pro:362880
+fibo:34
+0
+1
+2
+333333
+333333
+333333
+4
+5
+6
+7
+8
+9
+******
+10
+20
+3
+9
+8
+7
+6
+5
+4
+3
+2
+1
+0
+-5
 this is a string 5
 this is a string, !#$%&'()*+,-./0123456789:;<=>?@[\]^_`{|}~|
 this is a string, !#$%&'()*+,-./0123456789:;<=>?@[\]^_`{|}~|
@@ -13,3 +116,8 @@ T
 T
 T
 T
+-64
+z
+16
+9
+v

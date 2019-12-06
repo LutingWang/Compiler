@@ -3,27 +3,84 @@ const int const_int_3 = -0, const_int_4 = -12345679;
 const char const_char_1 = '9', const_char_2 = '_', const_char_3 = '+', const_char_4 = '*';
 int global_int_1,global_int_2;
 char global_char_1,global_char_2;
+int global_array_1[100], global_array_2[100];
+char global_array_3[100], global_array_4[100];
 int num5;
-void assignGlobal(int a,char b,int c,char d)
-{
+
+void assignGlobal(int a, char b, int c, char d) {
 	global_int_1 = a;
     global_char_1 = b;
     global_int_2 = c;
     global_char_2 = d;
+	for (num5 = 0; num5 < 100; num5 = num5 + 1) {
+		global_array_1[num5] = num5;
+	}
+	for (num5 = 100; 0 <= num5; num5 = num5 - 1) {
+		global_array_2[num5] = 10000 - num5;
+	}
+	for (num5 = 100; num5 < 100 + 100; num5 = num5 + 1) {
+		global_array_3[num5 - 100] = const_char_1;
+	}
     return;
 }
-void testglobal()
-{
-	assignGlobal(const_int_1, const_char_1, const_int_4, const_char_4);
-}
-void main()
-{
-	testglobal();
-	printf(global_int_1);
-	printf(global_int_2);
-	printf(global_char_1);
-	printf(global_char_2);
+
+void printGlobal() {
+	printf("global_int_1 = ", global_int_1);
+	printf("global_int_2 = ", global_int_2);
+	printf("global_char_1 = ", global_char_1);
+	printf("global_char_2 = ", global_char_2);
+
+	printf("num5 = ", num5);
 	num5=9;
 	for(num5=9;num5>=0;num5=num5-1) printf(num5);
+
+	printf("const_int_1 = ", const_int_1);
+	printf("const_int_2 = ", const_int_2);
+	printf("const_int_3 = ", const_int_3);
+	printf("const_int_4 = ", const_int_4);
+	printf("const_char_1 = ", const_char_1);
+	printf("const_char_2 = ", const_char_2);
+	printf("const_char_3 = ", const_char_3);
+	printf("const_char_4 = ", const_char_4);
+
+	for (num5 = 0; num5 < 100; num5 = num5 + 1) {
+		printf(global_array_1[num5]);
+		printf(global_array_2[num5]);
+		printf(global_array_3[num5]);
+		printf(global_array_4[num5]);
+	}
+}
+
+int globalPara(int a, char b, int c, char d, int e, char f) {
+	printf("a = ", a);
+	printf("b = ", b);
+	printf("c = ", c);
+	printf("d = ", d);
+	printf("e = ", e);
+	printf("f = ", f);
+	a = 1;
+	b = 'c';
+	c = 1;
+	d = 'c';
+	e = 1;
+	f = 'c';
+	printf("a = ", a);
+	printf("b = ", b);
+	printf("c = ", c);
+	printf("d = ", d);
+	printf("e = ", e);
+	printf("f = ", f);
+	return(num5);
+}
+
+void testglobal() {
+	assignGlobal(const_int_1, const_char_1, const_int_4, const_char_4);
+	printGlobal();
+	globalPara(const_int_1, const_char_1, global_int_1, global_char_1, global_array_1[30], global_array_3[50]);
+	printGlobal();
+}
+
+void main() {
+	testglobal();
 	return;
 }

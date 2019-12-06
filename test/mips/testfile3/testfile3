@@ -1,0 +1,22 @@
+const int const_1 = 102435;
+const int const_2 = -4325355;
+const char const_3 = 'g';
+int a, b, c, d;
+int e[100];
+char aa(int a, int bb, int cc) {
+	int c, d, e, f, g;
+	c = d + (a + b) + f * (3 + 4423) + (324) + (g + e);
+	return ('c');
+}
+
+void main() {
+	char ch_a;
+	scanf(ch_a);
+	printf("___this_is_b_string___", ch_a);
+	printf("___this_is_c_string___", (ch_a));
+	printf("___this_is_d_string___");
+	printf(1+2+3+aa(4,5,6));
+	printf('a');
+	printf('a'+1);
+	printf(('a'));
+}

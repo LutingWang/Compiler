@@ -1,18 +1,261 @@
 const int num1=10, num2=1, num3=+10, num4=-19;
 const char char1='a', char2='b';
 const int chAr2=-109;
+const int hide = 16;
+const char char_a = 'a', b = 'b';
+const char test1 = 'j';
 int num5, num6, array1[9];
 char char3, char4, array2[10], testresult[10];
-int return1()
-{
+char test2;
+int test3;
+int int_array1[2];
+char char_array1[2], char_array2[2];
+int global[4];
+int global_int;
+int a;
+int c;
+char d;
+int i,j,k;
+
+void testchar(){
+	const char test1 = 'a';
+	const char test3 = 'c';
+	char test4;
+    scanf(test2, test4);
+    printf("test1:", test1);
+    printf("test2:", test2);
+    printf("test3:", test3);
+    printf("test4:", test4);
+    printf("test1 in ascii:", test1+0);
+    printf("test2 in ascii:", test2+0);
+    printf("test3 in ascii:", test3+0);
+    printf("test4 in ascii:", test4+0);
+}
+
+void testarray1() {
+	int int_array2[3];
+	char char_array2[3];
+	int i1, i2, i3, i4, i5;
+	char c1, c2, c3, c4, c5;
+	scanf(c1, i1, c2, i2, c3, i3, c4, i4, c5, i5);
+	int_array1[0] = i1;
+	int_array1[1] = i2;
+	int_array2[0] = i3;
+	int_array2[1] = i4;
+	int_array2[2] = i5;
+	char_array1[0] = c1;
+	char_array1[1] = c2;
+	char_array2[0] = c3;
+	char_array2[1] = c4;
+	char_array2[2] = c5;
+	printf("sum of int array1:", int_array1[0]+int_array1[1]);
+	printf("sum of int array2:", int_array2[0]+int_array2[1]+int_array2[2]);
+	printf("char1:",char_array1[0]);
+	printf("char2:",char_array1[1]);
+	printf("char3:",char_array2[0]);
+	printf("char4:",char_array2[1]);
+	printf("char5:",char_array2[2]);
+}
+
+void teststack() {
+	int i0, i1, i2, i3, i4, i5, i6, i7, i8, i9;
+	scanf(i0, i1, i2, i3, i4, i5, i6, i7, i8, i9);
+	printf("remain:", i2+i3+i4+i5+i6+i7+i8+i9);
+	printf("not remain:", i0+i1);
+}
+
+void testbranch() {
+	int in, num, n;
+	int doublevar, triple, square;
+	scanf(num, in);
+	while (in) {
+		if (in < 2) {
+			doublevar = num * 2;
+		} else {
+			doublevar = in * 2;
+
+		}
+		printf("doublevar:", doublevar);
+		printf("while finish");
+		scanf(in);
+	}
+	scanf(in);
+	for (n = 0;  in > 0; n = n + 1) {
+		if (in == 1) {
+			printf("numb double:", num * 2);
+		} else if (in == 2) {
+			triple = num * 3;
+			printf("triple:", triple);
+		} else {
+			square = num * num;
+			printf("square:", square);
+		}
+		scanf(in);
+	}
+	printf("n:", n);
+	printf("doublevar:", doublevar);
+	printf("triple:", triple);
+	printf("square:", square);
+	printf("sum:", doublevar + triple + square);
+}
+
+void testbubble() {
+	int local[5];
+	int tmp, i, j;
+	printf("input globals");
+	for (i = 0; i < 4; i = i + 1) {
+		scanf(tmp);
+		global[i] = tmp;
+	}
+	printf("input locals");
+	for (i = 0; i < 5; i = i + 1) {
+		scanf(tmp);
+		local[i] = tmp;
+	}
+	for (i = 0; i < 4; i = i + 1) {
+		for (j = 0; j < 4 - i - 1; j = j + 1) {
+			if (global[j] > global[j+1]) {
+				tmp = global[j];
+				global[j] = global[j+1];
+				global[j+1] = tmp;
+			}
+		}
+	}
+	for (i = 0; i < 5; i = i + 1) {
+		for (j = 0; j < 5 - i - 1; j = j + 1) {
+			if (local[j] > local[j+1]) {
+				tmp = local[j];
+				local[j] = local[j+1];
+				local[j+1] = tmp;
+			}
+		}
+	}
+	printf("global");
+	for (i = 0; i < 4; i = i + 1) {
+		printf(global[i]);
+	}
+	printf("local");
+	for (i = 0; i < 5; i = i + 1) {
+		printf(local[i]);
+	}
+}
+
+void increase() {
+	global_int = global_int + 1;
+}
+
+int doublevar(int n) {
+	int tmp;
+	tmp = n * 2;
+	return (tmp);
+}
+
+char fa() {
+	return ('a');
+}
+
+void testsimplefunc() {
+	int tmp;
+	global_int = 0;
+	increase();
+	printf("new int:",global_int);
+	tmp = 1;
+	printf("doublevar:",doublevar(tmp));
+	printf("char:",fa());
+	printf("tmp:",tmp);
+}
+
+int sum(int a, int b) {
+	return (a+b);
+}
+
+void testembed() {
+	int a, b, c;
+	scanf(a,b,c);
+	printf("sum:",sum(sum(a,b),c));
+	printf("sum:",sum(a,sum(b,c)));
+}
+
+int product(int n) {
+	if (n <= 1) {
+		return (n);
+	} 
+	return (n * product(n - 1));
+}
+
+int fibo(int n) {
+	if (n <= 2) {
+		return (1);
+	} else {
+		return (fibo(n - 1) + fibo(n - 2));
+	}
+}
+
+void testrec() {
+	int n;
+	scanf(n);
+	do {
+		printf("pro:",product(n));
+		printf("fibo:",fibo(n));
+		scanf(n);
+	} while(n);
+}
+
+int test(int a, int b){
+    printf("******");
+    printf(i);
+    printf(j);
+    printf(k);
+    if(i>=j){
+    	    for(i=0;i<10;i=i+1){
+    	        if(i!=3){
+    	        printf(i);
+    	        }else{
+    	            for(k=0;k<3;k=k+1){
+    	            printf("333333");
+    	            }
+    	        }
+    	    }
+    	}else{
+    	    for(i=9;i>=0;i=i-1){
+    	        printf(i);
+    	    }
+    	}
+    return(-(a+b)-b);
+}
+
+void testcontrol(){
+	i = 10;
+	j = 20;
+	k = 30;
+	if(i<j){
+	    for(i=0;i<10;i=i+1){
+	        if(i!=3){
+	        printf(i);
+	        }else{
+	            for(k=0;k<3;k=k+1){
+	            printf("333333");
+	            }
+	        }
+	    }
+	}else{
+	    for(i=9;i>=0;i=i-1){
+	        printf(i);
+	    }
+	}
+	printf(test(1,2));
+}
+
+int return1() {
     return (1);
 }
-int factorial(int n)
-{
+
+int factorial(int n) {
     if(n==1)return (n);
     else return(n*factorial(n-1));
 }
-int testfor(int a, char b, int c, int d, int f, char e){
+
+int testfor(int a, char b, int c, int d, int f, char e) {
     int i;
     a=9;
     c=0;
@@ -25,8 +268,8 @@ int testfor(int a, char b, int c, int d, int f, char e){
     }
     return (0);   
 }
-int testwhile()
-{
+
+int testwhile() {
     int num1, num2, num3, num4;
     num1=0;
     num2=10;
@@ -48,8 +291,8 @@ int testwhile()
     }
     else return (0);
 }
-int testexpression()
-{
+
+int testexpression() {
     int a,c;
     char b;
     a=10;
@@ -61,8 +304,8 @@ int testexpression()
     if(array1[c]==99)return (1);
     return (0);
 }
-int testarray()
-{
+
+int testarray() {
     int a,b,c;
     a=1;
     b=2;
@@ -73,8 +316,8 @@ int testarray()
     if(array1[4]==10)return (1);
     return (0);
 }
-void testprintf(int flag)
-{
+
+void testprintf(int flag) {
     if(flag<=0)printf("this is a string, !#$%&'()*+,-./0123456789:;<=>?@[\]^_`{|}~|");
     else if(flag>=2){
             printf('a');
@@ -83,15 +326,15 @@ void testprintf(int flag)
          }
          else printf("this is a string ", num1-5);
 }
-char testfactorial()
-{
+
+char testfactorial() {
     if(factorial(1)==1)
         if(factorial(3)==6)
             return ('T');
     return ('F');
 }
-void main()
-{
+
+void testfunc1() {
     int i, flag;
     num5=9;
     num6=8;
@@ -118,4 +361,45 @@ void main()
     testprintf(2);
     testprintf(3);
     for(i=0;i<5;i=i+1)printf(testresult[i]);
+}
+
+void v0(int char_a, char b){
+	printf(char_a);
+	printf(b);
+}
+
+int i0(int char_a, char b){
+	return(char_a*(b-'0'));
+}
+
+char c0(char char_a, char b, char c){
+	printf(char_a+b-2*'0');
+	return(c);
+}
+
+void testfunc2() {
+	const char char_a = '4';
+	const char b = 'z';
+	int c;
+	char d;
+	v0(-64, b);
+	c = i0(4, char_a);
+	printf(c);
+	d = c0('4','5','v');
+	printf(d);
+	return;
+}
+
+void main() {
+	testchar();
+	testarray1();
+	teststack();
+	testbranch();
+	testbubble();
+	testsimplefunc();
+	testembed();
+	testrec();
+	testcontrol();
+	testfunc1();
+	testfunc2();
 }
