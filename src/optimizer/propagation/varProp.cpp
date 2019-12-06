@@ -45,7 +45,8 @@ bool Optim::_varProp(const MidCode*& midcode, VarMatch& match) {
         break;
     case MidCode::Instr::PUSH_ARG:
     case MidCode::Instr::RET:
-    case MidCode::Instr::OUTPUT_SYM:
+    // output sym should not be replaced
+    // case MidCode::Instr::OUTPUT_SYM:
         t1 = match.map(t1);
         break;
     case MidCode::Instr::CALL:

@@ -6,6 +6,7 @@
  **********************************************/
 
 #include <typeinfo>
+#include "compilerConfig.h"
 
 #include "./include/Symbol.h"
 
@@ -48,6 +49,7 @@ void symbol::Symbol::set(const Type type, const unsigned int num) noexcept {
     this->_num = num;
 }
 
+#if !judge
 std::ostream& symbol::operator << (std::ostream& output, const Symbol& s) {
 	output << typeid(s).name() << '<';
 	switch (sym.id()) {
@@ -110,3 +112,4 @@ std::ostream& symbol::operator << (std::ostream& output, const NonTerminal& nt) 
 	output << '>';
 	return output;
 }
+#endif /* judge */

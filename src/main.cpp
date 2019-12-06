@@ -6,6 +6,7 @@
  **********************************************/
 
 #include <cassert>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -15,17 +16,61 @@
 #include "midcode/MidCode.h"
 #include "mips.h"
 #include "Optim.h"
-
-#include "./files.h"
 using namespace std;
 
 // TODO: change midcode naming to avoid conflict
 // TODO: scan iterations, add comment of type
 
+// Latent streams for corresponding classes to use.
+// Do not expose in the headers!
+#define OUTPUT_STREAM(id) id##_output
+
+#if judge
+    std::ofstream OUTPUT_STREAM(error),
+        OUTPUT_STREAM(mips);
+
+    #define OUTPUT_PATH(id) #id ".txt"
+    #define OPEN(id) \
+        OUTPUT_STREAM(id).open(OUTPUT_PATH(id)); \
+        OUTPUT_STREAM(id) << std::left;
+    void open(void) {
+        OPEN(error);
+        OPEN(mips);
+    }
+#else
+    std::ofstream OUTPUT_STREAM(error),
+        OUTPUT_STREAM(symtable),
+        OUTPUT_STREAM(lexer),
+        OUTPUT_STREAM(midcode),
+        OUTPUT_STREAM(mips);
+
+    #define OUTPUT_PATH(id) testfile_path + "." #id
+    #define OPEN(id) \
+        OUTPUT_STREAM(id).open(OUTPUT_PATH(id)); \
+        OUTPUT_STREAM(id) << std::left;
+    void open(const std::string& testfile_path) {
+        OPEN(error);
+        OPEN(symtable);
+        OPEN(lexer);
+        OPEN(midcode);
+        OPEN(mips);
+    }
+#endif /* judge */
+
+void close(void) {
+#if !judge
+    OUTPUT_STREAM(error).close();
+    OUTPUT_STREAM(symtable).close();
+    OUTPUT_STREAM(lexer).close();
+    OUTPUT_STREAM(midcode).close();
+#endif /* judge */
+    OUTPUT_STREAM(mips).close();
+}
+
 #if judge
 int main(void) {
     const string testfile_path = "testfile.txt";
-    files::open();
+    open();
 #else
 int main(int argc, char* argv[]) {
 	// print compiler version info
@@ -34,7 +79,7 @@ int main(int argc, char* argv[]) {
 
     assert(argc == 2);
     const string testfile_path = PROJECT_BASE_DIR + string(argv[1]);
-    files::open(testfile_path);
+    open(testfile_path);
 #endif /* judge */
 	
 #if !judge
@@ -54,33 +99,29 @@ int main(int argc, char* argv[]) {
 
 #if !judge
     cout << "midcode generating ... ";
-#endif /* judge */
     MidCode::output();
-#if !judge
     cout << "finished" << endl;
 #endif /* judge */
 
 #if !judge
     cout << "optimization processing ... ";
 #endif /* judge */
-    for (bool updated = true; updated; ) {
-        updated = false;
-        updated = Optim::inlineExpan() || updated;
-        // updated = Optim::commonExprElim() || updated;
-        updated = Optim::symProp() || updated;
-        // updated = Optim::deadCodeDel() || updated;
-        updated = Optim::peephole() || updated;
-        Optim::clean();
-    }
+//    for (bool updated = true; updated; ) {
+//        updated = false;
+//        updated = Optim::inlineExpan() || updated;
+//        // updated = Optim::commonExprElim() || updated;
+//        updated = Optim::symProp() || updated;
+//        // updated = Optim::deadCodeDel() || updated;
+//        updated = Optim::peephole() || updated;
+//        Optim::clean();
+//    }
 #if !judge
     cout << "finished" << endl;
 #endif /* judge */
 
 #if !judge
     cout << "optimized midcode generating ... ";
-#endif /* judge */
     MidCode::output();
-#if !judge
     cout << "finished" << endl;
 #endif /* judge */
 
@@ -95,6 +136,6 @@ int main(int argc, char* argv[]) {
 #endif /* judge */
 
 exit:
-    files::close();
+    close();
 	return 0;
 }

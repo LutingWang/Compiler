@@ -6,15 +6,14 @@
  **********************************************/
 
 #include <fstream>
-#include "compilerConfig.h"
 
 #include "./include/errors.h"
 #include "./include/Lexer.h"
 #include "./include/InputFile.h"
 
-extern std::ofstream error_output;
-
 bool error::happened = false;
+
+extern std::ofstream error_output;
 
 void error::raise(Code c) {
 	error::happened = true;

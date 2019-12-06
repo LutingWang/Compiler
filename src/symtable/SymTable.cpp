@@ -6,6 +6,7 @@
  **********************************************/
 
 #include <cassert>
+#include "compilerConfig.h"
 #include "error.h"
 #include "symtable/Entry.h"
 #include "symtable/table.h"
@@ -121,7 +122,9 @@ void SymTable::_pushFunc(const string& funcName, symtable::FuncTable* const func
     
     curTable()._makeConst();
     _cur = functable;
+#if !judge
 	symtable::Printer::print(*functable);
+#endif /* judge */
 }
 
 void SymTable::pushFunc(const std::string& funcName) {
@@ -136,7 +139,9 @@ void SymTable::pushFunc(void) {
 	assert(!isMain());
     curTable()._makeConst();
 	_cur = _main;
+#if !judge
 	symtable::Printer::print(*_main);
+#endif /* judge */
 }
 
 bool SymTable::_isConst(void) const {

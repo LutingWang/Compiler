@@ -7,11 +7,13 @@
 
 #include <fstream>
 #include <iomanip>
+#include "compilerConfig.h"
 #include "symtable/Entry.h"
 #include "symtable/table.h"
 
 #include "Printer.h"
 
+#if !judge
 extern std::ofstream symtable_output;
 
 void symtable::Printer::print(const Entry& entry) {
@@ -43,3 +45,4 @@ void symtable::Printer::print(const FuncTable& functable) {
 	else { symtable_output << "char"; }
 	symtable_output << '>' << std::endl;
 }
+#endif /* judge */

@@ -190,6 +190,7 @@ std::string MidCode::genLabel(void) {
 	return "label$" + std::to_string(counter++);
 }
 
+#if !judge
 extern std::ofstream midcode_output;
 
 void MidCode::_print(void) const {
@@ -349,4 +350,4 @@ void MidCode::output(void) {
         midcode_output << std::endl;
 	}
 }
-
+#endif /* judge */

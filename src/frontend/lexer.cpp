@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cassert>
 #include <vector>
+#include "compilerConfig.h"
 
 #include "./include/errors.h"
 #include "./include/InputFile.h"
@@ -149,14 +150,18 @@ void Lexer::_parseStr(void) {
 	}
 }
 
+#if !judge
 extern std::ofstream lexer_output;
+#endif /* judge */
 
 void Lexer::getsym(void) {
 	// check if traceback is available
 	if (!tracebackStack.empty()) {
 		sym = tracebackStack.back();
 		tracebackStack.pop_back();
+#if !judge
 		lexer_output << "lexer: retracting " << sym << std::endl;
+#endif /* judge */
 		return;
 	}
 
@@ -226,12 +231,16 @@ start:
 		}
 		counter++;
 	}
+#if !judge
 	lexer_output << sym << std::endl;
+#endif /* judge */
 }
 
 void Lexer::traceback(const symbol::Symbol& lastSymbol) {
 	tracebackStack.push_back(sym);
 	sym = lastSymbol;
+#if !judge
 	lexer_output << "lexer: tracing back to " << sym << std::endl;
+#endif /* judge */
 }
 

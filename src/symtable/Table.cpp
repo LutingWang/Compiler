@@ -6,6 +6,7 @@
  **********************************************/
 
 #include <cassert>
+#include "compilerConfig.h"
 #include "error.h"
 #include "symtable/Entry.h"
 
@@ -70,7 +71,9 @@ const Entry* Table::_push(const Entry* const entry) {
 		delete _find(entry->name());
 	}
 	_syms[entry->name()] = entry;
+#if !judge
     Printer::print(*entry);
+#endif /* judge */
     return entry;
 }
 
