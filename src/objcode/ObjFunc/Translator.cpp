@@ -9,7 +9,6 @@
 #include <cassert>
 #include <functional>
 #include <map>
-#include "datastream/LiveVar.h"
 
 #include "../include/StrPool.h"
 
@@ -19,26 +18,30 @@ using Instr = ObjCode::Instr;
 Translator::Translator(CodeGen& output, RegPool& regpool, const StackFrame& stackframe) :
     _output(output), _regpool(regpool), _stackframe(stackframe) {}
 
-using Pusher = std::function<void(const symtable::Entry* const, const bool, const bool)>;
+using Pusher = std::function<void(const symtable::Entry* const,
+        const bool write, const bool mask)>;
 
 void requiredSyms(Pusher& push, const MidCode* const midcode) {
-    std::vector<const symtable::Entry*> use;
-    LiveVar::use(use, midcode);
+    // deal with abnormalies first
     if (midcode->is(MidCode::Instr::STORE_IND)) {
-        assert(use.size() == 2);
-        push(use[1], false, false);
-        push(use[0], false, false);
-    } else if (use.size() == 2) {
-        push(use[0], false, false);
-        push(use[1], false, true);
-    } else if (use.size() == 1) {
-        push(use[0], false, false);
+        push(midcode->t2(), false, false);
+        push(midcode->t1(), false, false);
+        return;
     }
     
-    const symtable::Entry* def = nullptr;
-    LiveVar::def(def, midcode);
-    if (def != nullptr) {
-        push(def, true, false);
+    if (midcode->is(MidCode::Instr::LOAD_IND)) {
+        push(midcode->t2(), false, false);
+    } else {
+        if (midcode->t1IsValid()) {
+            push(midcode->t1(), false, false);
+        }
+        if (midcode->t2IsValid()) {
+            push(midcode->t2(), false, true);
+        }
+    }
+    
+    if (midcode->t0IsValid() && !midcode->t0()->isArray()) {
+        push(midcode->t0(), true, false);
     }
 }
 
@@ -213,8 +216,12 @@ void Translator::compile(const BasicBlock& basicblock) {
     std::vector<bool> write;
     std::vector<bool> mask;
     Pusher pusher = [&](const symtable::Entry* const entry, const bool w, const bool m) {
-        _seq.push_back(entry); write.push_back(w); mask.push_back(m);
+        assert(!entry->isArray());
+        _seq.push_back(entry);
+        write.push_back(w);
+        mask.push_back(m);
     };
+    
     for (auto& midcode : basicblock.midcodes()) {
         requiredSyms(pusher, midcode);
     }

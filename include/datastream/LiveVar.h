@@ -20,6 +20,9 @@ namespace symtable {
 	class Entry;
 }
 
+#define FILTER(midcode, t) (midcode->t##IsValid() && \
+    !(midcode->t()->isGlobal() || midcode->t()->isConst() || midcode->t()->isArray()))
+
 class LiveVar {
 	// live variables for each basicblock, excluding global, const, or array
 	std::map<const BasicBlock*, std::set<const symtable::Entry*>> _out;

@@ -12,10 +12,6 @@
 
 #include "datastream/LiveVar.h"
 
-bool isGlobalOrConst(const symtable::Entry* const entry) {
-    return entry->isGlobal() || entry->isConst();
-}
-
 LiveVar::LiveVar(const FlowChart& flowchart) {
     auto& blocks = flowchart.blocks();
     std::vector<std::set<const symtable::Entry*>> in(blocks.size()); // initiated as use
@@ -25,21 +21,6 @@ LiveVar::LiveVar(const FlowChart& flowchart) {
         auto& useList = in[i];
         auto& defList = def[i];
         analyze(useList, defList, blocks[i]);
-        
-        // remove global or const
-        for (auto it = useList.begin(); it != useList.end(); ) {
-            if (isGlobalOrConst(*it)) {
-                it = useList.erase(it);
-            } else { it++; }
-        }
-        
-        // no const permitted, so remove global only
-        for (auto it = defList.begin(); it != defList.end(); ) {
-            assert(!(*it)->isConst());
-            if (isGlobalOrConst(*it)) {
-                it = defList.erase(it);
-            } else { it++; }
-        }
     }
     
     for (bool updated = true; updated; ) {
@@ -79,32 +60,19 @@ void LiveVar::backProp(std::vector<std::set<const symtable::Entry*>>& output,
         
         std::vector<const symtable::Entry*> useSym;
         use(useSym, midcode);
-        if (useSym.size() >= 1 && !isGlobalOrConst(useSym[0])) {
-            out.insert(useSym[0]);
-        }
-        if (useSym.size() >= 2 && !isGlobalOrConst(useSym[1])) {
-            out.insert(useSym[1]);
-        }
+        out.insert(useSym.begin(), useSym.end());
     }
 }
 
 void LiveVar::use(std::vector<const symtable::Entry*>& output, const MidCode* const midcode) {
     assert(output.empty());
-    // note that t1 could be array in `LOAD_IND`
-    if (midcode->t1IsValid() && !midcode->t1()->isArray()) {
-        output.push_back(midcode->t1());
-    }
-    if (midcode->t2IsValid()) {
-        output.push_back(midcode->t2());
-    }
+    if (FILTER(midcode, t1)) { output.push_back(midcode->t1()); }
+    if (FILTER(midcode, t2)) { output.push_back(midcode->t2()); }
 }
 
 void LiveVar::def(symtable::Entry const*& output, const MidCode* const midcode) {
     assert(output == nullptr);
-    // note that t0 could be array in `STORE_IND`
-    if (midcode->t0IsValid() && !midcode->t0()->isArray()) {
-        output = midcode->t0();
-    }
+    if (FILTER(midcode, t0)) { output = midcode->t0(); }
 }
 
 void LiveVar::analyze(std::set<const symtable::Entry*>& useList,
