@@ -7,7 +7,7 @@
 
 #include <cassert>
 #include <string>
-#include "midcode/MidCode.h"
+#include "midcode.h"
 
 #include "./VarMatch.h"
 

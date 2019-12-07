@@ -7,9 +7,7 @@
 
 #include <algorithm>
 #include <cassert>
-#include "midcode/MidCode.h"
-#include "midcode/BasicBlock.h"
-#include "midcode/FlowChart.h"
+#include "midcode.h"
 #include "symtable.h"
 
 #include "datastream/LiveVar.h"

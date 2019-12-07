@@ -12,7 +12,7 @@
 #include <queue>
 #include <set>
 #include <vector>
-#include "midcode/MidCode.h"
+#include "midcode.h"
 #include "symtable.h"
 
 #include "Reg.h"

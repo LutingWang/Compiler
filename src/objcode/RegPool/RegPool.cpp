@@ -7,7 +7,7 @@
 
 #include <algorithm>
 #include <cassert>
-#include "midcode/FlowChart.h"
+#include "midcode.h"
 #include "symtable.h"
 
 #include "../include/memory.h"

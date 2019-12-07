@@ -122,14 +122,12 @@
 
 #include <vector>
 #include <string>
-#include "midcode/MidCode.h"
-#include "midcode/BasicBlock.h"
+#include "midcode.h"
 #include "symtable.h"
 
 #include "../include/ObjCode.h"
 #include "../include/RegPool.h"
 #include "../include/memory.h"
-
 
 class Translator {
     CodeGen& _output;

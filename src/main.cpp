@@ -13,7 +13,7 @@
 #include "compilerConfig.h"
 #include "error.h"
 #include "frontend.h"
-#include "midcode/MidCode.h"
+#include "midcode.h"
 #include "mips.h"
 #include "Optim.h"
 using namespace std;

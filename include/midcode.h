@@ -1,5 +1,5 @@
 /**********************************************
-    > File Name: MidCode.h
+    > File Name: midcode.h
     > Author: Luting Wang
     > Mail: 2457348692@qq.com 
     > Created Time: Mon Nov  4 12:18:57 2019
@@ -8,7 +8,9 @@
 #ifndef MIDCODE_H
 #define MIDCODE_H
 
+#include <set>
 #include <string>
+#include <vector>
 
 namespace symtable {
 	class Entry;
@@ -16,6 +18,8 @@ namespace symtable {
 }
 
 class Optim;
+
+class FlowChart;
 
 class MidCode {
 	friend class Optim;
@@ -153,6 +157,59 @@ private:
 public:
     // print all the midcodes in symtable, grouped by functions
 	static void output(void);
+};
+
+class BasicBlock {
+    friend class FlowChart;
+    friend class Optim;
+
+    std::vector<const MidCode*> _midcodes;
+    std::set<BasicBlock*> _prec; // precursors
+    std::set<BasicBlock*> _succ; // successors
+public:
+    const std::vector<const MidCode*>& midcodes(void) const;
+    const std::set<BasicBlock*>& prec(void) const;
+    const std::set<BasicBlock*>& succ(void) const;
+
+private:
+    BasicBlock(void);
+    BasicBlock(const std::vector<const MidCode*>::const_iterator,
+            const std::vector<const MidCode*>::const_iterator);
+    ~BasicBlock(void);
+
+    // link another block to the back
+    void _proceed(BasicBlock* const);
+public:
+    // A call block contains multiple `PUSH` statements and
+    // a single `CALL` statement. If a block is not a call
+    // block, then it cannot contain these two kinds of statements.
+    bool isFuncCall(void) const;
+};
+
+class FlowChart {
+    // The destiny of midcode writing back. If the flowchart
+    // is declared as constant, then its midcodes cannot be
+    // altered. In this case, `_functable` is set as `nullptr`
+    // to avoid writing back.
+    symtable::FuncTable* _functable;
+    
+    // Sequentially stored midcodes in the form of `BasicBlock`s.
+    std::vector<BasicBlock*> _blocks;
+    // The last empty block that all return statements jump to.
+    BasicBlock* _tail;
+public:
+    const std::vector<BasicBlock*>& blocks(void) const;
+
+    void _init(const symtable::FuncTable* const);
+public:
+    FlowChart(const symtable::FuncTable* const);
+    FlowChart(symtable::FuncTable* const);
+    
+    // Deallocate all the blocks. Do not forget `_tail`.
+    ~FlowChart(void);
+
+    // Write back to cover the original midcodes in `_functable`.
+    void commit(void);
 };
 
 #endif /* MIDCODE_H */

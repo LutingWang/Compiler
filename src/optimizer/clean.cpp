@@ -10,9 +10,7 @@
 #include <set>
 #include <string>
 #include <vector>
-#include "midcode/MidCode.h"
-#include "midcode/FlowChart.h"
-#include "midcode/BasicBlock.h"
+#include "midcode.h"
 #include "symtable.h"
 
 #include "Optim.h"

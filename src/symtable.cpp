@@ -10,7 +10,7 @@
 #include <iomanip>
 #include "compilerConfig.h"
 #include "error.h"
-#include "midcode/MidCode.h"
+#include "midcode.h"
 
 #include "symtable.h"
 
@@ -48,10 +48,8 @@ const std::string& Entry::name(void) const {
     return _name;
 }
 
-namespace {
-    const int NOT_ARRAY = -1;
-    const int INVALID = -2;
-}
+const int NOT_ARRAY = -1;
+const int INVALID = -2;
 
 Entry::Entry(const std::string& symName,
         const bool isGlobal,
@@ -176,7 +174,7 @@ bool FuncTable::isInt(void) const {
     return _int;
 }
 
-const std::vector<const symtable::Entry*>& FuncTable::argList(void) const {
+const std::vector<const Entry*>& FuncTable::argList(void) const {
     return _argList;
 }
 
@@ -378,7 +376,7 @@ void SymTable::makeConst(void) {
 #if !judge
 extern std::ofstream symtable_output;
 
-void symtable::Printer::print(const Entry& entry) {
+void Printer::print(const Entry& entry) {
     symtable_output << std::setw(30) << typeid(entry).name() << " : "
         << std::setw(30) << entry.name() << '<';
     if (entry.isInvalid()) {
@@ -394,12 +392,12 @@ void symtable::Printer::print(const Entry& entry) {
     symtable_output << '>' << std::endl;
 }
 
-void symtable::Printer::print(const Table& table) {
+void Printer::print(const Table& table) {
     symtable_output << std::setw(30) << typeid(table).name() << " : "
         << std::setw(30) << table.name() << std::endl;
 }
 
-void symtable::Printer::print(const FuncTable& functable) {
+void Printer::print(const FuncTable& functable) {
     symtable_output << std::setw(30) << typeid(functable).name() << " : "
         << std::setw(30) << functable.name() << '<';
     if (functable.isVoid()) { symtable_output << "void"; }

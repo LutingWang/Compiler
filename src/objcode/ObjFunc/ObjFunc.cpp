@@ -11,9 +11,7 @@
 #include <set>
 #include <string>
 #include "datastream/LiveVar.h"
-#include "midcode/MidCode.h"
-#include "midcode/BasicBlock.h"
-#include "midcode/FlowChart.h"
+#include "midcode.h"
 #include "symtable.h"
 
 #include "../include/ObjCode.h"

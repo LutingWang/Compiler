@@ -30,39 +30,37 @@ void Lexer::deinit(void) {
     delete _input;
 }
 
-namespace {
-	std::vector<symbol::Symbol> tracebackStack;
+std::vector<symbol::Symbol> tracebackStack;
 
-	// tool class as overloading of cctype
-	class CType {
-	public:
-		// <alpha> ::= _|a-z|A-Z
-		static bool isalpha(char c) {
-			return c == '_' || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
-		}
-	
-		// <digit> ::= 0-9
-		static bool isdigit(char c) { return '0' <= c && c <= '9'; }
-	
-		static bool isalnum(char c) { return isalpha(c) || isdigit(c); }
-	};
+// tool class as overloading of cctype
+class CType {
+public:
+    // <alpha> ::= _|a-z|A-Z
+    static bool isalpha(char c) {
+        return c == '_' || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
+    }
 
-	// dependent on enum Reserved
-	std::vector<std::string> reserved = {
-		"const", "int", "char", "void", "main", "if", "else",
-		"do", "while", "for", "scanf", "printf", "return"
-	};
-	
-	// dependent on enum Delim
-	std::string delim = "=;,()[]{}";
-	
-	// dependent on enum Oper
-	std::string oper = "+-*/";
-	
-	// input file buffer
-	std::string buf;
-	int counter = 0;
-}
+    // <digit> ::= 0-9
+    static bool isdigit(char c) { return '0' <= c && c <= '9'; }
+
+    static bool isalnum(char c) { return isalpha(c) || isdigit(c); }
+};
+
+// dependent on enum Reserved
+std::vector<std::string> reserved = {
+    "const", "int", "char", "void", "main", "if", "else",
+    "do", "while", "for", "scanf", "printf", "return"
+};
+
+// dependent on enum Delim
+std::string delim = "=;,()[]{}";
+
+// dependent on enum Oper
+std::string oper = "+-*/";
+
+// input file buffer
+std::string buf;
+int counter = 0;
 	
 // <iden> ::= <alpha>{<alpha>|<digit>}
 // parse for identifiers or reserved words

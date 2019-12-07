@@ -8,7 +8,7 @@
 #include <cassert>
 #include <string>
 #include "error.h"
-#include "midcode/MidCode.h"
+#include "midcode.h"
 #include "symtable.h"
 
 #include "./Lexer.h"

@@ -9,8 +9,7 @@
 #include <set>
 #include <vector>
 #include "datastream/LiveVar.h"
-#include "midcode/BasicBlock.h"
-#include "midcode/FlowChart.h"
+#include "midcode.h"
 #include "symtable.h"
 
 #include "Optim.h"

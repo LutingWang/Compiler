@@ -8,8 +8,7 @@
 #include <algorithm>
 #include <cassert>
 #include <map>
-#include "midcode/BasicBlock.h"
-#include "midcode/FlowChart.h"
+#include "midcode.h"
 
 #include "../include/RegPool.h"
 

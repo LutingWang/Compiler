@@ -1,5 +1,5 @@
 /**********************************************
-    > File Name: MidCode.cpp
+    > File Name: midcode.cpp
     > Author: Luting Wang
     > Mail: 2457348692@qq.com 
     > Created Time: Mon Nov  4 16:21:32 2019
@@ -9,15 +9,15 @@
 #include <cassert>
 #include <fstream>
 #include <map>
-#include <set>
-#include <string>
 #include "compilerConfig.h"
 #include "error.h"
 #include "symtable.h"
 
-#include "midcode/MidCode.h"
+#include "midcode.h"
 
 using Instr = MidCode::Instr;
+
+/* MidCode */
 
 Instr MidCode::instr(void) const {
     return _instr;
@@ -284,54 +284,52 @@ void MidCode::_print(void) const {
 	midcode_output << std::endl;
 }
 
-namespace {
-	void print(const symtable::Entry* const entry) {
+void print(const symtable::Entry* const entry) {
 #if judge
-		if (entry == nullptr) { return; }
-		if (entry->isConst()) {
-			midcode_output << "const ";
-			if (entry->isInt()) {
-				midcode_output << "int " << entry->name() << " = " << entry->value();
-			} else {
-				midcode_output << "char " << entry->name() << " = '" << (char) entry->value() << '\'';
-			}
-		} else {
-			midcode_output << "var " << (entry->isInt() ? "int " : "char ") << entry->name();
-			if (entry->isArray()) {
-				midcode_output << '[' << entry->value() << ']';
-			}
-		}
-		midcode_output << std::endl;
+    if (entry == nullptr) { return; }
+    if (entry->isConst()) {
+        midcode_output << "const ";
+        if (entry->isInt()) {
+            midcode_output << "int " << entry->name() << " = " << entry->value();
+        } else {
+            midcode_output << "char " << entry->name() << " = '" << (char) entry->value() << '\'';
+        }
+    } else {
+        midcode_output << "var " << (entry->isInt() ? "int " : "char ") << entry->name();
+        if (entry->isArray()) {
+            midcode_output << '[' << entry->value() << ']';
+        }
+    }
+    midcode_output << std::endl;
 #endif /* judge */
-	}
-	
-	void print(const symtable::FuncTable* const functable) {
-		if (functable == nullptr) { return; }
+}
+
+void print(const symtable::FuncTable* const functable) {
+    if (functable == nullptr) { return; }
 #if judge
-		if (functable->isVoid()) { midcode_output << "void"; }
-		else if (functable->isInt()) { midcode_output << "int"; }
-		else { midcode_output << "char"; }
+    if (functable->isVoid()) { midcode_output << "void"; }
+    else if (functable->isInt()) { midcode_output << "int"; }
+    else { midcode_output << "char"; }
 #else
-		midcode_output << "func";
+    midcode_output << "func";
 #endif /* judge */
-		midcode_output << ' ' << functable->name() << "()" << std::endl;
+    midcode_output << ' ' << functable->name() << "()" << std::endl;
 
 #if judge
-		const std::vector<const symtable::Entry*>& argv = functable->argList();
-		for (auto entry : argv) {
-			midcode_output << "para " << (entry->isInt() ? "int " : "char ")
-				<< entry->name() << std::endl;
-		}
-	    
-	    std::set<const symtable::Entry*> syms;
-	    functable->syms(syms);
-		for (auto entry : syms) {
-			// exclude parameters
-			if (find(argv.begin(), argv.end(), entry) != argv.end()) { continue; }
-			print(entry);
-		}
+    const std::vector<const symtable::Entry*>& argv = functable->argList();
+    for (auto entry : argv) {
+        midcode_output << "para " << (entry->isInt() ? "int " : "char ")
+            << entry->name() << std::endl;
+    }
+    
+    std::set<const symtable::Entry*> syms;
+    functable->syms(syms);
+    for (auto entry : syms) {
+        // exclude parameters
+        if (find(argv.begin(), argv.end(), entry) != argv.end()) { continue; }
+        print(entry);
+    }
 #endif /* judge */
-	}
 }
 
 void MidCode::output(void) {
@@ -353,3 +351,167 @@ void MidCode::output(void) {
 	}
 }
 #endif /* judge */
+
+/* BasicBlock */
+
+const std::vector<const MidCode*>& BasicBlock::midcodes(void) const {
+    return _midcodes;
+}
+
+const std::set<BasicBlock*>& BasicBlock::prec(void) const {
+    return _prec;
+}
+
+const std::set<BasicBlock*>& BasicBlock::succ(void) const {
+    return _succ;
+}
+
+BasicBlock::BasicBlock(void) {}
+
+BasicBlock::BasicBlock(const std::vector<const MidCode*>::const_iterator first,
+        const std::vector<const MidCode*>::const_iterator last) :
+    _midcodes(first, last) {}
+
+BasicBlock::~BasicBlock(void) {}
+
+void BasicBlock::_proceed(BasicBlock* const successor) {
+    _succ.insert(successor);
+    successor->_prec.insert(this);
+}
+
+bool BasicBlock::isFuncCall(void) const {
+    return _midcodes.back()->is(Instr::CALL);
+}
+
+/* FlowChart */
+
+const std::vector<BasicBlock*>& FlowChart::blocks(void) const {
+    return _blocks;
+}
+
+void FlowChart::_init(const symtable::FuncTable* const functable) {
+    auto& midcodes = functable->midcodes();
+    
+    // initialize <label name, label pos in midcode>
+    std::map<std::string, int> labels;
+    for (int i = 0; i < midcodes.size(); i++) {
+        if (midcodes[i]->is(Instr::LABEL)) {
+            labels[midcodes[i]->labelName()] = i;
+        }
+    }
+
+    // Scan the mid code to determine pos of entrances.
+    // An entrance can be one of the following
+    //     - the first mid code of all
+    //     - the first push or call statements in a function call block
+    //     - the first statement after
+    //         1. a call block
+    //         2. a return statement
+    //         3. a branch statement
+    //         4. a goto statement
+    //     - the statement jumped to from
+    //         1. a branch statement
+    //         2. a goto statement
+    std::set<int> entrances;
+    for (int i = 0; i < midcodes.size(); i++) {
+        switch (midcodes[i]->instr()) {
+        case Instr::PUSH_ARG:
+        case Instr::CALL:
+            entrances.insert(i);
+            while (!midcodes[i]->is(Instr::CALL)) { i++; }
+            entrances.insert(i + 1);
+            break;
+        case Instr::BGT:
+        case Instr::BGE:
+        case Instr::BLT:
+        case Instr::BLE:
+        case Instr::BEQ:
+        case Instr::BNE:
+        case Instr::GOTO:
+            entrances.insert(labels[midcodes[i]->labelName()]);
+            // fallthrough
+        case Instr::RET:
+            entrances.insert(i + 1);
+            break;
+        default: continue;
+        }
+    }
+    entrances.erase(0); // the first mid code has to be entrance no matter what
+    entrances.insert(midcodes.size()); // set up guard element
+    assert(*(entrances.rbegin()) == midcodes.size());
+
+    // Divide the mid codes into blocks. If a block
+    // starts with a label, add it to `blockMap` to
+    // enable other blocks to discover it.
+    std::map<std::string, int> blockMap;
+    int startIndex = 0;
+    for (auto endIndex : entrances) {
+        if (midcodes[startIndex]->is(Instr::LABEL)) {
+            blockMap[midcodes[startIndex]->labelName()] = blocks().size();
+        }
+        _blocks.push_back(
+                new BasicBlock(
+                        midcodes.begin() + startIndex,
+                        midcodes.begin() + endIndex
+                )
+        );
+        startIndex = endIndex;
+    }
+
+    // Scan the blocks to store flow information.
+    // For return statements, proceed to `_tail`.
+    _tail = new BasicBlock();
+    for (int i = 0; i < blocks().size(); i++) {
+        const MidCode* exitcode = blocks()[i]->midcodes().back();
+        switch (exitcode->instr()) {
+        case Instr::RET:
+            blocks()[i]->_proceed(_tail);
+            break;
+        case Instr::GOTO:
+            assert(blockMap.find(exitcode->labelName()) != blockMap.end());
+            blocks()[i]->_proceed(blocks()[blockMap[exitcode->labelName()]]);
+            break;
+        case Instr::BGT:
+        case Instr::BGE:
+        case Instr::BLT:
+        case Instr::BLE:
+        case Instr::BEQ:
+        case Instr::BNE:
+            assert(blockMap.find(exitcode->labelName()) != blockMap.end());
+            blocks()[i]->_proceed(blocks()[blockMap[exitcode->labelName()]]);
+            // fallthrough
+        default:
+            if (i + 1 < blocks().size()) {
+                blocks()[i]->_proceed(blocks()[i + 1]);
+            }
+        }
+    }
+}
+
+FlowChart::FlowChart(const symtable::FuncTable* const functable) :
+    _functable(nullptr) {
+    _init(functable);
+}
+
+FlowChart::FlowChart(symtable::FuncTable* const functable) :
+    _functable(functable) {
+    _init(functable);
+}
+
+FlowChart::~FlowChart(void) {
+    for (auto block : blocks()) {
+        delete block;
+    }
+    delete _tail;
+}
+
+void FlowChart::commit(void) {
+    _functable->_midcodes.clear();
+    for (auto block : blocks()) {
+        _functable->_midcodes.insert(
+                _functable->_midcodes.end(),
+                block->midcodes().begin(),
+                block->midcodes().end()
+        );
+    }
+}

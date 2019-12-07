@@ -9,7 +9,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "midcode/MidCode.h"
+#include "midcode.h"
 #include "symtable.h"
 
 #include "./include/StrPool.h"

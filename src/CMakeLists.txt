@@ -8,9 +8,6 @@ set (LIBS ${LIBS} datastream)
 add_subdirectory ("frontend")
 set (LIBS ${LIBS} frontend)
 
-add_subdirectory ("midcode")
-set (LIBS ${LIBS} midcode)
-
 add_subdirectory ("objcode")
 set (LIBS ${LIBS} objcode)
 

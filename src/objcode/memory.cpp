@@ -55,19 +55,17 @@ int Sbss::locate(const symtable::Entry* entry) const {
     return _syms.at(entry);
 }
 
-namespace {
-    auto& noreg = ObjCode::noreg;
-    auto& noimm = ObjCode::noimm;
-    auto& nolab = ObjCode::nolab;
+auto& noreg = ObjCode::noreg;
+auto& noimm = ObjCode::noimm;
+auto& nolab = ObjCode::nolab;
 
-    // regs stored in stackframe
-    const std::vector<Reg> regs = {
-        Reg::s0, Reg::s1, Reg::s2, Reg::s3, Reg::s4, Reg::s5, Reg::s6, Reg::s7,
-        Reg::t0, Reg::t1, Reg::t2, Reg::t3, Reg::t4, Reg::t5, Reg::t6, Reg::t7,
-        Reg::ra,
-        Reg::a0, Reg::a1, Reg::a2, Reg::a3
-    };
-}
+// regs stored in stackframe
+const std::vector<Reg> regs = {
+    Reg::s0, Reg::s1, Reg::s2, Reg::s3, Reg::s4, Reg::s5, Reg::s6, Reg::s7,
+    Reg::t0, Reg::t1, Reg::t2, Reg::t3, Reg::t4, Reg::t5, Reg::t6, Reg::t7,
+    Reg::ra,
+    Reg::a0, Reg::a1, Reg::a2, Reg::a3
+};
 
 StackFrame::StackFrame(CodeGen& output, std::vector<const symtable::Entry*> argList,
 		const std::set<const symtable::Entry*>& syms) : Sbss(syms), _output(output) {

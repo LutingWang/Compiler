@@ -7,7 +7,7 @@
 
 #include <cassert>
 #include <functional>
-#include "midcode/MidCode.h"
+#include "midcode.h"
 #include "symtable.h"
 
 #include "Optim.h"

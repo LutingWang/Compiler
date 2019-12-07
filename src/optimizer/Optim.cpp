@@ -7,8 +7,7 @@
 
 #include <cassert>
 #include <set>
-#include "midcode/MidCode.h"
-#include "midcode/BasicBlock.h"
+#include "midcode.h"
 #include "symtable.h"
 
 #include "Optim.h"
