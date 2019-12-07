@@ -6,15 +6,12 @@
  **********************************************/
 
 #include <cassert>
-#include <functional>
 #include "midcode.h"
 #include "symtable.h"
 
 #include "Optim.h"
 
 using Instr = MidCode::Instr;
-using Arith = std::function<int(const int, const int)>;
-using Cond = std::function<bool(const int, const int)>;
 
 bool Optim::_constProp(const MidCode*& midcode) {
     // store ind cannot be optimized
@@ -29,21 +26,19 @@ bool Optim::_constProp(const MidCode*& midcode) {
     }
     
 #define eval(op) (midcode->t1()->value() op midcode->t2()->value())
-#define evalval(op) value = new int(eval(op))
-#define evalcond(op) cond = new bool(eval(op));
     int* value = nullptr;
     bool* cond = nullptr;
     switch (midcode->instr()) {
-    case Instr::ADD: evalval(+); break;
-    case Instr::SUB: evalval(-); break;
-    case Instr::MULT: evalval(*); break;
-    case Instr::DIV: evalval(/); break;
-    case Instr::BGT: evalcond(>); break;
-    case Instr::BGE: evalcond(>=); break;
-    case Instr::BLT: evalcond(<); break;
-    case Instr::BLE: evalcond(<=); break;
-    case Instr::BEQ: evalcond(==); break;
-    case Instr::BNE: evalcond(!=); break;
+    case Instr::ADD: value = new int(eval(+)); break;
+    case Instr::SUB: value = new int(eval(-)); break;
+    case Instr::MULT: value = new int(eval(*)); break;
+    case Instr::DIV: value = new int(eval(/)); break;
+    case Instr::BGT: cond = new bool(eval(>)); break;
+    case Instr::BGE: cond = new bool(eval(>=)); break;
+    case Instr::BLT: cond = new bool(eval(<)); break;
+    case Instr::BLE: cond = new bool(eval(<=)); break;
+    case Instr::BEQ: cond = new bool(eval(==)); break;
+    case Instr::BNE: cond = new bool(eval(!=)); break;
     default: assert(0);
     }
     

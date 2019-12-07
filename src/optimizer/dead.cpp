@@ -14,13 +14,12 @@
 
 #include "Optim.h"
 
-bool Optim::deadCodeDel(void) {
-    bool result = false;
+void Optim::deadCodeDel(bool& updated) {
     std::set<symtable::FuncTable*> funcs;
     SymTable::getTable().funcs(funcs, false);
     for (auto functable : funcs) {
         FlowChart flowchart(functable);
-        LiveVar livevar(flowchart);
+        const LiveVar livevar(flowchart);
         for (auto basicblock : flowchart.blocks()) {
             std::vector<std::set<const symtable::Entry*>> out;
             livevar.backProp(out, basicblock);
@@ -31,18 +30,20 @@ bool Optim::deadCodeDel(void) {
                 LiveVar::def(defSym, midcode);
                 
                 assert(defSym == nullptr || (!defSym->isConst() && !defSym->isArray()));
-                if (defSym == nullptr || defSym->isGlobal() || // global vars are not included
-                        out[i].count(defSym) != 0) { // defSym is alive
+                if (defSym == nullptr || // no output variable
+                    midcode->is(MidCode::Instr::CALL) || // global could change in a call
+                    midcode->is(MidCode::Instr::INPUT) || // input cannot be changed
+                    defSym->isGlobal() || // global vars are not included
+                    out[i].count(defSym) != 0) { // defSym is alive
                     i++;
                     continue;
                 }
                 
-                result = true;
+                updated = true;
                 out.erase(out.begin() + i);
                 basicblock->_midcodes.erase(basicblock->_midcodes.begin() + i);
             }
         }
         flowchart.commit();
     }
-    return result;
 }

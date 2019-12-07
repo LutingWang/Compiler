@@ -30,8 +30,7 @@
 // | ASSIGN     | t0 = t1           | move t0, t1       |
 // | ---------- | ----------------- | ----------------- |
 // | PUSH_ARG   | { push t1 }       | enumerated later  |
-// | &          | [t0 =] call t3    |                   |
-// | CALL       |                   |                   |
+// | & CALL     | [t0 =] call t3    |                   |
 // | ---------- | ----------------- | ----------------- |
 // | RET        | ret [t1]          | [move v0, t1]     |
 // |            |                   | epilogue          |

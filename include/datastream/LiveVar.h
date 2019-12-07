@@ -26,7 +26,7 @@ class LiveVar {
 public:
 	LiveVar(const FlowChart&);
     
-    void backProp(std::vector<std::set<const symtable::Entry*>>&, const BasicBlock* const);
+    void backProp(std::vector<std::set<const symtable::Entry*>>&, const BasicBlock* const) const;
 
     // arrays are excluded
 	static void use(std::vector<const symtable::Entry*>&, const MidCode* const);

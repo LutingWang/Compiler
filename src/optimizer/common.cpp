@@ -7,6 +7,5 @@
 
 #include "Optim.h"
 
-bool Optim::commonExprElim(void) {
-    return false;
+void Optim::commonExprElim(bool&) {
 }

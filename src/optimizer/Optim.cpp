@@ -12,9 +12,7 @@
 
 #include "Optim.h"
 
-bool Optim::peephole(void) {
-    bool result = false;
-    
+void Optim::peephole(bool& updated) {
     std::set<symtable::FuncTable*> funcs;
     SymTable::getTable().funcs(funcs, false);
     for (auto functable : funcs) {
@@ -24,11 +22,10 @@ bool Optim::peephole(void) {
 					(*(it + 1))->is(MidCode::Instr::LABEL) && 
 					(*it)->labelName() == (*(it + 1))->labelName()) {
                 it = functable->_midcodes.erase(it);
-                result = true;
+                updated = true;
             } else {
                 it++;
             }
         }
     }
-    return result;
 }

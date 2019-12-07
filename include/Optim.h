@@ -31,19 +31,19 @@ public:
 private:
     static const symtable::FuncTable* _repaceBlock(BasicBlock* const);
 public:
-	static bool inlineExpan(void);
+	static void inlineExpan(bool&);
     
-	static bool commonExprElim(void);
+	static void commonExprElim(bool&);
     
 private:
     static bool _constProp(const MidCode*&);
     static bool _varProp(const MidCode*&, VarMatch&);
 public:
-	static bool symProp(void);
+	static void symProp(bool&);
 
-	static bool deadCodeDel(void);
+	static void deadCodeDel(bool&);
     
-	static bool peephole(void);
+	static void peephole(bool&);
 };
 
 #endif /* OPTIM_H */

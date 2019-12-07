@@ -64,10 +64,11 @@ LiveVar::LiveVar(const FlowChart& flowchart) {
     }
 }
 
-void LiveVar::backProp(std::vector<std::set<const symtable::Entry*>>& output, const BasicBlock* const basicblock) {
+void LiveVar::backProp(std::vector<std::set<const symtable::Entry*>>& output,
+        const BasicBlock* const basicblock) const {
     assert(output.empty());
     output.resize(basicblock->midcodes().size());
-    auto out = _out[basicblock];
+    auto out = _out.at(basicblock);
     for (int i = output.size() - 1; i >= 0; i--) {
         output[i] = out;
         const MidCode* const midcode = basicblock->midcodes()[i];

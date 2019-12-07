@@ -25,7 +25,7 @@ const symtable::FuncTable* Optim::_repaceBlock(BasicBlock* const basicblock) {
         const MidCode* const midcode = basicblock->midcodes()[i];
         assert (!midcode->is(MidCode::Instr::CALL));
         const MidCode* const assign = new MidCode(MidCode::Instr::ASSIGN,
-                    calledFunc->argList()[i], midcode->t1(), nullptr, nullptr);
+                calledFunc->argList()[i], midcode->t1(), nullptr, nullptr);
         delete midcode;
         basicblock->_midcodes[i] = assign;
     }
@@ -73,29 +73,22 @@ const symtable::FuncTable* Optim::_repaceBlock(BasicBlock* const basicblock) {
     return calledFunc;
 }
 
-bool Optim::inlineExpan(void) {
-    bool result = false;
-    
+void Optim::inlineExpan(bool& updated) {
     std::set<symtable::FuncTable*> funcs;
     SymTable::getTable().funcs(funcs, false);
     for (auto functable : funcs) {
-        for (bool replaced = true; replaced; ) {
-            replaced = false;
-            FlowChart flowchart(functable);
-            for (auto basicblock : flowchart.blocks()) {
-                const symtable::FuncTable* const calledFunc = _repaceBlock(basicblock);
-                if (calledFunc != nullptr) {
-                    replaced = true;
-                    *functable << *calledFunc;
-                    
-                    // Commit immediately after replacement. Otherwise, compiler
-                    // may break down if the following processes checks whether
-                    // this function is recursive.
-                    flowchart.commit();
-                }
+        FlowChart flowchart(functable);
+        for (auto basicblock : flowchart.blocks()) {
+            const symtable::FuncTable* const calledFunc = _repaceBlock(basicblock);
+            if (calledFunc != nullptr) {
+                updated = true;
+                *functable << *calledFunc;
+                
+                // Commit immediately after replacement. Otherwise, compiler
+                // may break down if the following processes checks whether
+                // this function is recursive.
+                flowchart.commit();
             }
-            if (replaced) { result = true; }
         }
     }
-    return result;
 }

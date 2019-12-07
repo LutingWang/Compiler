@@ -108,11 +108,11 @@ int main(int argc, char* argv[]) {
 #endif /* judge */
     for (bool updated = true; updated; ) {
         updated = false;
-        updated = Optim::inlineExpan() || updated;
-        // updated = Optim::commonExprElim() || updated;
-        updated = Optim::symProp() || updated;
-        updated = Optim::deadCodeDel() || updated;
-        updated = Optim::peephole() || updated;
+        Optim::inlineExpan(updated);
+        // Optim::commonExprElim(updated);
+        Optim::symProp(updated);
+        Optim::deadCodeDel(updated);
+        Optim::peephole(updated);
         Optim::clean();
     }
 #if !judge
