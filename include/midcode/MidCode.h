@@ -35,7 +35,8 @@ public:
 
 		INPUT,		// scanf(t0)
 		OUTPUT_STR,	// printf(t3)
-		OUTPUT_SYM,	// printf(t1)
+		OUTPUT_INT,	// printf(t1)
+        OUTPUT_CHAR,    // printf(t1)
 
 		BGT,		// branch to t3 if t1 > t2
 		BGE,		// branch to t3 if t1 >= t2

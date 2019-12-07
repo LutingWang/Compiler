@@ -13,13 +13,13 @@
 #include <string>
 #include "compilerConfig.h"
 #include "error.h"
-#include "symtable/Entry.h"
-#include "symtable/table.h"
-#include "symtable/SymTable.h"
+#include "symtable.h"
 
 #include "midcode/MidCode.h"
 
-MidCode::Instr MidCode::instr(void) const {
+using Instr = MidCode::Instr;
+
+Instr MidCode::instr(void) const {
     return _instr;
 }
 
@@ -52,7 +52,8 @@ bool MidCode::t1IsLegal(void) const {
 	static const std::set<Instr> legitimation {
 		Instr::ADD, Instr::SUB, Instr::MULT, Instr::DIV,
     	Instr::LOAD_IND, Instr::STORE_IND, Instr::ASSIGN,
-    	Instr::PUSH_ARG, Instr::RET, Instr::OUTPUT_SYM,
+        Instr::PUSH_ARG, Instr::RET,
+        Instr::OUTPUT_INT, Instr::OUTPUT_CHAR,
     	Instr::BGT, Instr::BGE, Instr::BLT, Instr::BLE,
     	Instr::BEQ, Instr::BNE
 	};
@@ -195,7 +196,7 @@ extern std::ofstream midcode_output;
 
 void MidCode::_print(void) const {
 	switch (_instr) {
-#define CASE(id, op) case MidCode::Instr::id:	\
+#define CASE(id, op) case Instr::id:	\
 		midcode_output << t0()->name() << " = "	\
 			<< t1()->name() << " " #op " "		\
 			<< t2()->name();						\
@@ -203,23 +204,23 @@ void MidCode::_print(void) const {
 	CASE(ADD, +); CASE(SUB, -); CASE(MULT, *); CASE(DIV, /);
 #undef CASE
 
-	case MidCode::Instr::LOAD_IND:
+	case Instr::LOAD_IND:
 		midcode_output << t0()->name() << " = " 
 			<< t1()->name() 
 			<< '[' << t2()->name() << ']';
 		break;
-	case MidCode::Instr::STORE_IND:
+	case Instr::STORE_IND:
 		midcode_output << t0()->name() << '[' << t2()->name() << "] = " 
 			<< t1()->name();
 		break;
-	case MidCode::Instr::ASSIGN:
+	case Instr::ASSIGN:
 		midcode_output << t0()->name() << " = " 
 			<< t1()->name();
 		break;
-	case MidCode::Instr::PUSH_ARG:
+	case Instr::PUSH_ARG:
 		midcode_output << "push " << t1()->name();
 		break;
-	case MidCode::Instr::CALL:
+	case Instr::CALL:
 #if judge
 		midcode_output << "call " << labelName();
 		if (_t0 != nullptr) {
@@ -232,7 +233,7 @@ void MidCode::_print(void) const {
 		midcode_output << "call " << labelName();
 #endif /* judge */
 		break;
-	case MidCode::Instr::RET:
+	case Instr::RET:
 #if judeg
 		midcode_output << "ret";
 #else
@@ -242,24 +243,25 @@ void MidCode::_print(void) const {
 			midcode_output << ' ' << t1()->name();
 		}
 		break;
-	case MidCode::Instr::INPUT:
+	case Instr::INPUT:
 		midcode_output << "input " << t0()->name();
 		break;
-	case MidCode::Instr::OUTPUT_STR:
+	case Instr::OUTPUT_STR:
 		midcode_output << "output " << '"' << labelName() << "\" ";
         break;
-    case MidCode::Instr::OUTPUT_SYM:
+    case Instr::OUTPUT_INT:
+    case Instr::OUTPUT_CHAR:
         midcode_output << "output " << t1()->name();
         break;
 
 #if judge
-	#define CASE(id, op) case MidCode::Instr::id:		\
+	#define CASE(id, op) case Instr::id:		\
 		midcode_output << t1()->name() << " " #op " "		\
 			<< t2()->name() << " BNZ "			\
 			<< labelName();					\
 		break
 #else
-	#define CASE(id, op) case MidCode::Instr::id:		\
+	#define CASE(id, op) case Instr::id:		\
 		midcode_output << "if " << t1()->name()			\
 			<< " " #op " " << t2()->name()		\
 			<< " branch to \"" << labelName()			\
@@ -270,10 +272,10 @@ void MidCode::_print(void) const {
     CASE(BEQ, ==); CASE(BNE, !=);
 #undef CASE
 
-	case MidCode::Instr::GOTO:
+	case Instr::GOTO:
 		midcode_output << "goto " << labelName();
 		break;
-	case MidCode::Instr::LABEL:
+	case Instr::LABEL:
 		midcode_output << labelName() << ':';
 		break;
 	default:

@@ -8,7 +8,7 @@
 #include <cassert>
 #include <functional>
 #include "midcode/MidCode.h"
-#include "symtable/Entry.h"
+#include "symtable.h"
 
 #include "Optim.h"
 
@@ -47,16 +47,18 @@ bool Optim::_constProp(const MidCode*& midcode) {
     default: assert(0);
     }
     
-    delete midcode;
-    midcode = nullptr;
+    const MidCode* newCode = nullptr;
     assert((value == nullptr) != (cond == nullptr));
     if (value != nullptr) {
-        midcode = new MidCode(MidCode::Instr::ASSIGN, midcode->t0(),
+        newCode = new MidCode(MidCode::Instr::ASSIGN, midcode->t0(),
                 MidCode::genConst(true, *value), nullptr, nullptr);
-        delete value;
     } else if (*cond) {
-        midcode = new MidCode(MidCode::Instr::GOTO, nullptr, nullptr,
+        newCode = new MidCode(MidCode::Instr::GOTO, nullptr, nullptr,
                 nullptr, new std::string(midcode->labelName()));
     }
+    delete value;
+    delete cond;
+    delete midcode;
+    midcode = newCode;
     return true;
 }

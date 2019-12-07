@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 #include "midcode/MidCode.h"
-#include "symtable/Entry.h"
+#include "symtable.h"
 
 #include "./Reg.h"
 

@@ -12,8 +12,7 @@
 #include "midcode/MidCode.h"
 #include "midcode/BasicBlock.h"
 #include "midcode/FlowChart.h"
-#include "symtable/table.h"
-#include "symtable/SymTable.h"
+#include "symtable.h"
 
 #include "Optim.h"
 

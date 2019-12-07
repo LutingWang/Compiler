@@ -9,7 +9,7 @@
 #define OBJ_FUNC_H
 
 #include <map>
-#include "symtable/table.h"
+#include "symtable.h"
 
 class ObjCode;
 class RegPool;

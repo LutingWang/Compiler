@@ -7,8 +7,7 @@
 
 #include <algorithm>
 #include <cassert>
-#include "symtable/table.h"
-#include "symtable/SymTable.h"
+#include "symtable.h"
 
 #include "./include/Reg.h"
 #include "./include/ObjCode.h"

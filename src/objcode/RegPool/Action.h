@@ -8,7 +8,7 @@
 #ifndef ACTION_H
 #define ACTION_H
 
-#include "symtable/Entry.h"
+#include "symtable.h"
 
 #include "../include/Reg.h"
 

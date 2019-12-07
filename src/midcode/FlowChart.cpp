@@ -12,7 +12,7 @@
 #include <vector>
 #include "midcode/MidCode.h"
 #include "midcode/BasicBlock.h"
-#include "symtable/table.h"
+#include "symtable.h"
 
 #include "midcode/FlowChart.h"
 

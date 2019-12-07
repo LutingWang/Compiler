@@ -17,9 +17,6 @@ set (LIBS ${LIBS} objcode)
 add_subdirectory ("optimizer")
 set (LIBS ${LIBS} optimizer)
 
-add_subdirectory ("symtable")
-set (LIBS ${LIBS} symtable)
-
 aux_source_directory (. SRCS)
 add_executable (compiler ${SRCS})
 target_link_libraries (compiler ${LIBS})

@@ -9,9 +9,7 @@
 #include <string>
 #include "error.h"
 #include "midcode/MidCode.h"
-#include "symtable/Entry.h"
-#include "symtable/table.h"
-#include "symtable/SymTable.h"
+#include "symtable.h"
 
 #include "./Lexer.h"
 #include "./Symbol.h"
@@ -527,7 +525,12 @@ void Stat::write(void) {
     }
     if (!sym.is(symbol::Type::DELIM, symbol::RPARENT)) {
         nfield++;
-        MidCode::gen(MidCode::Instr::OUTPUT_SYM, nullptr, Expr::expr(), nullptr);
+        const symtable::Entry* const t1 = Expr::expr();
+        if (t1->isInt()) {
+            MidCode::gen(MidCode::Instr::OUTPUT_INT, nullptr, t1, nullptr);
+        } else {
+            MidCode::gen(MidCode::Instr::OUTPUT_CHAR, nullptr, t1, nullptr);
+        }
     }
     assert(nfield);
     MidCode::gen(MidCode::Instr::OUTPUT_STR, nullptr, nullptr, nullptr, "\\n");

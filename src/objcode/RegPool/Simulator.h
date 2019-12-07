@@ -12,7 +12,7 @@
 #include <queue>
 #include <set>
 #include <vector>
-#include "symtable/Entry.h"
+#include "symtable.h"
 
 #include "../include/Reg.h"
 

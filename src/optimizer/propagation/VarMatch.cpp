@@ -6,7 +6,7 @@
  **********************************************/
 
 #include <cassert>
-#include "symtable/Entry.h"
+#include "symtable.h"
 
 #include "./VarMatch.h"
 

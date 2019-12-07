@@ -14,8 +14,7 @@
 #include "midcode/MidCode.h"
 #include "midcode/BasicBlock.h"
 #include "midcode/FlowChart.h"
-#include "symtable/Entry.h"
-#include "symtable/SymTable.h"
+#include "symtable.h"
 
 #include "../include/ObjCode.h"
 #include "../include/RegPool.h"

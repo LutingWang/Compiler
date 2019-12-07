@@ -10,8 +10,7 @@
 #include <string>
 #include <vector>
 #include "midcode/MidCode.h"
-#include "symtable/table.h"
-#include "symtable/SymTable.h"
+#include "symtable.h"
 
 #include "./include/StrPool.h"
 

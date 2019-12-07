@@ -11,7 +11,7 @@
 #include <map>
 #include <set>
 #include <vector>
-#include "symtable/Entry.h"
+#include "symtable.h"
 
 #include "Reg.h"
 #include "ObjCode.h"

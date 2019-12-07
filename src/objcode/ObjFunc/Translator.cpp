@@ -130,11 +130,18 @@ void Translator::_compileCode(const MidCode& midcode) {
         SYSCALL(4);
         _output(Instr::move, Reg::a0, reg::compiler_tmp, noreg, noimm, nolab);
         break;
-    case MidCode::Instr::OUTPUT_SYM:
+    case MidCode::Instr::OUTPUT_INT:
         _output(Instr::move, reg::compiler_tmp, Reg::a0, noreg, noimm, nolab);
         t1 = REQ;
         _output(Instr::move, Reg::a0, t1, noreg, noimm, nolab);
-        SYSCALL(midcode.t1()->isInt() ? 1 : 11);
+        SYSCALL(1);
+        _output(Instr::move, Reg::a0, reg::compiler_tmp, noreg, noimm, nolab);
+        break;
+    case MidCode::Instr::OUTPUT_CHAR:
+        _output(Instr::move, reg::compiler_tmp, Reg::a0, noreg, noimm, nolab);
+        t1 = REQ;
+        _output(Instr::move, Reg::a0, t1, noreg, noimm, nolab);
+        SYSCALL(11);
         _output(Instr::move, Reg::a0, reg::compiler_tmp, noreg, noimm, nolab);
         break;
     case MidCode::Instr::BGT:

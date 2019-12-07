@@ -37,7 +37,7 @@
 // |            |                   | epilogue          |
 // |            |                   | jr ra             |
 // | ---------- | ----------------- | ----------------- |
-// | INPUT      | scanf(t0)         | li v0, 5          |
+// | INPUT      | scanf(t0)         | li v0, 5/12       |
 // |            |                   | syscall           |
 // |            |                   | move t0, v0       |
 // | ---------- | ----------------- | ----------------- |
@@ -47,9 +47,15 @@
 // |            |                   | syscall           |
 // |            |                   | move a0, t8       |
 // | ---------- | ----------------- | ----------------- |
-// | OUTPUT_SYM | printf(t1)        | move t8, a0       |
+// | OUTPUT_INT | printf(t1)        | move t8, a0       |
 // |            |                   | move a0, t1       |
 // |            |                   | li v0, 1          |
+// |            |                   | syscall           |
+// |            |                   | move a0, t8       |
+// | ---------- | ----------------- | ----------------- |
+// | OUTPUT_    | printf(t1)        | move t8, a0       |
+// | CHAR       |                   | move a0, t1       |
+// |            |                   | li v0, 11         |
 // |            |                   | syscall           |
 // |            |                   | move a0, t8       |
 // | ---------- | ----------------- | ----------------- |
@@ -118,7 +124,7 @@
 #include <string>
 #include "midcode/MidCode.h"
 #include "midcode/BasicBlock.h"
-#include "symtable/Entry.h"
+#include "symtable.h"
 
 #include "../include/ObjCode.h"
 #include "../include/RegPool.h"

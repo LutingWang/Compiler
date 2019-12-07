@@ -10,7 +10,7 @@
 #include "midcode/MidCode.h"
 #include "midcode/BasicBlock.h"
 #include "midcode/FlowChart.h"
-#include "symtable/Entry.h"
+#include "symtable.h"
 
 #include "datastream/LiveVar.h"
 

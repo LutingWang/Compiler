@@ -11,9 +11,7 @@
 #include "datastream/LiveVar.h"
 #include "midcode/BasicBlock.h"
 #include "midcode/FlowChart.h"
-#include "symtable/Entry.h"
-#include "symtable/table.h"
-#include "symtable/SymTable.h"
+#include "symtable.h"
 
 #include "Optim.h"
 

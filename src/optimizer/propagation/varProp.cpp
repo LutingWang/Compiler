@@ -13,8 +13,10 @@
 
 #include "Optim.h"
 
+using Instr = MidCode::Instr;
+
 bool Optim::_varProp(const MidCode*& midcode, VarMatch& match) {
-    const MidCode::Instr instr = midcode->instr();
+    const Instr instr = midcode->instr();
     const symtable::Entry* t0 = midcode->_t0;
     const symtable::Entry* t1 = midcode->_t1;
     const symtable::Entry* t2 = midcode->_t2;
@@ -29,30 +31,30 @@ bool Optim::_varProp(const MidCode*& midcode, VarMatch& match) {
         t2 = match.map(t2);
         t3 = new std::string(midcode->labelName());
     } else switch (midcode->instr()) {
-    case MidCode::Instr::LOAD_IND:
+    case Instr::LOAD_IND:
         assert(!match.contains(t1));
         t2 = match.map(t2);
         match.erase(t0);
         break;
-    case MidCode::Instr::STORE_IND:
+    case Instr::STORE_IND:
         t1 = match.map(t1);
         t2 = match.map(t2);
         assert(!match.contains(t0));
         break;
-    case MidCode::Instr::ASSIGN:
+    case Instr::ASSIGN:
         t1 = match.map(t1);
         match.match(t0, t1);
         break;
-    case MidCode::Instr::PUSH_ARG:
-    case MidCode::Instr::RET:
-    // output sym should not be replaced
-    // case MidCode::Instr::OUTPUT_SYM:
+    case Instr::PUSH_ARG:
+    case Instr::RET:
+    case Instr::OUTPUT_INT:
+    case Instr::OUTPUT_CHAR:
         t1 = match.map(t1);
         break;
-    case MidCode::Instr::CALL:
+    case Instr::CALL:
         match.eraseGlobal(); // TODO: target those globals that would change in called func only
         // fallthrough
-    case MidCode::Instr::INPUT:
+    case Instr::INPUT:
         match.erase(t0);
         break;
     default:
