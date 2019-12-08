@@ -114,19 +114,17 @@ int main(int argc, char* argv[]) {
         Optim::deadCodeDel(updated);
         Optim::peephole(updated);
         Optim::clean();
+#if !judge
+        midcode_output << "<!--anchor-->" << endl;
+        MidCode::output();
+#endif /* judge */
     }
 #if !judge
     cout << "finished" << endl;
 #endif /* judge */
 
 #if !judge
-    cout << "optimized midcode generating ... ";
-    MidCode::output();
-    cout << "finished" << endl;
-#endif /* judge */
-
-#if !judge
-	cout << "mips code generating ... ";
+	cout << "mips generating ... ";
 #endif /* judge */
     mips::init();
     mips::output();

@@ -28,14 +28,29 @@ void Optim::symProp(bool& updated) {
             }
         }
         
-        // perform var propagation
+        // preparation for var propagation
         FlowChart flowchart(functable);
-        for (auto basicblock : flowchart.blocks()) {
-            VarMatch match;
-            for (auto& midcode : basicblock->_midcodes) {
-                updated = _varProp(midcode, match) || updated;
+        auto& blocks = flowchart.blocks();
+        std::vector<VarMatch*> matches(blocks.size());
+        ReachDef reachdef(flowchart);
+        for (int i = 0; i < blocks.size(); i++) {
+            Defs defs;
+            reachdef.getIn(defs, blocks[i]);
+            matches[i] = new VarMatch(defs);
+        }
+        
+        // perform var propagation
+        for (int i = 0; i < blocks.size(); i++) {
+            for (auto& midcode : blocks[i]->_midcodes) {
+                updated = _varProp(midcode, *(matches[i])) || updated;
             }
         }
+        
+        // deinit matches
+        for (int i = 0; i < matches.size(); i++) {
+            delete matches[i];
+        }
+        
         flowchart.commit();
 	}
 }

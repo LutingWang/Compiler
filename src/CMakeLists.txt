@@ -2,9 +2,6 @@ cmake_minimum_required (VERSION 3.7.1)
 
 project (compiler)
 
-add_subdirectory ("datastream")
-set (LIBS ${LIBS} datastream)
-
 add_subdirectory ("frontend")
 set (LIBS ${LIBS} frontend)
 

@@ -9,6 +9,7 @@
 #define VAR_MATCH_H
 
 #include <map>
+#include "datastream.h"
 
 namespace symtable {
 	class Entry;
@@ -17,7 +18,7 @@ namespace symtable {
 class VarMatch {
     std::map<const symtable::Entry*, const symtable::Entry*> _matches;
 public:
-    VarMatch(void);
+    VarMatch(const Defs&);
     
     bool contains(const symtable::Entry* const) const;
     

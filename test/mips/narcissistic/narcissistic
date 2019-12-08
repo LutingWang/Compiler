@@ -72,13 +72,20 @@ void complete_flower_num()
   y = 0 ;
   for(i=100;i<100+MAX_NUM;i=i+1){
       n=i/100;
+	  printf(n);
       j=mod(i/10,10);
+	  printf(j);
       a=mod(i,10);
+	  printf(a);
+	  printf("full_num = ", full_num(n,j,a));
+	  printf("flower_num = ", flower_num(n,j,a));
       if(full_num(n,j,a)==flower_num(n, j, a)){
         k[y] = i ;
         y = y + 1 ;
+		printf(y);
       }
   }
+  printf(y);
   for(i = 0 ; i<y ; i=i+1){
     printf("  ", k[i]) ;
   }

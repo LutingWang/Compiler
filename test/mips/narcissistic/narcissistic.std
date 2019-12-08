@@ -17,6 +17,648 @@ complete number: 28
  
 ---------------------------------------------------------------
 'water flower'number is:
+1
+0
+0
+full_num = 100
+flower_num = 1
+1
+0
+1
+full_num = 101
+flower_num = 2
+1
+0
+2
+full_num = 102
+flower_num = 9
+1
+0
+3
+full_num = 103
+flower_num = 28
+1
+0
+4
+full_num = 104
+flower_num = 65
+1
+0
+5
+full_num = 105
+flower_num = 126
+1
+0
+6
+full_num = 106
+flower_num = 217
+1
+0
+7
+full_num = 107
+flower_num = 344
+1
+0
+8
+full_num = 108
+flower_num = 513
+1
+0
+9
+full_num = 109
+flower_num = 730
+1
+1
+0
+full_num = 110
+flower_num = 2
+1
+1
+1
+full_num = 111
+flower_num = 3
+1
+1
+2
+full_num = 112
+flower_num = 10
+1
+1
+3
+full_num = 113
+flower_num = 29
+1
+1
+4
+full_num = 114
+flower_num = 66
+1
+1
+5
+full_num = 115
+flower_num = 127
+1
+1
+6
+full_num = 116
+flower_num = 218
+1
+1
+7
+full_num = 117
+flower_num = 345
+1
+1
+8
+full_num = 118
+flower_num = 514
+1
+1
+9
+full_num = 119
+flower_num = 731
+1
+2
+0
+full_num = 120
+flower_num = 9
+1
+2
+1
+full_num = 121
+flower_num = 10
+1
+2
+2
+full_num = 122
+flower_num = 17
+1
+2
+3
+full_num = 123
+flower_num = 36
+1
+2
+4
+full_num = 124
+flower_num = 73
+1
+2
+5
+full_num = 125
+flower_num = 134
+1
+2
+6
+full_num = 126
+flower_num = 225
+1
+2
+7
+full_num = 127
+flower_num = 352
+1
+2
+8
+full_num = 128
+flower_num = 521
+1
+2
+9
+full_num = 129
+flower_num = 738
+1
+3
+0
+full_num = 130
+flower_num = 28
+1
+3
+1
+full_num = 131
+flower_num = 29
+1
+3
+2
+full_num = 132
+flower_num = 36
+1
+3
+3
+full_num = 133
+flower_num = 55
+1
+3
+4
+full_num = 134
+flower_num = 92
+1
+3
+5
+full_num = 135
+flower_num = 153
+1
+3
+6
+full_num = 136
+flower_num = 244
+1
+3
+7
+full_num = 137
+flower_num = 371
+1
+3
+8
+full_num = 138
+flower_num = 540
+1
+3
+9
+full_num = 139
+flower_num = 757
+1
+4
+0
+full_num = 140
+flower_num = 65
+1
+4
+1
+full_num = 141
+flower_num = 66
+1
+4
+2
+full_num = 142
+flower_num = 73
+1
+4
+3
+full_num = 143
+flower_num = 92
+1
+4
+4
+full_num = 144
+flower_num = 129
+1
+4
+5
+full_num = 145
+flower_num = 190
+1
+4
+6
+full_num = 146
+flower_num = 281
+1
+4
+7
+full_num = 147
+flower_num = 408
+1
+4
+8
+full_num = 148
+flower_num = 577
+1
+4
+9
+full_num = 149
+flower_num = 794
+1
+5
+0
+full_num = 150
+flower_num = 126
+1
+5
+1
+full_num = 151
+flower_num = 127
+1
+5
+2
+full_num = 152
+flower_num = 134
+1
+5
+3
+full_num = 153
+flower_num = 153
+1
+1
+5
+4
+full_num = 154
+flower_num = 190
+1
+5
+5
+full_num = 155
+flower_num = 251
+1
+5
+6
+full_num = 156
+flower_num = 342
+1
+5
+7
+full_num = 157
+flower_num = 469
+1
+5
+8
+full_num = 158
+flower_num = 638
+1
+5
+9
+full_num = 159
+flower_num = 855
+1
+6
+0
+full_num = 160
+flower_num = 217
+1
+6
+1
+full_num = 161
+flower_num = 218
+1
+6
+2
+full_num = 162
+flower_num = 225
+1
+6
+3
+full_num = 163
+flower_num = 244
+1
+6
+4
+full_num = 164
+flower_num = 281
+1
+6
+5
+full_num = 165
+flower_num = 342
+1
+6
+6
+full_num = 166
+flower_num = 433
+1
+6
+7
+full_num = 167
+flower_num = 560
+1
+6
+8
+full_num = 168
+flower_num = 729
+1
+6
+9
+full_num = 169
+flower_num = 946
+1
+7
+0
+full_num = 170
+flower_num = 344
+1
+7
+1
+full_num = 171
+flower_num = 345
+1
+7
+2
+full_num = 172
+flower_num = 352
+1
+7
+3
+full_num = 173
+flower_num = 371
+1
+7
+4
+full_num = 174
+flower_num = 408
+1
+7
+5
+full_num = 175
+flower_num = 469
+1
+7
+6
+full_num = 176
+flower_num = 560
+1
+7
+7
+full_num = 177
+flower_num = 687
+1
+7
+8
+full_num = 178
+flower_num = 856
+1
+7
+9
+full_num = 179
+flower_num = 1073
+1
+8
+0
+full_num = 180
+flower_num = 513
+1
+8
+1
+full_num = 181
+flower_num = 514
+1
+8
+2
+full_num = 182
+flower_num = 521
+1
+8
+3
+full_num = 183
+flower_num = 540
+1
+8
+4
+full_num = 184
+flower_num = 577
+1
+8
+5
+full_num = 185
+flower_num = 638
+1
+8
+6
+full_num = 186
+flower_num = 729
+1
+8
+7
+full_num = 187
+flower_num = 856
+1
+8
+8
+full_num = 188
+flower_num = 1025
+1
+8
+9
+full_num = 189
+flower_num = 1242
+1
+9
+0
+full_num = 190
+flower_num = 730
+1
+9
+1
+full_num = 191
+flower_num = 731
+1
+9
+2
+full_num = 192
+flower_num = 738
+1
+9
+3
+full_num = 193
+flower_num = 757
+1
+9
+4
+full_num = 194
+flower_num = 794
+1
+9
+5
+full_num = 195
+flower_num = 855
+1
+9
+6
+full_num = 196
+flower_num = 946
+1
+9
+7
+full_num = 197
+flower_num = 1073
+1
+9
+8
+full_num = 198
+flower_num = 1242
+1
+9
+9
+full_num = 199
+flower_num = 1459
+2
+0
+0
+full_num = 200
+flower_num = 8
+2
+0
+1
+full_num = 201
+flower_num = 9
+2
+0
+2
+full_num = 202
+flower_num = 16
+2
+0
+3
+full_num = 203
+flower_num = 35
+2
+0
+4
+full_num = 204
+flower_num = 72
+2
+0
+5
+full_num = 205
+flower_num = 133
+2
+0
+6
+full_num = 206
+flower_num = 224
+2
+0
+7
+full_num = 207
+flower_num = 351
+2
+0
+8
+full_num = 208
+flower_num = 520
+2
+0
+9
+full_num = 209
+flower_num = 737
+2
+1
+0
+full_num = 210
+flower_num = 9
+2
+1
+1
+full_num = 211
+flower_num = 10
+2
+1
+2
+full_num = 212
+flower_num = 17
+2
+1
+3
+full_num = 213
+flower_num = 36
+2
+1
+4
+full_num = 214
+flower_num = 73
+2
+1
+5
+full_num = 215
+flower_num = 134
+2
+1
+6
+full_num = 216
+flower_num = 225
+2
+1
+7
+full_num = 217
+flower_num = 352
+2
+1
+8
+full_num = 218
+flower_num = 521
+2
+1
+9
+full_num = 219
+flower_num = 738
+2
+2
+0
+full_num = 220
+flower_num = 16
+2
+2
+1
+full_num = 221
+flower_num = 17
+2
+2
+2
+full_num = 222
+flower_num = 24
+2
+2
+3
+full_num = 223
+flower_num = 43
+2
+2
+4
+full_num = 224
+flower_num = 80
+2
+2
+5
+full_num = 225
+flower_num = 141
+2
+2
+6
+full_num = 226
+flower_num = 232
+2
+2
+7
+full_num = 227
+flower_num = 359
+1
   153
  
 ---------------------------------------------------------------

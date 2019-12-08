@@ -6,11 +6,24 @@
  **********************************************/
 
 #include <cassert>
+#include "midcode.h"
 #include "symtable.h"
 
 #include "./VarMatch.h"
 
-VarMatch::VarMatch(void) {} // TODO: allow initialization from data flow
+VarMatch::VarMatch(const Defs& defs) {
+    std::set<const symtable::Entry*> blackList;
+    for (auto midcode : defs) {
+        auto t0 = midcode->t0();
+        assert(!t0->isGlobal() && !t0->isArray() && !t0->isConst());
+        if (!midcode->is(MidCode::Instr::ASSIGN) || _matches.count(t0) || !midcode->t1()->isConst()) {
+            _matches.erase(t0);
+            blackList.insert(t0);
+        } else if (!blackList.count(t0)) {
+            _matches[t0] = midcode->t1();
+        }
+    }
+}
 
 bool VarMatch::contains(const symtable::Entry* const entry) const {
     assert(entry == nullptr || !entry->isInvalid());
@@ -56,4 +69,3 @@ void VarMatch::match(const symtable::Entry* const lhs, const symtable::Entry* co
     erase(lhs);
     _matches[lhs] = rhs;
 }
-

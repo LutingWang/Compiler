@@ -10,7 +10,6 @@
 #include <fstream>
 #include <set>
 #include <string>
-#include "datastream/LiveVar.h"
 #include "midcode.h"
 #include "symtable.h"
 

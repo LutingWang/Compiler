@@ -8,7 +8,7 @@
 #include <cassert>
 #include <set>
 #include <vector>
-#include "datastream/LiveVar.h"
+#include "datastream.h"
 #include "midcode.h"
 #include "symtable.h"
 
@@ -26,15 +26,10 @@ void Optim::deadCodeDel(bool& updated) {
             assert(out.size() == basicblock->midcodes().size());
             for (int i = 0; i < out.size(); ) {
                 const MidCode* const midcode = basicblock->midcodes()[i];
-                const symtable::Entry* defSym = nullptr;
-                LiveVar::def(defSym, midcode);
-                
-                assert(defSym == nullptr || (!defSym->isConst() && !defSym->isArray()));
-                if (defSym == nullptr || // no output variable
+                if (!midcode->t0IsValid() || midcode->t0()->isGlobal() || midcode->t0()->isArray() ||
                     midcode->is(MidCode::Instr::CALL) || // global could change in a call
-                    midcode->is(MidCode::Instr::INPUT) || // input cannot be changed
-                    defSym->isGlobal() || // global vars are not included
-                    out[i].count(defSym) != 0) { // defSym is alive
+                    midcode->is(MidCode::Instr::INPUT) ||
+                    out[i].count(midcode->t0()) != 0) { // defSym is alive
                     i++;
                     continue;
                 }
