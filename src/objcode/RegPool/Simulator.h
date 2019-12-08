@@ -9,6 +9,7 @@
 #define SIMULATOR_H
 
 #include <functional>
+#include <map>
 #include <queue>
 #include <set>
 #include <vector>
@@ -22,7 +23,7 @@ class Action;
 
 class Simulator {
 	const std::vector<const symtable::Entry*>& _reg_a;
-	const std::vector<const symtable::Entry*>& _reg_s;
+	const std::map<const symtable::Entry*, Reg>& _reg_s;
 	std::vector<const symtable::Entry*> _reg_t;
 	std::vector<bool> _dirty;
     
@@ -34,7 +35,7 @@ class Simulator {
 public:
 	Simulator(ActionGen&,
             const std::vector<const symtable::Entry*>& reg_a,
-			const std::vector<const symtable::Entry*>& reg_s, 
+			const std::map<const symtable::Entry*, Reg>& reg_s, 
 			const std::vector<const symtable::Entry*>& _seq);
 
 	void request(bool write, bool mask);

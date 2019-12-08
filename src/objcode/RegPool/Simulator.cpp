@@ -16,7 +16,7 @@
 
 Simulator::Simulator(ActionGen& output,
         const std::vector<const symtable::Entry*>& reg_a,
-		const std::vector<const symtable::Entry*>& reg_s, 
+		const std::map<const symtable::Entry*, Reg>& reg_s, 
 		const std::vector<const symtable::Entry*>& _seq) :
 	_reg_a(reg_a), 
 	_reg_s(reg_s), 
@@ -39,10 +39,9 @@ void Simulator::request(bool write, bool mask) {
 	}
 
 	// check s regs
-	ind = std::find(_reg_s.begin(), _reg_s.end(), target) - _reg_s.begin();
-    if (ind != _reg_s.size()) {
+    if (_reg_s.count(target) != 0) {
         _maskCache = NAN;
-        _output(reg::s[ind], nullptr, nullptr);
+        _output(_reg_s.at(target), nullptr, nullptr);
         return;
     }
 

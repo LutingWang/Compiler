@@ -60,10 +60,6 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
     
 	auto& args = functable->argList();
     
-    // initialize helpers
-    const FlowChart flowchart(functable);
-    // LiveVar livevar(flowchart);
-    
     // initialize stackframe
     std::set<const symtable::Entry*> storage;
     functable->syms(storage);
@@ -79,13 +75,14 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
 	}
     RegPool regpool(reg_a, stackframe);
     // TODO: uncomment
-    // regpool.assignSavedRegs(functable);
+    regpool.assignSavedRegs(functable);
     
     // prologue
     output(ObjCode::Instr::subi, Reg::sp, Reg::sp, ObjCode::noreg, stackframe.size(), ObjCode::nolab);
     regpool.genPrologue();
 
     // start translation
+    const FlowChart flowchart(functable);
     Translator translator(output, regpool, stackframe);
     for (auto basicblock : flowchart.blocks()) {
         translator.compile(*basicblock);

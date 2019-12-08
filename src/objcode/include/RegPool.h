@@ -9,6 +9,7 @@
 #define REGPOOL_H
 
 #include <functional>
+#include <map>
 #include <queue>
 #include <set>
 #include <vector>
@@ -24,7 +25,7 @@ class Action;
 
 class RegPool {
 	std::vector<const symtable::Entry*> _reg_a;
-	std::vector<const symtable::Entry*> _reg_s;
+	std::map<const symtable::Entry*, Reg> _reg_s;
     const StackFrame& _stackframe;
 	std::queue<Action*> _actionCache; // within one block
 

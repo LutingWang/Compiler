@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <set>
 #include "midcode.h"
 #include "symtable.h"
 
@@ -18,22 +19,29 @@
 #include "../include/RegPool.h"
 
 RegPool::RegPool(const std::vector<const symtable::Entry*>& reg_a, const StackFrame& stackframe) :
-	_reg_a(reg_a), _reg_s(reg::s.size(), nullptr),  _stackframe(stackframe) {
+	_reg_a(reg_a), _stackframe(stackframe) {
 	assert(_reg_a.size() == reg::a.size());
 }
 
 void RegPool::genPrologue(void) const {
-    for (int i = 0; i < reg::s.size(); i++) {
-        if (_reg_s[i] == nullptr) { continue; }
-        _stackframe.storeReg(reg::s[i]);
-        _stackframe.loadSym(reg::s[i], _reg_s[i]);
+    std::set<Reg> usedRegS;
+    for (auto& pair : _reg_s) {
+        usedRegS.insert(pair.second);
+    }
+    for (auto reg : usedRegS) {
+        assert(std::find(reg::s.begin(), reg::s.end(), reg) != reg::s.end());
+        _stackframe.storeReg(reg);
     }
 }
 
 void RegPool::genEpilogue(void) const {
-    for (int i = 0; i < reg::s.size(); i++) {
-        if (_reg_s[i] == nullptr) { continue; }
-        _stackframe.loadReg(reg::s[i]);
+    std::set<Reg> usedRegS;
+    for (auto& pair : _reg_s) {
+        usedRegS.insert(pair.second);
+    }
+    for (auto reg : usedRegS) {
+        assert(std::find(reg::s.begin(), reg::s.end(), reg) != reg::s.end());
+        _stackframe.loadReg(reg);
     }
 }
 
