@@ -23,18 +23,33 @@ class StackFrame;
 
 class Action;
 
+class SPool {
+    std::map<const symtable::Entry*, Reg> _regs;
+public:
+    SPool(const symtable::FuncTable* const);
+    
+    bool contains(const symtable::Entry* const) const;
+    Reg at(const symtable::Entry* const) const;
+    
+private:
+    void _usage(std::set<Reg>&) const;
+public:
+    void backup(const StackFrame&) const;
+    void restore(const StackFrame&) const;
+};
+
 class RegPool {
 	std::vector<const symtable::Entry*> _reg_a;
-	std::map<const symtable::Entry*, Reg> _reg_s;
+	const SPool _reg_s;
     const StackFrame& _stackframe;
 	std::queue<Action*> _actionCache; // within one block
 
 public:
 	RegPool(const std::vector<const symtable::Entry*>& reg_a,
+            const symtable::FuncTable* const,
             const StackFrame&);
     
-    void assignSavedRegs(const symtable::FuncTable* const);
-    void genPrologue(void) const; // backup s regs and load s regs for this func
+    void genPrologue(void) const; // backup s regs
     void genEpilogue(void) const; // restore s regs
     
 	// simulate register assignment

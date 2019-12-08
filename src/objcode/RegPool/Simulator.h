@@ -16,6 +16,7 @@
 #include "symtable.h"
 
 #include "../include/Reg.h"
+#include "../include/RegPool.h"
 
 using ActionGen = std::function<void(const Reg, const symtable::Entry* const, const symtable::Entry* const)>;
 
@@ -23,7 +24,7 @@ class Action;
 
 class Simulator {
 	const std::vector<const symtable::Entry*>& _reg_a;
-	const std::map<const symtable::Entry*, Reg>& _reg_s;
+	const SPool& _reg_s;
 	std::vector<const symtable::Entry*> _reg_t;
 	std::vector<bool> _dirty;
     
@@ -35,7 +36,7 @@ class Simulator {
 public:
 	Simulator(ActionGen&,
             const std::vector<const symtable::Entry*>& reg_a,
-			const std::map<const symtable::Entry*, Reg>& reg_s, 
+			const SPool& reg_s, 
 			const std::vector<const symtable::Entry*>& _seq);
 
 	void request(bool write, bool mask);

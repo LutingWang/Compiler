@@ -7,7 +7,10 @@
 
 #include <algorithm>
 #include <cassert>
+#include <map>
 #include <set>
+#include <stack>
+#include "datastream.h"
 #include "midcode.h"
 #include "symtable.h"
 
@@ -18,31 +21,144 @@
 
 #include "../include/RegPool.h"
 
-RegPool::RegPool(const std::vector<const symtable::Entry*>& reg_a, const StackFrame& stackframe) :
-	_reg_a(reg_a), _stackframe(stackframe) {
+/* SPool */
+
+class ConflictGraph {
+    using Node = const symtable::Entry;
+    using Graph = std::map<Node*, std::set<Node*>>;
+    
+    Graph _graph;
+public:
+    ConflictGraph(const FlowChart&);
+    
+private:
+    static void _removeNode(Graph&, Node* const);
+public:
+    void color(std::map<Node*, Reg>&) const;
+};
+
+ConflictGraph::ConflictGraph(const FlowChart& flowchart) {
+    const LiveVar livevar(flowchart);
+    for (auto basicblock : flowchart.blocks()) {
+        std::vector<Vars> varsList;
+        livevar.backProp(varsList, basicblock);
+        for (auto& vars : varsList) {
+            for (auto entry : vars) {
+                _graph[entry].insert(vars.begin(), vars.end());
+            }
+        }
+    }
+    
+    // erase self loop
+    for (auto& pair : _graph) {
+        pair.second.erase(pair.first);
+    }
+}
+
+void ConflictGraph::_removeNode(Graph& graph, Node* const node) {
+    for (auto neighbour : graph.at(node)) {
+        assert(graph.at(neighbour).count(node));
+        graph.at(neighbour).erase(node);
+    }
+    graph.erase(node);
+}
+
+void ConflictGraph::color(std::map<Node*, Reg>& output) const {
+    assert(output.empty());
+    const int K = reg::s.size();
+    auto graph = _graph; // `_graph` cannot be changed
+    
+    // find nodes to be colored
+    std::stack<Node*> nodes;
+    while (graph.size() > 0) {
+        Node* candidate = nullptr;
+        for (auto& pair : graph) {
+            if (pair.second.size() >= K) { continue; }
+            candidate = pair.first;
+            break;
+        }
+        
+        if (candidate == nullptr) {
+            int maxDegree = K - 1;
+            for (auto& pair : graph) {
+                if (pair.second.size() <= maxDegree) { continue; }
+                maxDegree = pair.second.size();
+                candidate = pair.first;
+            }
+        } else {
+            nodes.push(candidate);
+        }
+        _removeNode(graph, candidate);
+    }
+    
+    // color `nodes`
+    for (Node* head; !nodes.empty(); nodes.pop()) {
+        head = nodes.top();
+        std::set<Reg> preserved;
+        for (auto conflictedNode : _graph.at(head)) {
+            if (output.count(conflictedNode) == 0) { continue; }
+            preserved.insert(output.at(conflictedNode));
+        }
+        for (auto reg : reg::s) {
+            if (preserved.count(reg) != 0) { continue; }
+            output[head] = reg;
+            break;
+        }
+    }
+}
+
+SPool::SPool(const symtable::FuncTable* const functable) {
+    const FlowChart flowchart(functable);
+    const ConflictGraph conflictGraph(flowchart);
+    conflictGraph.color(_regs);
+}
+
+bool SPool::contains(const symtable::Entry* const entry) const {
+    return _regs.count(entry);
+}
+
+Reg SPool::at(const symtable::Entry* const entry) const {
+    return _regs.at(entry);
+}
+
+void SPool::_usage(std::set<Reg>& usage) const {
+    assert(usage.empty());
+    for (auto& pair : _regs) {
+        usage.insert(pair.second);
+    }
+}
+
+void SPool::backup(const StackFrame& stackframe) const {
+    std::set<Reg> usage;
+    _usage(usage);
+    for (auto reg : usage) {
+        assert(std::find(reg::s.begin(), reg::s.end(), reg) != reg::s.end());
+        stackframe.storeReg(reg);
+    }
+}
+
+void SPool::restore(const StackFrame& stackframe) const {
+    std::set<Reg> usage;
+    _usage(usage);
+    for (auto reg : usage) {
+        assert(std::find(reg::s.begin(), reg::s.end(), reg) != reg::s.end());
+        stackframe.loadReg(reg);
+    }
+}
+
+/* RegPool */
+
+RegPool::RegPool(const std::vector<const symtable::Entry*>& reg_a, const symtable::FuncTable* const functable, const StackFrame& stackframe) :
+	_reg_a(reg_a), _reg_s(functable), _stackframe(stackframe) {
 	assert(_reg_a.size() == reg::a.size());
 }
 
 void RegPool::genPrologue(void) const {
-    std::set<Reg> usedRegS;
-    for (auto& pair : _reg_s) {
-        usedRegS.insert(pair.second);
-    }
-    for (auto reg : usedRegS) {
-        assert(std::find(reg::s.begin(), reg::s.end(), reg) != reg::s.end());
-        _stackframe.storeReg(reg);
-    }
+    _reg_s.backup(_stackframe);
 }
 
 void RegPool::genEpilogue(void) const {
-    std::set<Reg> usedRegS;
-    for (auto& pair : _reg_s) {
-        usedRegS.insert(pair.second);
-    }
-    for (auto reg : usedRegS) {
-        assert(std::find(reg::s.begin(), reg::s.end(), reg) != reg::s.end());
-        _stackframe.loadReg(reg);
-    }
+    _reg_s.restore(_stackframe);
 }
 
 void RegPool::simulate(const std::vector<const symtable::Entry*>& _seq,
