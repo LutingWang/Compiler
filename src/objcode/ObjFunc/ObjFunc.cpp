@@ -69,11 +69,7 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
     const StackFrame stackframe(output, args, storage);
 
 	// initialize register pool
-	std::vector<const symtable::Entry*> reg_a(reg::a.size(), nullptr);
-	for (int i = 0; i < args.size() && i < reg::a.size(); i++) {
-		reg_a[i] = args[i];
-	}
-    RegPool regpool(reg_a, functable, stackframe);
+    RegPool regpool(functable, stackframe);
     
     // prologue
     output(ObjCode::Instr::subi, Reg::sp, Reg::sp, ObjCode::noreg, stackframe.size(), ObjCode::nolab);

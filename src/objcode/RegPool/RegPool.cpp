@@ -21,6 +21,37 @@
 
 #include "../include/RegPool.h"
 
+/* APool */
+
+APool::APool(const symtable::FuncTable* const functable, const StackFrame& stackframe) :
+    _stackframe(stackframe) {
+    auto& args = functable->argList();
+    for (int i = 0; i < args.size() && i < reg::a.size(); i++) {
+        _regs.push_back(args[i]);
+    }
+}
+
+bool APool::contains(const symtable::Entry* const entry) const {
+    return std::find(_regs.begin(), _regs.end(), entry) != _regs.end();
+}
+
+Reg APool::at(const symtable::Entry* const entry) const {
+    int ind = std::find(_regs.begin(), _regs.end(), entry) - _regs.begin();
+    return reg::a[ind];
+}
+
+void APool::backup() const {
+    for (int i = 0; i < _regs.size(); i++) {
+        _stackframe.storeReg(reg::a[i]);
+    }
+}
+
+void APool::restore(void) const {
+    for (int i = 0; i < _regs.size(); i++) {
+        _stackframe.loadReg(reg::a[i]);
+    }
+}
+
 /* SPool */
 
 class ConflictGraph {
@@ -29,7 +60,7 @@ class ConflictGraph {
     
     Graph _graph;
 public:
-    ConflictGraph(const FlowChart&);
+    ConflictGraph(const FlowChart&, const std::vector<Node*> blackList);
     
 private:
     static void _removeNode(Graph&, Node* const);
@@ -37,7 +68,7 @@ public:
     void color(std::map<Node*, Reg>&) const;
 };
 
-ConflictGraph::ConflictGraph(const FlowChart& flowchart) {
+ConflictGraph::ConflictGraph(const FlowChart& flowchart, const std::vector<Node*> blackList) {
     const LiveVar livevar(flowchart);
     for (auto basicblock : flowchart.blocks()) {
         std::vector<Vars> varsList;
@@ -52,6 +83,12 @@ ConflictGraph::ConflictGraph(const FlowChart& flowchart) {
     // erase self loop
     for (auto& pair : _graph) {
         pair.second.erase(pair.first);
+    }
+    
+    // erase blackList
+    for (auto& node : blackList) {
+        if (_graph.count(node) == 0) { continue; }
+        _removeNode(_graph, node);
     }
 }
 
@@ -107,9 +144,10 @@ void ConflictGraph::color(std::map<Node*, Reg>& output) const {
     }
 }
 
-SPool::SPool(const symtable::FuncTable* const functable) {
+SPool::SPool(const symtable::FuncTable* const functable, const StackFrame& stackframe) :
+    _stackframe(stackframe) {
     const FlowChart flowchart(functable);
-    const ConflictGraph conflictGraph(flowchart);
+    const ConflictGraph conflictGraph(flowchart, functable->argList());
     conflictGraph.color(_regs);
 }
 
@@ -128,37 +166,40 @@ void SPool::_usage(std::set<Reg>& usage) const {
     }
 }
 
-void SPool::backup(const StackFrame& stackframe) const {
+void SPool::backup(void) const {
     std::set<Reg> usage;
     _usage(usage);
     for (auto reg : usage) {
         assert(std::find(reg::s.begin(), reg::s.end(), reg) != reg::s.end());
-        stackframe.storeReg(reg);
+        _stackframe.storeReg(reg);
     }
 }
 
-void SPool::restore(const StackFrame& stackframe) const {
+void SPool::restore(void) const {
     std::set<Reg> usage;
     _usage(usage);
     for (auto reg : usage) {
         assert(std::find(reg::s.begin(), reg::s.end(), reg) != reg::s.end());
-        stackframe.loadReg(reg);
+        _stackframe.loadReg(reg);
     }
 }
 
 /* RegPool */
 
-RegPool::RegPool(const std::vector<const symtable::Entry*>& reg_a, const symtable::FuncTable* const functable, const StackFrame& stackframe) :
-	_reg_a(reg_a), _reg_s(functable), _stackframe(stackframe) {
-	assert(_reg_a.size() == reg::a.size());
+RegPool::RegPool(const symtable::FuncTable* const functable, const StackFrame& stackframe) :
+	_reg_a(functable, stackframe), _reg_s(functable, stackframe), _stackframe(stackframe) {}
+
+void RegPool::genPrologue(void) const { _reg_s.backup(); }
+void RegPool::genEpilogue(void) const { _reg_s.restore(); }
+
+void RegPool::stash(void) const {
+    _reg_a.backup();
+    _stackframe.storeReg(Reg::ra);
 }
 
-void RegPool::genPrologue(void) const {
-    _reg_s.backup(_stackframe);
-}
-
-void RegPool::genEpilogue(void) const {
-    _reg_s.restore(_stackframe);
+void RegPool::unstash(void) const {
+    _stackframe.loadReg(Reg::ra);
+    _reg_a.restore();
 }
 
 void RegPool::simulate(const std::vector<const symtable::Entry*>& _seq,

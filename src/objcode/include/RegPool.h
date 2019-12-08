@@ -23,10 +23,24 @@ class StackFrame;
 
 class Action;
 
+class APool {
+    std::vector<const symtable::Entry*> _regs;
+    const StackFrame& _stackframe;
+public:
+    APool(const symtable::FuncTable* const, const StackFrame&);
+    
+    bool contains(const symtable::Entry* const) const;
+    Reg at(const symtable::Entry* const) const;
+    
+    void backup(void) const;
+    void restore(void) const;
+};
+
 class SPool {
     std::map<const symtable::Entry*, Reg> _regs;
+    const StackFrame& _stackframe;
 public:
-    SPool(const symtable::FuncTable* const);
+    SPool(const symtable::FuncTable* const, const StackFrame&);
     
     bool contains(const symtable::Entry* const) const;
     Reg at(const symtable::Entry* const) const;
@@ -34,23 +48,23 @@ public:
 private:
     void _usage(std::set<Reg>&) const;
 public:
-    void backup(const StackFrame&) const;
-    void restore(const StackFrame&) const;
+    void backup(void) const;
+    void restore(void) const;
 };
 
 class RegPool {
-	std::vector<const symtable::Entry*> _reg_a;
+	const APool _reg_a;
 	const SPool _reg_s;
     const StackFrame& _stackframe;
 	std::queue<Action*> _actionCache; // within one block
 
 public:
-	RegPool(const std::vector<const symtable::Entry*>& reg_a,
-            const symtable::FuncTable* const,
-            const StackFrame&);
+	RegPool(const symtable::FuncTable* const, const StackFrame&);
     
-    void genPrologue(void) const; // backup s regs
-    void genEpilogue(void) const; // restore s regs
+    void genPrologue(void) const;
+    void genEpilogue(void) const;
+    void stash(void) const;
+    void unstash(void) const;
     
 	// simulate register assignment
 	void simulate(const std::vector<const symtable::Entry*>&, 

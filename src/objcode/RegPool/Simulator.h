@@ -23,7 +23,7 @@ using ActionGen = std::function<void(const Reg, const symtable::Entry* const, co
 class Action;
 
 class Simulator {
-	const std::vector<const symtable::Entry*>& _reg_a;
+	const APool& _reg_a;
 	const SPool& _reg_s;
 	std::vector<const symtable::Entry*> _reg_t;
 	std::vector<bool> _dirty;
@@ -35,7 +35,7 @@ class Simulator {
 	ActionGen& _output;
 public:
 	Simulator(ActionGen&,
-            const std::vector<const symtable::Entry*>& reg_a,
+            const APool& reg_a,
 			const SPool& reg_s, 
 			const std::vector<const symtable::Entry*>& _seq);
 

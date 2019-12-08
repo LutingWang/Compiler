@@ -15,7 +15,7 @@
 #define NAN -1
 
 Simulator::Simulator(ActionGen& output,
-        const std::vector<const symtable::Entry*>& reg_a,
+        const APool& reg_a,
 		const SPool& reg_s, 
 		const std::vector<const symtable::Entry*>& _seq) :
 	_reg_a(reg_a), 
@@ -31,10 +31,9 @@ void Simulator::request(bool write, bool mask) {
     _seq.erase(_seq.begin());
 
 	// check a regs
-	int ind = std::find(_reg_a.begin(), _reg_a.end(), target) - _reg_a.begin();
-	if (ind != _reg_a.size()) {
+	if (_reg_a.contains(target)) {
         _maskCache = NAN;
-		_output(reg::a[ind], nullptr, nullptr);
+		_output(_reg_a.at(target), nullptr, nullptr);
 		return;
 	}
 
@@ -46,7 +45,7 @@ void Simulator::request(bool write, bool mask) {
     }
 
 	// check t regs
-    ind = std::find(_reg_t.begin(), _reg_t.end(), target) - _reg_t.begin();
+    int ind = std::find(_reg_t.begin(), _reg_t.end(), target) - _reg_t.begin();
     if (ind != _reg_t.size()) {
         _maskCache = ind;
         _output(reg::t[ind], nullptr, nullptr);

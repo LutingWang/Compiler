@@ -173,8 +173,7 @@ void Translator::_compileCallBlock(const BasicBlock& basicblock) {
     assert(basicblock.isFuncCall());
     Reg t0, t1;
     
-    for (Reg a : reg::a) { _stackframe.storeReg(a); } // backup `reg::a`
-    _stackframe.storeReg(Reg::ra); // backup `Reg::ra`
+    _regpool.stash();
     
     // copy the first 4 parameters to `reg::a`
     int argNum = basicblock.midcodes().size() - 1;
@@ -201,8 +200,7 @@ void Translator::_compileCallBlock(const BasicBlock& basicblock) {
     // jump to the func
     _output(Instr::jal, noreg, noreg, noreg, noimm, basicblock.midcodes().back()->labelName());
     
-    _stackframe.loadReg(Reg::ra); // restore `Reg::ra`
-    for (Reg a : reg::a) { _stackframe.loadReg(a); } // restore `reg::a`
+    _regpool.unstash();
     
     // retrieve retval
     if (basicblock.midcodes().back()->t0() != nullptr) {
