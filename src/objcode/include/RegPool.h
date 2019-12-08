@@ -16,12 +16,10 @@
 #include "midcode.h"
 #include "symtable.h"
 
-#include "Reg.h"
+#include "./Reg.h"
 
 class ObjCode;
 class StackFrame;
-
-class Action;
 
 class APool {
     std::vector<const symtable::Entry*> _regs;
@@ -34,6 +32,17 @@ public:
     
     void backup(void) const;
     void restore(void) const;
+};
+
+class TPool {
+    std::vector<const symtable::Entry*> _regs;
+    std::vector<bool> _dirty;
+    const StackFrame& _stackframe;
+public:
+    TPool(const StackFrame&);
+    
+    Reg request(const symtable::Entry* const, const bool write, const Reg mask, const std::vector<const symtable::Entry*>&);
+    void writeback(void);
 };
 
 class SPool {
@@ -54,9 +63,12 @@ public:
 
 class RegPool {
 	const APool _reg_a;
+    TPool _reg_t;
 	const SPool _reg_s;
     const StackFrame& _stackframe;
-	std::queue<Action*> _actionCache; // within one block
+    
+	std::vector<const symtable::Entry*> _seq; // within one block
+    Reg _maskCache;
 
 public:
 	RegPool(const symtable::FuncTable* const, const StackFrame&);
@@ -66,19 +78,10 @@ public:
     void stash(void) const;
     void unstash(void) const;
     
-	// simulate register assignment
-	void simulate(const std::vector<const symtable::Entry*>&, 
-			const std::vector<bool>& write, 
-			const std::vector<bool>& mask);
+	// foresee register usage sequence
+	void foresee(const std::vector<const symtable::Entry*>&);
 
-private:
-    // execute the current action
-    void _execute(void);
-public:
-	// perform one operation and return the register
-	Reg request(void);
-
-	// finish up all the remaining operations in this block
+	Reg request(const bool write, const bool mask);
 	void clear(void);
 };
 

@@ -65,8 +65,6 @@ namespace {
     };
 }
 
-#define REQ _regpool.request()
-
 #define SYSCALL(id) \
     _output(Instr::li, Reg::v0, noreg, noreg, (id), nolab); \
     _output(Instr::syscall, noreg, noreg, noreg, noimm, nolab);
@@ -83,38 +81,38 @@ void Translator::_compileCode(const MidCode& midcode) {
     case MidCode::Instr::ADD:
     case MidCode::Instr::SUB:
     case MidCode::Instr::MULT:
-        t1 = REQ;
-        t2 = REQ;
-        t0 = REQ;
+        t1 = _regpool.request(false, false);
+        t2 = _regpool.request(false, true);
+        t0 = _regpool.request(true, false);
         _output(*instr, t0, t1, t2, noimm, nolab);
         break;
     case MidCode::Instr::DIV:
-        t1 = REQ;
-        t2 = REQ;
+        t1 = _regpool.request(false, false);
+        t2 = _regpool.request(false, true);
         _output(Instr::div, noreg, t1, t2, noimm, nolab);
-        t0 = REQ;
+        t0 = _regpool.request(true, false);
         _output(Instr::mflo, t0, noreg, noreg, noimm, nolab);
         break;
     case MidCode::Instr::LOAD_IND:
-        t2 = REQ;
+        t2 = _regpool.request(false, false);
         _output(Instr::sll, reg::compiler_tmp, t2, noreg, LOG_WORD_SIZE, nolab);
-        t0 = REQ;
+        t0 = _regpool.request(true, false);
         _stackframe.loadInd(t0, midcode.t1(), reg::compiler_tmp);
         break;
     case MidCode::Instr::STORE_IND:
-        t2 = REQ;
+        t2 = _regpool.request(false, false);
         _output(Instr::sll, reg::compiler_tmp, t2, noreg, LOG_WORD_SIZE, nolab);
-        t1 = REQ;
+        t1 = _regpool.request(false, false);
         _stackframe.storeInd(t1, midcode.t0(), reg::compiler_tmp);
         break;
     case MidCode::Instr::ASSIGN:
-        t1 = REQ;
-        t0 = REQ;
+        t1 = _regpool.request(false, false);
+        t0 = _regpool.request(true, false);
         _output(Instr::move, t0, t1, noreg, noimm, nolab);
         break;
     case MidCode::Instr::RET:
         if (midcode.t1() != nullptr) {
-            t1 = REQ;
+            t1 = _regpool.request(false, false);
             _output(Instr::move, Reg::v0, t1, noreg, noimm, nolab);
         }
         _regpool.clear();
@@ -124,7 +122,7 @@ void Translator::_compileCode(const MidCode& midcode) {
         break;
     case MidCode::Instr::INPUT:
         SYSCALL(midcode.t0()->isInt() ? 5 : 12);
-        t0 = REQ;
+        t0 = _regpool.request(true, false);
         _output(Instr::move, t0, Reg::v0, noreg, noimm, nolab);
         break;
     case MidCode::Instr::OUTPUT_STR:
@@ -135,14 +133,14 @@ void Translator::_compileCode(const MidCode& midcode) {
         break;
     case MidCode::Instr::OUTPUT_INT:
         _output(Instr::move, reg::compiler_tmp, Reg::a0, noreg, noimm, nolab);
-        t1 = REQ;
+        t1 = _regpool.request(false, false);
         _output(Instr::move, Reg::a0, t1, noreg, noimm, nolab);
         SYSCALL(1);
         _output(Instr::move, Reg::a0, reg::compiler_tmp, noreg, noimm, nolab);
         break;
     case MidCode::Instr::OUTPUT_CHAR:
         _output(Instr::move, reg::compiler_tmp, Reg::a0, noreg, noimm, nolab);
-        t1 = REQ;
+        t1 = _regpool.request(false, false);
         _output(Instr::move, Reg::a0, t1, noreg, noimm, nolab);
         SYSCALL(11);
         _output(Instr::move, Reg::a0, reg::compiler_tmp, noreg, noimm, nolab);
@@ -153,8 +151,8 @@ void Translator::_compileCode(const MidCode& midcode) {
     case MidCode::Instr::BLE:
     case MidCode::Instr::BEQ:
     case MidCode::Instr::BNE:
-        t1 = _regpool.request();
-        t2 = _regpool.request();
+        t1 = _regpool.request(false, false);
+        t2 = _regpool.request(false, true);
         _regpool.clear();
         _output(*instr, noreg, t1, t2, noimm, midcode.labelName());
         break;
@@ -178,7 +176,7 @@ void Translator::_compileCallBlock(const BasicBlock& basicblock) {
     // copy the first 4 parameters to `reg::a`
     int argNum = basicblock.midcodes().size() - 1;
     for (int i = 0; i < argNum && i < reg::a.size(); i++) {
-        t1 = REQ;
+        t1 = _regpool.request(false, false);
         if (std::find(reg::a.begin(), reg::a.end(), t1) == reg::a.end()) {
             _output(Instr::move, reg::a[i], t1, noreg, noimm, nolab);
         } else {
@@ -188,7 +186,7 @@ void Translator::_compileCallBlock(const BasicBlock& basicblock) {
     
     // store the rest parameters to stack
     for (int i = reg::a.size(); i < argNum; i++) {
-        t1 = REQ;
+        t1 = _regpool.request(false, false);
         if (std::find(reg::a.begin(), reg::a.end(), t1) == reg::a.end()) {
             _output(Instr::sw, t1, Reg::sp, noreg, (i - argNum) * WORD_SIZE, nolab);
         } else {
@@ -204,27 +202,23 @@ void Translator::_compileCallBlock(const BasicBlock& basicblock) {
     
     // retrieve retval
     if (basicblock.midcodes().back()->t0() != nullptr) {
-        t0 = REQ;
+        t0 = _regpool.request(true, false);
         _output(Instr::move, t0, Reg::v0, noreg, noimm, nolab);
     }
 }
 
 void Translator::compile(const BasicBlock& basicblock) {
     std::vector<const symtable::Entry*> _seq;
-    std::vector<bool> write;
-    std::vector<bool> mask;
     Pusher pusher = [&](const symtable::Entry* const entry, const bool w, const bool m) {
         assert(!entry->isArray());
         _seq.push_back(entry);
-        write.push_back(w);
-        mask.push_back(m);
     };
     
     for (auto& midcode : basicblock.midcodes()) {
         requiredSyms(pusher, midcode);
     }
     
-    _regpool.simulate(_seq, write, mask);
+    _regpool.foresee(_seq);
     
     if (basicblock.isFuncCall()) {
         _compileCallBlock(basicblock);

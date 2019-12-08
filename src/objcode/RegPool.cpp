@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <climits>
 #include <map>
 #include <set>
 #include <stack>
@@ -14,12 +15,9 @@
 #include "midcode.h"
 #include "symtable.h"
 
-#include "../include/memory.h"
+#include "./include/memory.h"
 
-#include "Action.h"
-#include "Simulator.h"
-
-#include "../include/RegPool.h"
+#include "./include/RegPool.h"
 
 /* APool */
 
@@ -49,6 +47,70 @@ void APool::backup() const {
 void APool::restore(void) const {
     for (int i = 0; i < _regs.size(); i++) {
         _stackframe.loadReg(reg::a[i]);
+    }
+}
+
+/* TPool */
+
+const Reg NO_MASK = Reg::zero;
+
+TPool::TPool(const StackFrame& stackframe) :
+    _regs(reg::t.size(), nullptr),
+    _dirty(reg::t.size(), false),
+    _stackframe(stackframe) {}
+
+Reg TPool::request(const symtable::Entry* const target, const bool write, const Reg mask, const std::vector<const symtable::Entry*>& seq) {
+    int ind = std::find(_regs.begin(), _regs.end(), target) - _regs.begin();
+    if (ind != _regs.size()) {
+        if (write) { _dirty[ind] = true; }
+        return reg::t[ind];
+    }
+    
+    // try to find a nullptr in the temporary registers
+    ind = std::find(_regs.begin(), _regs.end(), nullptr) - _regs.begin();
+    if (ind != _regs.size()) {
+        if (!write) { _stackframe.loadSym(reg::t[ind], target); }
+        _regs[ind] = target;
+        _dirty[ind] = write;
+        return reg::t[ind];
+    }
+    
+    // use OPT strategy
+    std::vector<int> usage(_regs.size(), INT_MAX);
+    int appeared = 0; // if all `Entry`s have appeared, then stop the iteration
+    for (int i = 0; i < seq.size(); i++) {
+        ind = std::find(_regs.begin(), _regs.end(), seq[i]) - _regs.begin();
+        if (ind == _regs.size() || usage[ind] < i) { continue; }
+        usage[ind] = i;
+        if (++appeared == usage.size()) { break; }
+    }
+    
+    // if `mask` is valid, disqualify the corresponding reg
+    if (mask != NO_MASK) {
+        ind = std::find(reg::t.begin(), reg::t.end(), mask) - reg::t.begin();
+        assert(ind != reg::t.size());
+        usage[ind] = 0;
+    }
+    
+    // find the register to be used last
+    ind = std::max_element(usage.begin(), usage.end()) - usage.begin();
+    if (_dirty[ind]) { _stackframe.storeSym(reg::t[ind], _regs[ind]); }
+    if (!write) { _stackframe.loadSym(reg::t[ind], target); }
+    _regs[ind] = target;
+    _dirty[ind] = write;
+    return reg::t[ind];
+}
+
+void TPool::writeback(void) {
+    for (int i = 0; i < _regs.size(); i++) {
+        if (!_dirty[i]) {
+            _regs[i] = nullptr;
+            continue;
+        }
+        assert(_regs[i] != nullptr);
+        _stackframe.storeSym(reg::t[i], _regs[i]);
+        _regs[i] = nullptr;
+        _dirty[i] = false;
     }
 }
 
@@ -187,7 +249,11 @@ void SPool::restore(void) const {
 /* RegPool */
 
 RegPool::RegPool(const symtable::FuncTable* const functable, const StackFrame& stackframe) :
-	_reg_a(functable, stackframe), _reg_s(functable, stackframe), _stackframe(stackframe) {}
+	_reg_a(functable, stackframe),
+    _reg_t(stackframe),
+    _reg_s(functable, stackframe),
+    _stackframe(stackframe),
+    _maskCache(NO_MASK) {}
 
 void RegPool::genPrologue(void) const { _reg_s.backup(); }
 void RegPool::genEpilogue(void) const { _reg_s.restore(); }
@@ -202,44 +268,31 @@ void RegPool::unstash(void) const {
     _reg_a.restore();
 }
 
-void RegPool::simulate(const std::vector<const symtable::Entry*>& _seq,
-		const std::vector<bool>& write,
-		const std::vector<bool>& mask) {
-    assert(_seq.size() == write.size() && _seq.size() == mask.size());
-    assert(_actionCache.empty());
-    ActionGen output = [this](const Reg reg, const symtable::Entry* const load, const symtable::Entry* const store)
-            { this->_actionCache.push(new Action(reg, load, store)); };
-    Simulator simu(output, _reg_a, _reg_s, _seq);
-    for (int i = 0; i < _seq.size(); i++) {
-        simu.request(write[i], mask[i]);
-    }
-	simu.clear();
+void RegPool::foresee(const std::vector<const symtable::Entry*>& seq) {
+    _seq = seq;
 }
 
-void RegPool::_execute(void) {
-	const Action* const action = _actionCache.front();
-    _actionCache.pop();
+Reg RegPool::request(const bool write, const bool mask) {
+    assert(!write || !mask);
+    const symtable::Entry* const target = _seq[0];
+    _seq.erase(_seq.begin());
     
-    // store first!
-    if (action->store != nullptr) {
-        _stackframe.storeSym(action->reg, action->store);
-	}
-    if (action->load != nullptr) {
-        _stackframe.loadSym(action->reg, action->load);
-	}
-    delete action;
-}
-
-Reg RegPool::request(void) {
-    const Reg result = _actionCache.front()->reg;
-	_execute();
-    return result;
+    if (_reg_a.contains(target)) {
+        _maskCache = NO_MASK;
+        return _reg_a.at(target);
+    }
+    
+    if (_reg_s.contains(target)) {
+        _maskCache = NO_MASK;
+        return _reg_s.at(target);
+    }
+    
+    _maskCache = _reg_t.request(target, write, mask ? _maskCache : NO_MASK, _seq);
+    return _maskCache;
 }
 
 void RegPool::clear(void) {
-	while (!_actionCache.empty()) {
-        assert(_actionCache.front()->load == nullptr);
-        assert(_actionCache.front()->store != nullptr);
-		_execute();
-	}
+    assert(_seq.empty());
+    _reg_t.writeback();
+    _maskCache = NO_MASK;
 }
