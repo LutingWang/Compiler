@@ -18,30 +18,27 @@ using Instr = ObjCode::Instr;
 Translator::Translator(CodeGen& output, RegPool& regpool, const StackFrame& stackframe) :
     _output(output), _regpool(regpool), _stackframe(stackframe) {}
 
-using Pusher = std::function<void(const symtable::Entry* const,
-        const bool write, const bool mask)>;
-
-void requiredSyms(Pusher& push, const MidCode* const midcode) {
+void requiredSyms(std::vector<const symtable::Entry*>& output, const MidCode* const midcode) {
     // deal with abnormalies first
     if (midcode->is(MidCode::Instr::STORE_IND)) {
-        push(midcode->t2(), false, false);
-        push(midcode->t1(), false, false);
+        output.push_back(midcode->t2());
+        output.push_back(midcode->t1());
         return;
     }
     
     if (midcode->is(MidCode::Instr::LOAD_IND)) {
-        push(midcode->t2(), false, false);
+        output.push_back(midcode->t2());
     } else {
         if (midcode->t1IsValid()) {
-            push(midcode->t1(), false, false);
+            output.push_back(midcode->t1());
         }
         if (midcode->t2IsValid()) {
-            push(midcode->t2(), false, true);
+            output.push_back(midcode->t2());
         }
     }
     
     if (midcode->t0IsValid() && !midcode->t0()->isArray()) {
-        push(midcode->t0(), true, false);
+        output.push_back(midcode->t0());
     }
 }
 
@@ -209,13 +206,8 @@ void Translator::_compileCallBlock(const BasicBlock& basicblock) {
 
 void Translator::compile(const BasicBlock& basicblock) {
     std::vector<const symtable::Entry*> _seq;
-    Pusher pusher = [&](const symtable::Entry* const entry, const bool w, const bool m) {
-        assert(!entry->isArray());
-        _seq.push_back(entry);
-    };
-    
     for (auto& midcode : basicblock.midcodes()) {
-        requiredSyms(pusher, midcode);
+        requiredSyms(_seq, midcode);
     }
     
     _regpool.foresee(_seq);

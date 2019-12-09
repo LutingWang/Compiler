@@ -88,7 +88,6 @@ Reg TPool::request(const symtable::Entry* const target, const bool write, const 
     // if `mask` is valid, disqualify the corresponding reg
     if (mask != NO_MASK) {
         ind = std::find(reg::t.begin(), reg::t.end(), mask) - reg::t.begin();
-        assert(ind != reg::t.size());
         usage[ind] = 0;
     }
     

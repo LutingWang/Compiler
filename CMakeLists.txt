@@ -5,7 +5,7 @@ set (CMAKE_CXX_COMPILER "/Applications/Xcode.app/Contents/Developer/Toolchains/X
 project(compiler)
 
 set (Compiler_VERSION_MAJOR 2)
-set (Compiler_VERSION_MINOR 0)
+set (Compiler_VERSION_MINOR 1)
 
 set (CMAKE_CXX_STANDARD 11)
 set (PROJECT_SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
