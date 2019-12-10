@@ -17,7 +17,8 @@ ObjCode::~ObjCode(void) {}
 
 PseudoCode::PseudoCode(const bool flipped) : _flipped(flipped) {}
 
-void RCode::_output(const std::string& instr) const {
+template<const char instr[]>
+void RCode<instr>::output(void) const {
     mips_output << instr << ' ' << _t0
             << ", " << _t1 << ", " << _t2 << std::endl;
 }
@@ -45,10 +46,16 @@ void PseudoBCode::_output(const std::string& instr, const std::string& oppo) con
             << ", " << _imm << ", " << _label << std::endl;
 }
 
-void Add::output(void) const { _output("add"); }
-void Sub::output(void) const { _output("sub"); }
-void Mul::output(void) const { _output("mul"); }
+namespace objcode {
+    const char add[] = "add";
+    const char sub[] = "sub";
+    const char mul[] = "mul";
+    const char div[] = "div";
+    const char move[] = "move";
+    const char syscall[] = "syscall";
+}
 
+template<>
 void Div::output(void) const {
     mips_output << "div " << _t1 << ", " << _t2 << std::endl;
     mips_output << "mflo " << _t0 << std::endl;

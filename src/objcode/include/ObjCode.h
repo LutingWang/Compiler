@@ -29,6 +29,7 @@ namespace objcode {
         PseudoCode(const bool);
     };
 
+    template<const char instr[]>
     struct RCode : ObjCode {
         const Reg _t0;
         const Reg _t1;
@@ -36,7 +37,7 @@ namespace objcode {
 
         RCode(const Reg t0, const Reg t1, const Reg t2) :
             _t0(t0), _t1(t1), _t2(t2) {}
-        void _output(const std::string&) const;
+        void output(void) const;
     };
 
     struct PseudoRCode : PseudoCode {
@@ -90,17 +91,19 @@ namespace objcode {
         void _output(const std::string& instr, const std::string& oppo) const;
     };
 
-    #define RegisterR(cls) \
-    struct cls : RCode { \
-        cls(const Reg t0, const Reg t1, const Reg t2) : \
-            RCode(t0, t1, t2) {} \
-        virtual void output(void) const; \
-    };
+    extern const char add[];
+    extern const char sub[];
+    extern const char mul[];
+    extern const char div[];
+    extern const char move[];
+    extern const char syscall[];
 
-    RegisterR(Add)
-    RegisterR(Sub)
-    RegisterR(Mul)
-    RegisterR(Div)
+    using Add = RCode<add>;
+    using Sub = RCode<sub>;
+    using Mul = RCode<mul>;
+    using Div = RCode<div>;
+    using Move = RCode<move>;
+    using Syscall = RCode<syscall>;
 
     #define RegisterPR(cls) \
     struct cls : PseudoRCode { \
@@ -167,13 +170,18 @@ namespace objcode {
     RegisterPB(PseudoBeq)
     RegisterPB(PseudoBne)
 
-    struct Move : RCode {
-        Move(const Reg t0, const Reg t1) : RCode(t0, t1, reg::no_reg) {}
+    template<>
+    struct RCode<move> : ObjCode {
+        const Reg _t0;
+        const Reg _t1;
+        
+        RCode(const Reg t0, const Reg t1) : _t0(t0), _t1(t1) {}
         virtual void output(void) const;
     };
 
-    struct Syscall : RCode {
-        Syscall(void) : RCode(reg::no_reg, reg::no_reg, reg::no_reg) {}
+    template<>
+    struct RCode<syscall> : ObjCode {
+        RCode(void) {}
         virtual void output(void) const;
     };
 
