@@ -9,6 +9,31 @@
 #include <fstream>
 
 #include "./include/ObjCode.h"
+
+namespace objcode {
+#define RegIns(id) const char id[] = #id
+    // RCode and PseudoRCode
+    RegIns(add); RegIns(sub);
+    RegIns(mul); RegIns(div);
+    RegIns(move); RegIns(syscall);
+    RegIns(neg); RegIns(mflo);
+
+    // ICode
+    RegIns(lw); RegIns(sw);
+    RegIns(sll); RegIns(li);
+
+    // JCode
+    RegIns(j); RegIns(jal);
+    RegIns(jr); RegIns(label);
+
+    // BCode, BZCode, and pseudoBCode
+    RegIns(bgt); RegIns(bge);
+    RegIns(blt); RegIns(ble);
+    RegIns(beq); RegIns(bne);
+    RegIns(beqz); RegIns(bnez);
+    RegIns(la);
+}
+
 using namespace objcode;
 
 extern std::ofstream mips_output;
@@ -17,121 +42,62 @@ ObjCode::~ObjCode(void) {}
 
 PseudoCode::PseudoCode(const bool flipped) : _flipped(flipped) {}
 
-template<const char instr[]>
-void RCode<instr>::output(void) const {
-    mips_output << instr << ' ' << _t0
-            << ", " << _t1 << ", " << _t2 << std::endl;
-}
-
-void PseudoRCode::_output(const std::string& instr) const {
-    mips_output << instr << ' ' << _t0 << ", " << _t1 << ", " << _imm << std::endl;
-}
-
-void ICode::_output(const std::string& instr) const {
-    mips_output << instr << ' ' << _t0
-            << ", " << _imm << '(' << _t1 << ')' << std::endl;
-}
-
-void JCode::_output(const std::string& instr) const {
-    mips_output << instr << ' ' << _label << std::endl;
-}
-
-void BCode::_output(const std::string& instr) const {
-    mips_output << instr << ' ' << _t1
-            << ", " << _t2 << ", " << _label << std::endl;
-}
-
-void PseudoBCode::_output(const std::string& instr, const std::string& oppo) const {
-    mips_output << (_flipped ? oppo : instr) << ' ' << _t1
-            << ", " << _imm << ", " << _label << std::endl;
-}
-
-namespace objcode {
-    const char add[] = "add";
-    const char sub[] = "sub";
-    const char mul[] = "mul";
-    const char div[] = "div";
-    const char move[] = "move";
-    const char syscall[] = "syscall";
-}
+/* RCode */
 
 template<>
 void Div::output(void) const {
-    mips_output << "div " << _t1 << ", " << _t2 << std::endl;
-    mips_output << "mflo " << _t0 << std::endl;
+    mips_output << div << ' ' << _t1 << ", " << _t2 << std::endl;
+    mips_output << mflo << ' ' << _t0 << std::endl;
 }
-
-void PseudoAdd::output(void) const { _output("add"); }
-
-void PseudoSub::output(void) const {
-    _output("sub");
-    if (_flipped) { mips_output << "neg " << _t0 << ", " << _t0 << std::endl; }
-}
-
-void PseudoMul::output(void) const { _output("mul"); }
-
-void PseudoDiv::output(void) const {
-    mips_output << "li " << reg::compiler_tmp << ", " << _imm << std::endl;
-    mips_output << "div ";
-    if (_flipped) { mips_output << reg::compiler_tmp << ", " << _t1; }
-    else { mips_output << _t1 << ", " << reg::compiler_tmp; }
-    mips_output << std::endl << "mflo " << _t0 << std::endl;
-}
-
-void Lw::output(void) const { _output("lw"); }
-void Sw::output(void) const { _output("sw"); }
-
-void Sll::output(void) const {
-    mips_output << "sll " << _t0 << ", " << _t1 << ", " << _imm << std::endl;
-}
-
-void J::output(void) const { _output("j"); }
-void Jal::output(void) const { _output("jal"); }
-
-void Label::output(void) const {
-    mips_output << _label << ':' << std::endl;
-}
-
-void Bgt::output(void) const { _output("bgt"); }
-void Bge::output(void) const { _output("bge"); }
-void Blt::output(void) const { _output("blt"); }
-void Ble::output(void) const { _output("ble"); }
-void Beq::output(void) const { _output("beq"); }
-void Bne::output(void) const { _output("bne"); }
-void PseudoBgt::output(void) const { _output("bgt", "ble"); }
-void PseudoBge::output(void) const { _output("bge", "blt"); }
-void PseudoBlt::output(void) const { _output("blt", "bge"); }
-void PseudoBle::output(void) const { _output("ble", "bgt"); }
-void PseudoBeq::output(void) const { _output("beq", "beq"); }
-void PseudoBne::output(void) const { _output("bne", "bne"); }
 
 void Move::output(void) const {
-    mips_output << "move " << _t0 << ", " << _t1 << std::endl;
+    mips_output << move << ' ' << _t0 << ", " << _t1 << std::endl;
 }
 
 void Syscall::output(void) const {
-    mips_output << "syscall" << std::endl;
+    mips_output << syscall << std::endl;
+}
+
+/* PseudoRCode */
+
+template<>
+void PseudoSub::output(void) const {
+    mips_output << sub << ' ' << _t0 << ", " << _t1 << ", " << _imm << std::endl;
+    if (_flipped) { mips_output << neg << ' ' << _t0 << ", " << _t0 << std::endl; }
+}
+
+template<>
+void PseudoDiv::output(void) const {
+    mips_output << li << ' ' << reg::compiler_tmp << ", " << _imm << std::endl;
+    mips_output << div << ' ';
+    if (_flipped) { mips_output << reg::compiler_tmp << ", " << _t1; }
+    else { mips_output << _t1 << ", " << reg::compiler_tmp; }
+    mips_output << std::endl << mflo << ' ' << _t0 << std::endl;
+}
+
+/* ICode */
+
+template<>
+void Sll::output(void) const {
+    mips_output << sll << ' ' << _t0 << ", " << _t1 << ", " << _imm << std::endl;
 }
 
 void Li::output(void) const {
     mips_output << "li " << _t0 << ", " << _imm << std::endl;
 }
 
+/* JCode */
+
 void Jr::output(void) const {
     mips_output << "jr " << Reg::ra << std::endl;
 }
 
-void Beqz::output(void) const {
-    mips_output << "beqz " << _t1 << ", " << _t2 << ", " << _label << std::endl;
+template<>
+void Label::output(void) const {
+    mips_output << _label << ':' << std::endl;
 }
 
-void Bnez::output(void) const {
-    mips_output << "bnez " << _t1 << ", " << _t2 << ", " << _label << std::endl;
-}
-
-void La::output(void) const {
-    mips_output << "la " << _t1 << ", " << _label << std::endl;
-}
+/* Factory */
 
 const ObjCode* ArithFactory::produce(const Reg t0, const int t1, const int t2) const {
     return new Li(t0, _op(t1, t2));

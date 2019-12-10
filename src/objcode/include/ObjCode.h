@@ -8,6 +8,7 @@
 #ifndef OBJ_CODE_H
 #define OBJ_CODE_H
 
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <string>
@@ -17,10 +18,11 @@
 #define WORD_SIZE 4
 #define LOG_WORD_SIZE 2
 
+extern std::ofstream mips_output;
+
 namespace objcode {
     struct ObjCode {
         virtual void output(void) const = 0;
-        
         virtual ~ObjCode(void);
     };
 
@@ -37,138 +39,23 @@ namespace objcode {
 
         RCode(const Reg t0, const Reg t1, const Reg t2) :
             _t0(t0), _t1(t1), _t2(t2) {}
-        void output(void) const;
+        virtual void output(void) const {
+            mips_output << instr << ' ' << _t0
+                << ", " << _t1 << ", " << _t2 << std::endl;
+        }
     };
 
-    struct PseudoRCode : PseudoCode {
-        const Reg _t0;
-        const Reg _t1;
-        const int _imm;
+#define RegIns(cls, ins) \
+    extern const char ins[]; \
+    using cls = RCode<ins>;
 
-        PseudoRCode(const Reg t0, const Reg t1, const int imm) :
-            PseudoCode(false), _t0(t0), _t1(t1), _imm(imm) {}
-        PseudoRCode(const Reg t0, const int imm, const Reg t2) :
-            PseudoCode(true), _t0(t0), _t1(t2), _imm(imm) {}
-        void _output(const std::string&) const;
-    };
-
-    struct ICode : ObjCode {
-        const Reg _t0;
-        const Reg _t1;
-        const int _imm;
-
-        ICode(const Reg t0, const Reg t1, const int imm) :
-            _t0(t0), _t1(t1), _imm(imm) {}
-        void _output(const std::string&) const;
-    };
-
-    struct JCode : ObjCode {
-        const std::string _label;
-        
-        JCode(const std::string& label) : _label(label) {}
-        void _output(const std::string&) const;
-    };
-
-    struct BCode : ObjCode {
-        const Reg _t1;
-        const Reg _t2;
-        const std::string _label;
-        
-        BCode(const Reg t1, const Reg t2, const std::string& label) :
-            _t1(t1), _t2(t2), _label(label) {}
-        void _output(const std::string&) const;
-    };
-
-    struct PseudoBCode : PseudoCode {
-        const Reg _t1;
-        const int _imm;
-        const std::string _label;
-        
-        PseudoBCode(const Reg t1, const int imm, const std::string& label) :
-            PseudoCode(false), _t1(t1), _imm(imm), _label(label) {}
-        PseudoBCode(const int imm, const Reg t2, const std::string& label) :
-            PseudoCode(true), _t1(t2), _imm(imm), _label(label) {}
-        void _output(const std::string& instr, const std::string& oppo) const;
-    };
-
-    extern const char add[];
-    extern const char sub[];
-    extern const char mul[];
-    extern const char div[];
-    extern const char move[];
-    extern const char syscall[];
-
-    using Add = RCode<add>;
-    using Sub = RCode<sub>;
-    using Mul = RCode<mul>;
-    using Div = RCode<div>;
-    using Move = RCode<move>;
-    using Syscall = RCode<syscall>;
-
-    #define RegisterPR(cls) \
-    struct cls : PseudoRCode { \
-        cls(const Reg t0, const Reg t1, const int imm) : \
-            PseudoRCode(t0, t1, imm) {} \
-        cls(const Reg t0, const int imm, const Reg t2) : \
-            PseudoRCode(t0, imm, t2) {} \
-        virtual void output(void) const; \
-    };
-
-    RegisterPR(PseudoAdd)
-    RegisterPR(PseudoSub)
-    RegisterPR(PseudoMul)
-    RegisterPR(PseudoDiv)
-
-    #define RegisterI(cls) \
-    struct cls : ICode { \
-        cls(const Reg t0, const Reg t1, const int imm) : \
-            ICode(t0, t1, imm) {} \
-        virtual void output(void) const; \
-    };
-
-    RegisterI(Lw)
-    RegisterI(Sw)
-    RegisterI(Sll)
-
-    #define RegisterJ(cls) \
-    struct cls : JCode { \
-        cls(const std::string& label) : JCode(label) {} \
-        virtual void output(void) const; \
-    };
-
-    RegisterJ(J)
-    RegisterJ(Jal)
-    RegisterJ(Label)
-
-    #define RegisterB(cls) \
-    struct cls : BCode { \
-        cls(const Reg t1, const Reg t2, const std::string& label) : \
-            BCode(t1, t2, label) {} \
-        virtual void output(void) const; \
-    };
-
-    RegisterB(Bgt)
-    RegisterB(Bge)
-    RegisterB(Blt)
-    RegisterB(Ble)
-    RegisterB(Beq)
-    RegisterB(Bne)
-
-    #define RegisterPB(cls) \
-    struct cls : PseudoBCode { \
-        cls(const Reg t1, const int t2, const std::string& label) : \
-            PseudoBCode(t1, t2, label) {} \
-        cls(const int t1, const Reg t2, const std::string& label) : \
-            PseudoBCode(t1, t2, label) {} \
-        virtual void output(void) const; \
-    };
-
-    RegisterPB(PseudoBgt)
-    RegisterPB(PseudoBge)
-    RegisterPB(PseudoBlt)
-    RegisterPB(PseudoBle)
-    RegisterPB(PseudoBeq)
-    RegisterPB(PseudoBne)
+    RegIns(Add, add);
+    RegIns(Sub, sub);
+    RegIns(Mul, mul);
+    RegIns(Div, div);
+    RegIns(Move, move);
+    RegIns(Syscall, syscall);
+#undef RegIns
 
     template<>
     struct RCode<move> : ObjCode {
@@ -185,33 +72,165 @@ namespace objcode {
         virtual void output(void) const;
     };
 
-    struct Li : ICode {
-        Li(const Reg t0, const int imm) : ICode(t0, reg::no_reg, imm) {}
+    template<const char instr[]>
+    struct PseudoRCode : PseudoCode {
+        const Reg _t0;
+        const Reg _t1;
+        const int _imm;
+
+        PseudoRCode(const Reg t0, const Reg t1, const int imm) :
+            PseudoCode(false), _t0(t0), _t1(t1), _imm(imm) {}
+        PseudoRCode(const Reg t0, const int imm, const Reg t2) :
+            PseudoCode(true), _t0(t0), _t1(t2), _imm(imm) {}
+        virtual void output(void) const {
+            mips_output << instr << ' ' << _t0 << ", " << _t1 << ", " << _imm << std::endl;
+        }
+    };
+
+#define RegIns(cls, ins) \
+    extern const char ins[]; \
+    using cls = PseudoRCode<ins>
+
+    RegIns(PseudoAdd, add);
+    RegIns(PseudoSub, sub);
+    RegIns(PseudoMul, mul);
+    RegIns(PseudoDiv, div);
+#undef RegIns
+
+    template<const char instr[]>
+    struct ICode : ObjCode {
+        const Reg _t0;
+        const Reg _t1;
+        const int _imm;
+
+        ICode(const Reg t0, const Reg t1, const int imm) :
+            _t0(t0), _t1(t1), _imm(imm) {}
+        virtual void output(void) const {
+            mips_output << instr << ' ' << _t0
+                    << ", " << _imm << '(' << _t1 << ')' << std::endl;
+        }
+    };
+
+#define RegIns(cls, ins) \
+    extern const char ins[]; \
+    using cls = ICode<ins>
+
+    RegIns(Lw, lw);
+    RegIns(Sw, sw);
+    RegIns(Sll, sll);
+    RegIns(Li, li);
+#undef RegIns
+
+    template<>
+    struct ICode<li> : ObjCode {
+        const Reg _t0;
+        const int _imm;
+        
+        ICode(const Reg t0, const int imm) : _t0(t0), _imm(imm) {}
         virtual void output(void) const;
     };
 
-    struct Jr : JCode {
-        Jr(void) : JCode("") {}
+    template<const char instr[]>
+    struct JCode : ObjCode {
+        const std::string _label;
+        
+        JCode(const std::string& label) : _label(label) {}
+        virtual void output(void) const {
+            mips_output << instr << ' ' << _label << std::endl;
+        }
+    };
+
+#define RegIns(cls, ins) \
+    extern const char ins[]; \
+    using cls = JCode<ins>
+
+    RegIns(J, j);
+    RegIns(Jal, jal);
+    RegIns(Jr, jr);
+    RegIns(Label, label);
+#undef RegIns
+
+    template<>
+    struct JCode<jr> : ObjCode {
+        JCode(void) {}
         virtual void output(void) const;
     };
 
-    struct Beqz : BCode {
-        Beqz(const Reg t1, const std::string& label) :
-            BCode(t1, reg::no_reg, label) {}
-        virtual void output(void) const;
+    template<const char instr[]>
+    struct BCode : ObjCode {
+        const Reg _t1;
+        const Reg _t2;
+        const std::string _label;
+        
+        BCode(const Reg t1, const Reg t2, const std::string& label) :
+            _t1(t1), _t2(t2), _label(label) {}
+        virtual void output(void) const {
+            mips_output << instr << ' ' << _t1
+                    << ", " << _t2 << ", " << _label << std::endl;
+        }
     };
 
-    struct Bnez : BCode {
-        Bnez(const Reg t1, const std::string& label) :
-            BCode(t1, reg::no_reg, label) {}
-        virtual void output(void) const;
+#define RegIns(cls, ins) \
+    extern const char ins[]; \
+    using cls = BCode<ins>
+
+    RegIns(Bgt, bgt);
+    RegIns(Bge, bge);
+    RegIns(Blt, blt);
+    RegIns(Ble, ble);
+    RegIns(Beq, beq);
+    RegIns(Bne, bne);
+#undef RegIns
+
+    template<const char instr[]>
+    struct BZCode : ObjCode {
+        const Reg _t1;
+        const std::string _label;
+        
+        BZCode(const Reg t1, const std::string& label) :
+            _t1(t1), _label(label) {}
+        virtual void output(void) const {
+            mips_output << instr << ' ' << _t1 << ", " << _label << std::endl;
+        }
+
     };
 
-    struct La : PseudoBCode {
-        La(const Reg t1, const std::string& label) :
-            PseudoBCode(t1, 0, label) {}
-        virtual void output(void) const;
+#define RegIns(cls, ins) \
+    extern const char ins[]; \
+    using cls = BZCode<ins>
+
+    RegIns(Beqz, beqz);
+    RegIns(Bnez, bnez);
+    RegIns(La, la);
+#undef RegIns
+
+    template<const char instr[], const char oppo[]>
+    struct PseudoBCode : PseudoCode {
+        const Reg _t1;
+        const int _imm;
+        const std::string _label;
+        
+        PseudoBCode(const Reg t1, const int imm, const std::string& label) :
+            PseudoCode(false), _t1(t1), _imm(imm), _label(label) {}
+        PseudoBCode(const int imm, const Reg t2, const std::string& label) :
+            PseudoCode(true), _t1(t2), _imm(imm), _label(label) {}
+        virtual void output(void) const {
+            mips_output << (_flipped ? oppo : instr) << ' ' << _t1
+                    << ", " << _imm << ", " << _label << std::endl;
+        }
     };
+
+#define RegIns(cls, ins, oppo) \
+    extern const char ins[]; \
+    using cls = PseudoBCode<ins, oppo>;
+
+    RegIns(PseudoBgt, bgt, ble);
+    RegIns(PseudoBge, bge, blt);
+    RegIns(PseudoBlt, blt, bge);
+    RegIns(PseudoBle, ble, bgt);
+    RegIns(PseudoBeq, beq, beq);
+    RegIns(PseudoBne, bne, bne);
+#undef RegIns
 
     struct ArithFactory {
         using Oper = std::function<int(int, int)>;
