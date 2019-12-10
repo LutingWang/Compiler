@@ -11,7 +11,9 @@
 #include <map>
 #include "symtable.h"
 
-struct ObjCode;
+namespace objcode {
+    struct ObjCode;
+}
 class RegPool;
 class StackFrame;
 
@@ -23,7 +25,7 @@ public:
 	static void deinit(void);
 
 private:
-	std::vector<const ObjCode*> _objcodes;
+	std::vector<const objcode::ObjCode*> _objcodes;
     
 public:
 	ObjFunc(const symtable::FuncTable* const);

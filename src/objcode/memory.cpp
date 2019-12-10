@@ -63,7 +63,7 @@ const std::vector<Reg> regs = {
     Reg::a0, Reg::a1, Reg::a2, Reg::a3
 };
 
-StackFrame::StackFrame(const CodeGen& output, std::vector<const symtable::Entry*> argList,
+StackFrame::StackFrame(const objcode::CodeGen& output, std::vector<const symtable::Entry*> argList,
 		const std::set<const symtable::Entry*>& syms) : Sbss(syms), _output(output) {
     // args should be eliminated from `syms` before hand
 	for (auto& entry : syms) {
@@ -105,27 +105,27 @@ int StackFrame::locate(const Reg reg) const {
 }
 
 void StackFrame::storeReg(const Reg reg) const {
-    _output(new Sw(reg, Reg::sp, locate(reg)));
+    _output(new objcode::Sw(reg, Reg::sp, locate(reg)));
 }
 
 void StackFrame::loadReg(const Reg reg) const {
-    _output(new Lw(reg, Reg::sp, locate(reg)));
+    _output(new objcode::Lw(reg, Reg::sp, locate(reg)));
 }
 
 void StackFrame::storeSym(const Reg reg, const symtable::Entry* const entry) const {
     assert(!entry->isConst() && !entry->isArray());
     if (entry->isGlobal()) {
-        _output(new Sw(reg, Reg::gp, global()->locate(entry)));
+        _output(new objcode::Sw(reg, Reg::gp, global()->locate(entry)));
     } else {
-        _output(new Sw(reg, Reg::sp, locate(entry)));
+        _output(new objcode::Sw(reg, Reg::sp, locate(entry)));
     }
 }
 
 void StackFrame::loadSym(const Reg reg, const symtable::Entry* const entry) const {
 	assert(!entry->isConst() && !entry->isArray());
     if (entry->isGlobal()) {
-        _output(new Lw(reg, Reg::gp, global()->locate(entry)));
+        _output(new objcode::Lw(reg, Reg::gp, global()->locate(entry)));
     } else {
-        _output(new Lw(reg, Reg::sp, locate(entry)));
+        _output(new objcode::Lw(reg, Reg::sp, locate(entry)));
     }
 }

@@ -51,8 +51,8 @@ void ObjFunc::deinit(void) {
 
 ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
     // call back function to insert objcode
-    const CodeGen output =
-        [this](const ObjCode* const objcode) {
+    const objcode::CodeGen output =
+        [this](const objcode::ObjCode* const objcode) {
             this->_objcodes.push_back(objcode);
         };
     
@@ -70,7 +70,7 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
     RegPool regpool(functable, stackframe);
     
     // prologue
-    output(subFactory->produce(Reg::sp, Reg::sp, stackframe.size()));
+    output(objcode::subFactory->produce(Reg::sp, Reg::sp, stackframe.size()));
     regpool.genPrologue();
 
     // start translation

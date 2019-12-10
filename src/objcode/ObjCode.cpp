@@ -9,6 +9,7 @@
 #include <fstream>
 
 #include "./include/ObjCode.h"
+using namespace objcode;
 
 extern std::ofstream mips_output;
 
@@ -155,11 +156,13 @@ RegisterArithFactory(Sub, -)
 RegisterArithFactory(Mul, *)
 RegisterArithFactory(Div, /)
 
-const ArithFactory
-    *addFactory = new AddFactory(),
-    *subFactory = new SubFactory(),
-    *mulFactory = new MulFactory(),
-    *divFactory = new DivFactory();
+namespace objcode {
+    const ArithFactory
+        *addFactory = new AddFactory(),
+        *subFactory = new SubFactory(),
+        *mulFactory = new MulFactory(),
+        *divFactory = new DivFactory();
+}
 
 // TODO: use generics and use bgtz, etc.
 
@@ -184,10 +187,12 @@ RegisterBranchFactory(Ble, <=)
 RegisterBranchFactory(Beq, ==)
 RegisterBranchFactory(Bne, !=)
 
-const BranchFactory
-    *bgtFactory = new BgtFactory(),
-    *bgeFactory = new BgeFactory(),
-    *bltFactory = new BltFactory(),
-    *bleFactory = new BleFactory(),
-    *beqFactory = new BeqFactory(),
-    *bneFactory = new BneFactory();
+namespace objcode {
+    const BranchFactory
+        *bgtFactory = new BgtFactory(),
+        *bgeFactory = new BgeFactory(),
+        *bltFactory = new BltFactory(),
+        *bleFactory = new BleFactory(),
+        *beqFactory = new BeqFactory(),
+        *bneFactory = new BneFactory();
+}

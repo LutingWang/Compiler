@@ -128,21 +128,24 @@
 #include "../include/RegPool.h"
 #include "../include/memory.h"
 
-struct ArithFactory;
-struct BranchFactory;
+namespace objcode {
+    struct ArithFactory;
+    struct BranchFactory;
+}
+
 class UsageQueue;
 
 class Translator {
-    const CodeGen& _output;
+    const objcode::CodeGen& _output;
     RegPool& _regpool;
     const StackFrame& _stackframe;
 public:
-    Translator(const CodeGen&, RegPool&, const StackFrame&);
+    Translator(const objcode::CodeGen&, RegPool&, const StackFrame&);
     
 private:
     // Translate midcodes but `push` and `call`.
-    void _compileArith(const ArithFactory* const, UsageQueue&);
-    void _compileBranch(const BranchFactory* const, UsageQueue&, const std::string&);
+    void _compileArith(const objcode::ArithFactory* const, UsageQueue&);
+    void _compileBranch(const objcode::BranchFactory* const, UsageQueue&, const std::string&);
     void _compileCode(const MidCode* const, UsageQueue&);
     
     // Call blocks need to be translated as a whole.

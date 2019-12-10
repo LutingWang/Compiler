@@ -10,12 +10,13 @@
 #include <functional>
 #include <map>
 
+#include "../include/ObjCode.h"
 #include "../include/StrPool.h"
 
 #include "./Translator.h"
 using Instr = MidCode::Instr;
 
-Translator::Translator(const CodeGen& output, RegPool& regpool, const StackFrame& stackframe) :
+Translator::Translator(const objcode::CodeGen& output, RegPool& regpool, const StackFrame& stackframe) :
     _output(output), _regpool(regpool), _stackframe(stackframe) {}
 
 class UsageQueue {
@@ -104,7 +105,7 @@ const UsageQueue::Usage UsageQueue::pop(const bool write, const bool mask) {
     return usage;
 }
 
-void Translator::_compileArith(const ArithFactory* const factory, UsageQueue& usagequeue) {
+void Translator::_compileArith(const objcode::ArithFactory* const factory, UsageQueue& usagequeue) {
     auto t1 = usagequeue.pop(false, false);
     auto t2 = usagequeue.pop(false, t1.useReg());
     auto t0 = usagequeue.pop(true, false);
@@ -118,7 +119,7 @@ void Translator::_compileArith(const ArithFactory* const factory, UsageQueue& us
     }
 }
 
-void Translator::_compileBranch(const BranchFactory* const factory, UsageQueue& usagequeue, const std::string& label) {
+void Translator::_compileBranch(const objcode::BranchFactory* const factory, UsageQueue& usagequeue, const std::string& label) {
     auto t1 = usagequeue.pop(false, false);
     auto t2 = usagequeue.pop(false, t1.useReg());
     _regpool.clear();
@@ -134,28 +135,28 @@ void Translator::_compileBranch(const BranchFactory* const factory, UsageQueue& 
 // NOTE: clear regpool right before ret, branch, or jump
 void Translator::_compileCode(const MidCode* const midcode, UsageQueue& usagequeue) {
     switch (midcode->instr()) {
-    case Instr::ADD: _compileArith(addFactory, usagequeue); break;
-    case Instr::SUB: _compileArith(subFactory, usagequeue); break;
-    case Instr::MULT: _compileArith(mulFactory, usagequeue); break;
-    case Instr::DIV: _compileArith(divFactory, usagequeue); break;
+    case Instr::ADD: _compileArith(objcode::addFactory, usagequeue); break;
+    case Instr::SUB: _compileArith(objcode::subFactory, usagequeue); break;
+    case Instr::MULT: _compileArith(objcode::mulFactory, usagequeue); break;
+    case Instr::DIV: _compileArith(objcode::divFactory, usagequeue); break;
     case Instr::LOAD_IND: {
         // TODO: simplify
         auto t2 = usagequeue.pop(false, false);
         auto t0 = usagequeue.pop(true, false);
         if (t2.useReg()) {
-            _output(new Sll(reg::compiler_tmp, t2.getReg(), LOG_WORD_SIZE));
+            _output(new objcode::Sll(reg::compiler_tmp, t2.getReg(), LOG_WORD_SIZE));
             if (midcode->t1()->isGlobal()) {
-                _output(new Add(reg::compiler_tmp, reg::compiler_tmp, Reg::gp));
-                _output(new Lw(t0.getReg(), reg::compiler_tmp, _stackframe.locateGlobal(midcode->t1())));
+                _output(new objcode::Add(reg::compiler_tmp, reg::compiler_tmp, Reg::gp));
+                _output(new objcode::Lw(t0.getReg(), reg::compiler_tmp, _stackframe.locateGlobal(midcode->t1())));
             } else {
-                _output(new Add(reg::compiler_tmp, reg::compiler_tmp, Reg::sp));
-                _output(new Lw(t0.getReg(), reg::compiler_tmp, _stackframe.locate(midcode->t1())));
+                _output(new objcode::Add(reg::compiler_tmp, reg::compiler_tmp, Reg::sp));
+                _output(new objcode::Lw(t0.getReg(), reg::compiler_tmp, _stackframe.locate(midcode->t1())));
             }
         } else {
             if (midcode->t1()->isGlobal()) {
-                _output(new Lw(t0.getReg(), Reg::gp, (t2.getImm() << LOG_WORD_SIZE) + _stackframe.locateGlobal(midcode->t1())));
+                _output(new objcode::Lw(t0.getReg(), Reg::gp, (t2.getImm() << LOG_WORD_SIZE) + _stackframe.locateGlobal(midcode->t1())));
             } else {
-                _output(new Lw(t0.getReg(), Reg::sp, (t2.getImm() << LOG_WORD_SIZE) + _stackframe.locate(midcode->t1())));
+                _output(new objcode::Lw(t0.getReg(), Reg::sp, (t2.getImm() << LOG_WORD_SIZE) + _stackframe.locate(midcode->t1())));
             }
         }
         break;
@@ -168,18 +169,18 @@ void Translator::_compileCode(const MidCode* const midcode, UsageQueue& usageque
         
         auto t2 = usagequeue.pop(false, false);
         if (!t2.useReg()) { offset += t2.getImm() << LOG_WORD_SIZE; } // offset directly to gp or sp
-        else { _output(new Sll(reg::compiler_tmp, t2.getReg(), LOG_WORD_SIZE)); } // offset to t0
+        else { _output(new objcode::Sll(reg::compiler_tmp, t2.getReg(), LOG_WORD_SIZE)); } // offset to t0
         
         auto t1 = usagequeue.pop(false, false);
         Reg data = reg::stackframe_tmp; // holding data to store
         if (t1.useReg()) { data = t1.getReg(); }
-        else { _output(new Li(reg::stackframe_tmp, t1.getImm())); }
+        else { _output(new objcode::Li(reg::stackframe_tmp, t1.getImm())); }
             
         if (t2.useReg()) {
-            _output(new Add(reg::compiler_tmp, reg::compiler_tmp, base));
-            _output(new Sw(data, reg::compiler_tmp, offset));
+            _output(new objcode::Add(reg::compiler_tmp, reg::compiler_tmp, base));
+            _output(new objcode::Sw(data, reg::compiler_tmp, offset));
         } else {
-            _output(new Sw(data, base, offset));
+            _output(new objcode::Sw(data, base, offset));
         }
         break;
     }
@@ -187,9 +188,9 @@ void Translator::_compileCode(const MidCode* const midcode, UsageQueue& usageque
         auto t1 = usagequeue.pop(false, false);
         auto t0 = usagequeue.pop(true, false);
         if (t1.useReg()) {
-            _output(new Move(t0.getReg(), t1.getReg()));
+            _output(new objcode::Move(t0.getReg(), t1.getReg()));
         } else {
-            _output(new Li(t0.getReg(), t1.getImm()));
+            _output(new objcode::Li(t0.getReg(), t1.getImm()));
         }
         break;
     }
@@ -197,52 +198,52 @@ void Translator::_compileCode(const MidCode* const midcode, UsageQueue& usageque
         if (midcode->t1IsValid()) {
             auto t1 = usagequeue.pop(false, false);
             if (t1.useReg()) {
-                _output(new Move(Reg::v0, t1.getReg()));
+                _output(new objcode::Move(Reg::v0, t1.getReg()));
             } else {
-                _output(new Li(Reg::v0, t1.getImm()));
+                _output(new objcode::Li(Reg::v0, t1.getImm()));
             }
         }
         _regpool.clear();
         _regpool.genEpilogue();
-        _output(addFactory->produce(Reg::sp, Reg::sp, _stackframe.size()));
-        _output(new Jr());
+            _output(objcode::addFactory->produce(Reg::sp, Reg::sp, _stackframe.size()));
+            _output(new objcode::Jr());
         break;
     case Instr::INPUT: {
-        _output(new Li(Reg::v0, midcode->t0()->isInt() ? 5 : 12));
-        _output(new Syscall());
+        _output(new objcode::Li(Reg::v0, midcode->t0()->isInt() ? 5 : 12));
+        _output(new objcode::Syscall());
         auto t0 = usagequeue.pop(true, false);
-        _output(new Move(t0.getReg(), Reg::v0));
+        _output(new objcode::Move(t0.getReg(), Reg::v0));
         break;
     }
     case Instr::OUTPUT_STR:
-        _output(new Move(reg::compiler_tmp, Reg::a0));
-        _output(new La(Reg::a0, strpool[midcode->labelName()]));
-        _output(new Li(Reg::v0, 4));
-        _output(new Syscall());
-        _output(new Move(Reg::a0, reg::compiler_tmp));
+            _output(new objcode::Move(reg::compiler_tmp, Reg::a0));
+            _output(new objcode::La(Reg::a0, strpool[midcode->labelName()]));
+            _output(new objcode::Li(Reg::v0, 4));
+            _output(new objcode::Syscall());
+            _output(new objcode::Move(Reg::a0, reg::compiler_tmp));
         break;
     case Instr::OUTPUT_INT: case Instr::OUTPUT_CHAR: {
-        _output(new Move(reg::compiler_tmp, Reg::a0));
+        _output(new objcode::Move(reg::compiler_tmp, Reg::a0));
         auto t1 = usagequeue.pop(false, false);
-        if (t1.useReg()) { _output(new Move(Reg::a0, t1.getReg())); }
-        else { _output(new Li(Reg::a0, t1.getImm())); }
-        _output(new Li(Reg::v0, midcode->is(Instr::OUTPUT_INT) ? 1 : 11));
-        _output(new Syscall());
-        _output(new Move(Reg::a0, reg::compiler_tmp));
+        if (t1.useReg()) { _output(new objcode::Move(Reg::a0, t1.getReg())); }
+        else { _output(new objcode::Li(Reg::a0, t1.getImm())); }
+        _output(new objcode::Li(Reg::v0, midcode->is(Instr::OUTPUT_INT) ? 1 : 11));
+        _output(new objcode::Syscall());
+        _output(new objcode::Move(Reg::a0, reg::compiler_tmp));
         break;
     }
-    case Instr::BGT: _compileBranch(bgtFactory, usagequeue, midcode->labelName()); break;
-    case Instr::BGE: _compileBranch(bgeFactory, usagequeue, midcode->labelName()); break;
-    case Instr::BLT: _compileBranch(bltFactory, usagequeue, midcode->labelName()); break;
-    case Instr::BLE: _compileBranch(bleFactory, usagequeue, midcode->labelName()); break;
-    case Instr::BEQ: _compileBranch(beqFactory, usagequeue, midcode->labelName()); break;
-    case Instr::BNE: _compileBranch(bneFactory, usagequeue, midcode->labelName()); break;
+    case Instr::BGT: _compileBranch(objcode::bgtFactory, usagequeue, midcode->labelName()); break;
+    case Instr::BGE: _compileBranch(objcode::bgeFactory, usagequeue, midcode->labelName()); break;
+    case Instr::BLT: _compileBranch(objcode::bltFactory, usagequeue, midcode->labelName()); break;
+    case Instr::BLE: _compileBranch(objcode::bleFactory, usagequeue, midcode->labelName()); break;
+    case Instr::BEQ: _compileBranch(objcode::beqFactory, usagequeue, midcode->labelName()); break;
+    case Instr::BNE: _compileBranch(objcode::bneFactory, usagequeue, midcode->labelName()); break;
     case MidCode::Instr::GOTO:
         _regpool.clear();
-        _output(new J(midcode->labelName()));
+            _output(new objcode::J(midcode->labelName()));
         break;
     case MidCode::Instr::LABEL:
-        _output(new Label(midcode->labelName()));
+            _output(new objcode::Label(midcode->labelName()));
         break;
     default: assert(0);
     }
@@ -258,11 +259,11 @@ void Translator::_compileCallBlock(const BasicBlock* const basicblock, UsageQueu
     for (int i = 0; i < argNum && i < reg::a.size(); i++) {
         auto t1 = usagequeue.pop(false, false);
         if (!t1.useReg()) {
-            _output(new Li(reg::a[i], t1.getImm()));
+            _output(new objcode::Li(reg::a[i], t1.getImm()));
         } else if (std::find(reg::a.begin(), reg::a.end(), t1.getReg()) == reg::a.end()) {
-            _output(new Move(reg::a[i], t1.getReg()));
+            _output(new objcode::Move(reg::a[i], t1.getReg()));
         } else {
-            _output(new Lw(reg::a[i], Reg::sp, _stackframe.locate(t1.getReg())));
+            _output(new objcode::Lw(reg::a[i], Reg::sp, _stackframe.locate(t1.getReg())));
         }
     }
     
@@ -271,23 +272,23 @@ void Translator::_compileCallBlock(const BasicBlock* const basicblock, UsageQueu
         const int offset = (i - argNum) * WORD_SIZE;
         auto t1 = usagequeue.pop(false, false);
         if (!t1.useReg()) {
-            _output(new Li(reg::compiler_tmp, t1.getImm()));
-            _output(new Sw(reg::compiler_tmp, Reg::sp, offset));
+            _output(new objcode::Li(reg::compiler_tmp, t1.getImm()));
+            _output(new objcode::Sw(reg::compiler_tmp, Reg::sp, offset));
         } else if (std::find(reg::a.begin(), reg::a.end(), t1.getReg()) == reg::a.end()) {
-            _output(new Sw(t1.getReg(), Reg::sp, offset));
+            _output(new objcode::Sw(t1.getReg(), Reg::sp, offset));
         } else {
-            _output(new Lw(reg::compiler_tmp, Reg::sp, _stackframe.locate(t1.getReg())));
-            _output(new Sw(reg::compiler_tmp, Reg::sp, offset));
+            _output(new objcode::Lw(reg::compiler_tmp, Reg::sp, _stackframe.locate(t1.getReg())));
+            _output(new objcode::Sw(reg::compiler_tmp, Reg::sp, offset));
         }
     }
     
-    _output(new Jal(basicblock->midcodes().back()->labelName())); // jump to the func
+    _output(new objcode::Jal(basicblock->midcodes().back()->labelName())); // jump to the func
     _regpool.unstash(); // restore ra and s
     
     // retrieve retval
     if (basicblock->midcodes().back()->t0() != nullptr) {
         auto t0 = usagequeue.pop(true, false);
-        _output(new Move(t0.getReg(), Reg::v0));
+        _output(new objcode::Move(t0.getReg(), Reg::v0));
     }
 }
 
