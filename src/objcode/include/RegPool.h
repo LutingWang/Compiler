@@ -18,7 +18,7 @@
 
 #include "./Reg.h"
 
-class ObjCode;
+struct ObjCode;
 class StackFrame;
 
 class APool {
@@ -79,7 +79,7 @@ public:
     void unstash(void) const;
     
 	// foresee register usage sequence
-	void foresee(const std::vector<const symtable::Entry*>&);
+	void foresee(const symtable::Entry* const);
 
 	Reg request(const bool write, const bool mask);
 	void clear(void);

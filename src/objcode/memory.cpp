@@ -55,10 +55,6 @@ int Sbss::locate(const symtable::Entry* entry) const {
     return _syms.at(entry);
 }
 
-auto& noreg = ObjCode::noreg;
-auto& noimm = ObjCode::noimm;
-auto& nolab = ObjCode::nolab;
-
 // regs stored in stackframe
 const std::vector<Reg> regs = {
     Reg::s0, Reg::s1, Reg::s2, Reg::s3, Reg::s4, Reg::s5, Reg::s6, Reg::s7,
@@ -67,7 +63,7 @@ const std::vector<Reg> regs = {
     Reg::a0, Reg::a1, Reg::a2, Reg::a3
 };
 
-StackFrame::StackFrame(CodeGen& output, std::vector<const symtable::Entry*> argList,
+StackFrame::StackFrame(const CodeGen& output, std::vector<const symtable::Entry*> argList,
 		const std::set<const symtable::Entry*>& syms) : Sbss(syms), _output(output) {
     // args should be eliminated from `syms` before hand
 	for (auto& entry : syms) {
@@ -95,6 +91,11 @@ int StackFrame::locate(const symtable::Entry* const entry) const {
 	return Sbss::locate(entry);
 }
 
+int StackFrame::locateGlobal(const symtable::Entry* const entry) const {
+    assert(entry->isGlobal());
+    return global()->locate(entry);
+}
+
 int StackFrame::locate(const Reg reg) const {
 	int offset = std::find(regs.begin(), regs.end(), reg) - regs.begin();
 	assert(offset < regs.size()); // reg to be located need to be legal
@@ -102,69 +103,29 @@ int StackFrame::locate(const Reg reg) const {
 	assert(offset < _size);
 	return offset;
 }
-           
-void StackFrame::_visit(const ObjCode::Instr instr, const Reg reg) const {
-    assert(instr == ObjCode::Instr::sw || instr == ObjCode::Instr::lw);
-    _output(instr, reg, Reg::sp, noreg, locate(reg), nolab);
-}
-
-void StackFrame::_visit(ObjCode::Instr instr, const Reg reg, const symtable::Entry* const entry) const {
-    assert(instr == ObjCode::Instr::sw || instr == ObjCode::Instr::lw);
-    assert(entry != nullptr && !entry->isArray());
-    Reg t1;
-    int imm;
-    if (entry->isConst()) {
-        assert(instr == ObjCode::Instr::lw);
-        instr = ObjCode::Instr::li;
-        t1 = noreg;
-        imm = entry->value();
-    } else if (entry->isGlobal()) {
-        t1 = Reg::gp;
-        imm = global()->locate(entry);
-    } else {
-        t1 = Reg::sp;
-        imm = locate(entry);
-    }
-    _output(instr, reg, t1, noreg, imm, nolab);
-}
-
-void StackFrame::_visit(const ObjCode::Instr instr, const Reg reg,
-        const symtable::Entry* const entry, const Reg ind) const {
-    assert(instr == ObjCode::Instr::sw || instr == ObjCode::Instr::lw);
-    assert(entry != nullptr && entry->isArray()); // implies non-const
-    Reg base;
-    int imm;
-    if (entry->isGlobal()) {
-        base = Reg::gp;
-        imm = global()->locate(entry);
-    } else {
-        base = Reg::sp;
-        imm = locate(entry);
-    }
-    _output(ObjCode::Instr::add, reg::stackframe_tmp, ind, base, noimm, nolab);
-    _output(instr, reg, reg::stackframe_tmp, noreg, imm, nolab);
-}
 
 void StackFrame::storeReg(const Reg reg) const {
-    _visit(ObjCode::Instr::sw, reg);
+    _output(new Sw(reg, Reg::sp, locate(reg)));
 }
 
 void StackFrame::loadReg(const Reg reg) const {
-   _visit(ObjCode::Instr::lw, reg);
+    _output(new Lw(reg, Reg::sp, locate(reg)));
 }
 
 void StackFrame::storeSym(const Reg reg, const symtable::Entry* const entry) const {
-	_visit(ObjCode::Instr::sw, reg, entry);
+    assert(!entry->isConst() && !entry->isArray());
+    if (entry->isGlobal()) {
+        _output(new Sw(reg, Reg::gp, global()->locate(entry)));
+    } else {
+        _output(new Sw(reg, Reg::sp, locate(entry)));
+    }
 }
 
 void StackFrame::loadSym(const Reg reg, const symtable::Entry* const entry) const {
-	_visit(ObjCode::Instr::lw, reg, entry);
-}
-
-void StackFrame::storeInd(const Reg reg, const symtable::Entry* const entry, const Reg ind) const {
-    _visit(ObjCode::Instr::sw, reg, entry, ind);
-}
-
-void StackFrame::loadInd(const Reg reg, const symtable::Entry* const entry, const Reg ind) const {
-    _visit(ObjCode::Instr::lw, reg, entry, ind);
+	assert(!entry->isConst() && !entry->isArray());
+    if (entry->isGlobal()) {
+        _output(new Lw(reg, Reg::gp, global()->locate(entry)));
+    } else {
+        _output(new Lw(reg, Reg::sp, locate(entry)));
+    }
 }

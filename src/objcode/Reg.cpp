@@ -38,6 +38,7 @@ const std::vector<Reg> reg::s = {
 	Reg::s7
 };
 
+const Reg reg::no_reg = Reg::zero;
 const Reg reg::compiler_tmp = Reg::t8;
 const Reg reg::stackframe_tmp = Reg::t9;
 

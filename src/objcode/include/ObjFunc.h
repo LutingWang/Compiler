@@ -11,7 +11,7 @@
 #include <map>
 #include "symtable.h"
 
-class ObjCode;
+struct ObjCode;
 class RegPool;
 class StackFrame;
 

@@ -29,6 +29,7 @@ namespace reg {
 	extern const std::vector<Reg> a;
 	extern const std::vector<Reg> t;
 	extern const std::vector<Reg> s;
+    extern const Reg no_reg;
     extern const Reg compiler_tmp;
     extern const Reg stackframe_tmp;
 }

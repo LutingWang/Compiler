@@ -51,12 +51,10 @@ void ObjFunc::deinit(void) {
 
 ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
     // call back function to insert objcode
-    CodeGen output = [this](const ObjCode::Instr instr,
-            const Reg t0, const Reg t1, const Reg t2,
-            const int imm, const std::string& label) {
-        this->_objcodes.push_back(
-                new ObjCode(instr, t0, t1, t2, imm, label));
-    };
+    const CodeGen output =
+        [this](const ObjCode* const objcode) {
+            this->_objcodes.push_back(objcode);
+        };
     
 	auto& args = functable->argList();
     
@@ -72,14 +70,14 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
     RegPool regpool(functable, stackframe);
     
     // prologue
-    output(ObjCode::Instr::subi, Reg::sp, Reg::sp, ObjCode::noreg, stackframe.size(), ObjCode::nolab);
+    output(subFactory->produce(Reg::sp, Reg::sp, stackframe.size()));
     regpool.genPrologue();
 
     // start translation
     const FlowChart flowchart(functable);
     Translator translator(output, regpool, stackframe);
     for (auto basicblock : flowchart.blocks()) {
-        translator.compile(*basicblock);
+        translator.compile(basicblock);
     }
 }
 

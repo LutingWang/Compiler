@@ -60,7 +60,7 @@ public:
 // Each of the functionalities are supported by one of the `_visit` functions. Check
 // their comment for more info.
 class StackFrame : protected Sbss {
-    CodeGen& _output; // call back function to generate objcode
+    const CodeGen& _output; // call back function to generate objcode
 	std::map<const symtable::Entry*, int> _args; // first 4 args are not mapped
 	int _regBase;
 	int _size;
@@ -69,35 +69,22 @@ public:
 
     // Since args are stored away from the other variables, `syms` cannot
     // have intersections with `argList`.
-	StackFrame(CodeGen&, std::vector<const symtable::Entry*> argList,
+	StackFrame(const CodeGen&, std::vector<const symtable::Entry*> argList,
 			const std::set<const symtable::Entry*>& syms);
     virtual ~StackFrame(void) {}
 
     // Only locate the local variables. Attempt to locate a global variable
     // would trigger assertion error.
 	virtual int locate(const symtable::Entry* const) const;
+    int locateGlobal(const symtable::Entry* const) const;
     
 	int locate(const Reg) const;
 
-private:
-    // Load (store) the `reg` from (to) stackframe
-	void _visit(const ObjCode::Instr, const Reg) const;
-    
-    // Load (store) the `entry` from (to) stackframe or sbss. For constants,
-    // `instr` would be altered to `li`.
-    void _visit(ObjCode::Instr, const Reg, const symtable::Entry* const) const;
-    
-    // Load (store) the `ind`th element in array `entry` from (to) stackframe
-    // or sbss. Note that `ind << 2` should be done outside this function. In
-    // either case, `reg` is holding the data to be loaded or stored.
-    void _visit(const ObjCode::Instr, const Reg, const symtable::Entry* const, const Reg ind) const;
 public:
 	void storeReg(const Reg) const;
 	void loadReg(const Reg) const;
 	void storeSym(const Reg, const symtable::Entry* const) const;
 	void loadSym(const Reg, const symtable::Entry* const) const;
-    void storeInd(const Reg dst, const symtable::Entry* const, const Reg ind) const;
-    void loadInd(const Reg dst, const symtable::Entry* const, const Reg ind) const;
 };
 
 #endif /* MEMORY_H */

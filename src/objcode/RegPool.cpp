@@ -267,8 +267,9 @@ void RegPool::unstash(void) const {
     _reg_a.restore();
 }
 
-void RegPool::foresee(const std::vector<const symtable::Entry*>& seq) {
-    _seq = seq;
+void RegPool::foresee(const symtable::Entry* const entry) {
+    assert(!entry->isConst() && !entry->isArray());
+    _seq.push_back(entry);
 }
 
 Reg RegPool::request(const bool write, const bool mask) {

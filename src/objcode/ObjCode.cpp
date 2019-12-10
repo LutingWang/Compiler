@@ -10,167 +10,184 @@
 
 #include "./include/ObjCode.h"
 
-const Reg ObjCode::noreg = Reg::zero;
-const int ObjCode::noimm = 0;
-const std::string ObjCode::nolab = "";
-
-ObjCode::ObjCode(const Instr instr,
-		const Reg t0,
-		const Reg t1,
-		const Reg t2,
-		const int imm,
-		const std::string& label) :
-	_instr(instr),
-	_t0(t0),
-	_t1(t1),
-	_t2(t2),
-	_imm(imm),
-	_label(label) {
-        
-    // Be aware that it is legal for some instructions
-    // to have `imm` equal to `noimm`.
-	int status = ((t0 != noreg) << 4) +
-		((t1 != noreg) << 3) +
-		((t2 != noreg) << 2) +
-		((imm != noimm) << 1) +
-		(label != nolab);
-	switch (instr) {
-	case Instr::add: case Instr::sub: 
-	case Instr::mul: 
-		assert(status == 0b11100);
-		break;
-	case Instr::div:
-		assert(status == 0b01100);
-		break;
-	case Instr::mflo:
-		assert(status == 0b10000);
-		break;
-	case Instr::addi: case Instr::subi:
-	case Instr::lw: case Instr::sw:
-		assert(status == 0b11010 || status == 0b11000);
-		break;
-	case Instr::bgt: case Instr::bge:
-	case Instr::blt: case Instr::ble:
-	case Instr::beq: case Instr::bne:
-		assert(status == 0b01101);
-		break;
-	case Instr::beqz: case Instr::bnez:
-		assert(status == 0b01001);
-		break;
-	case Instr::jal: case Instr::j: 
-		assert(status == 0b00001);
-		break;
-	case Instr::jr:
-		assert(status == 0b10000);
-		break;
-	case Instr::la:
-		assert(status == 0b10001);
-		break;
-	case Instr::li:
-		assert(status == 0b10010 || status == 0b10000);
-		break;
-	case Instr::move:
-		assert(status == 0b11000);
-		break;
-	case Instr::sll:
-		assert(status == 0b11010 || status == 0b11000);
-		break;
-	case Instr::syscall:
-		assert(status == 0b00000);
-		break;
-	case Instr::label:
-		assert(status == 0b00001);
-		break;
-	default: assert(0);
-	}
-}
-
-std::ostream& operator << (std::ostream& output, const ObjCode::Instr instr) {
-	switch (instr) {
-#define CASE(id) case ObjCode::Instr::id: output << #id; break
-	CASE(add); CASE(sub); 
-	CASE(mul); CASE(div); CASE(mflo);
-
-	CASE(addi); CASE(subi); 
-	CASE(lw); CASE(sw); 
-
-	CASE(bgt); CASE(bge); 
-	CASE(blt); CASE(ble); 
-	CASE(beq); CASE(bne); 
-	CASE(beqz); CASE(bnez);
-
-	CASE(jal); CASE(j); CASE(jr);
-
-	CASE(la); CASE(li); CASE(move); CASE(sll);
-
-	CASE(syscall);
-
-	CASE(label);
-#undef CASE
-	default: assert(0);
-	}
-	return output;
-}
-
 extern std::ofstream mips_output;
 
-void ObjCode::output(void) const {
-	if (_instr != ObjCode::Instr::label) {
-		mips_output << _instr << ' ';
-	}
-	switch (_instr) {
-	case Instr::add: case Instr::sub: 
-	case Instr::mul: 
-		mips_output << _t0 << ", " << _t1 << ", " << _t2 << std::endl;
-		break;
-	case Instr::div:
-		mips_output << _t1 << ", " << _t2 << std::endl;
-		break;
-	case Instr::mflo:
-		mips_output << _t0 << std::endl;
-		break;
-	case Instr::addi: case Instr::subi:
-		mips_output << _t0 << ", " << _t1 << ", " << _imm << std::endl;
-		break;
-	case Instr::lw: case Instr::sw:
-		mips_output << _t0 << ", " << _imm << '(' << _t1 << ')' << std::endl;
-		break;
-	case Instr::bgt: case Instr::bge:
-	case Instr::blt: case Instr::ble:
-	case Instr::beq: case Instr::bne:
-		mips_output << _t1 << ", " << _t2 << ", " << _label << std::endl;
-		break;
-	case Instr::beqz: case Instr::bnez:
-		mips_output << _t1 << ", " << _label << std::endl;
-		break;
-	case Instr::jal: 
-		mips_output << _label << std::endl;
-		break;
-	case Instr::j: 
-		mips_output << _label << std::endl;
-		break;
-	case Instr::jr:
-		mips_output << _t0 << std::endl;
-		break;
-	case Instr::la:
-		mips_output << _t0 << ", " << _label << std::endl;;
-		break;
-	case Instr::li:
-		mips_output << _t0 << ", " << _imm << std::endl;;
-		break;
-	case Instr::move:
-		mips_output << _t0 << ", " << _t1 << std::endl;;
-		break;
-	case Instr::sll:
-		mips_output << _t0 << ", " << _t1 << ", " << _imm << std::endl;
-		break;
-	case Instr::syscall:
-        mips_output << std::endl;
-		break;
-	case Instr::label:
-		mips_output << _label << ':' << std::endl;
-		break;
-	default: assert(0);
-	}
+ObjCode::~ObjCode(void) {}
+
+PseudoCode::PseudoCode(const bool flipped) : _flipped(flipped) {}
+
+void RCode::_output(const std::string& instr) const {
+    mips_output << instr << ' ' << _t0
+            << ", " << _t1 << ", " << _t2 << std::endl;
 }
 
+void PseudoRCode::_output(const std::string& instr) const {
+    mips_output << instr << ' ' << _t0 << ", " << _t1 << ", " << _imm << std::endl;
+}
+
+void ICode::_output(const std::string& instr) const {
+    mips_output << instr << ' ' << _t0
+            << ", " << _imm << '(' << _t1 << ')' << std::endl;
+}
+
+void JCode::_output(const std::string& instr) const {
+    mips_output << instr << ' ' << _label << std::endl;
+}
+
+void BCode::_output(const std::string& instr) const {
+    mips_output << instr << ' ' << _t1
+            << ", " << _t2 << ", " << _label << std::endl;
+}
+
+void PseudoBCode::_output(const std::string& instr, const std::string& oppo) const {
+    mips_output << (_flipped ? oppo : instr) << ' ' << _t1
+            << ", " << _imm << ", " << _label << std::endl;
+}
+
+void Add::output(void) const { _output("add"); }
+void Sub::output(void) const { _output("sub"); }
+void Mul::output(void) const { _output("mul"); }
+
+void Div::output(void) const {
+    mips_output << "div " << _t1 << ", " << _t2 << std::endl;
+    mips_output << "mflo " << _t0 << std::endl;
+}
+
+void PseudoAdd::output(void) const { _output("add"); }
+
+void PseudoSub::output(void) const {
+    _output("sub");
+    if (_flipped) { mips_output << "neg " << _t0 << ", " << _t0 << std::endl; }
+}
+
+void PseudoMul::output(void) const { _output("mul"); }
+
+void PseudoDiv::output(void) const {
+    mips_output << "li " << reg::compiler_tmp << ", " << _imm << std::endl;
+    mips_output << "div ";
+    if (_flipped) { mips_output << reg::compiler_tmp << ", " << _t1; }
+    else { mips_output << _t1 << ", " << reg::compiler_tmp; }
+    mips_output << std::endl << "mflo " << _t0 << std::endl;
+}
+
+void Lw::output(void) const { _output("lw"); }
+void Sw::output(void) const { _output("sw"); }
+
+void Sll::output(void) const {
+    mips_output << "sll " << _t0 << ", " << _t1 << ", " << _imm << std::endl;
+}
+
+void J::output(void) const { _output("j"); }
+void Jal::output(void) const { _output("jal"); }
+
+void Label::output(void) const {
+    mips_output << _label << ':' << std::endl;
+}
+
+void Bgt::output(void) const { _output("bgt"); }
+void Bge::output(void) const { _output("bge"); }
+void Blt::output(void) const { _output("blt"); }
+void Ble::output(void) const { _output("ble"); }
+void Beq::output(void) const { _output("beq"); }
+void Bne::output(void) const { _output("bne"); }
+void PseudoBgt::output(void) const { _output("bgt", "ble"); }
+void PseudoBge::output(void) const { _output("bge", "blt"); }
+void PseudoBlt::output(void) const { _output("blt", "bge"); }
+void PseudoBle::output(void) const { _output("ble", "bgt"); }
+void PseudoBeq::output(void) const { _output("beq", "beq"); }
+void PseudoBne::output(void) const { _output("bne", "bne"); }
+
+void Move::output(void) const {
+    mips_output << "move " << _t0 << ", " << _t1 << std::endl;
+}
+
+void Syscall::output(void) const {
+    mips_output << "syscall" << std::endl;
+}
+
+void Li::output(void) const {
+    mips_output << "li " << _t0 << ", " << _imm << std::endl;
+}
+
+void Jr::output(void) const {
+    mips_output << "jr " << Reg::ra << std::endl;
+}
+
+void Beqz::output(void) const {
+    mips_output << "beqz " << _t1 << ", " << _t2 << ", " << _label << std::endl;
+}
+
+void Bnez::output(void) const {
+    mips_output << "bnez " << _t1 << ", " << _t2 << ", " << _label << std::endl;
+}
+
+void La::output(void) const {
+    mips_output << "la " << _t1 << ", " << _label << std::endl;
+}
+
+const ObjCode* ArithFactory::produce(const Reg t0, const int t1, const int t2) const {
+    return new Li(t0, _op(t1, t2));
+}
+
+const ObjCode* BranchFactory::produce(const int t1, const int t2, const std::string& label) const {
+    static int counter = 0;
+    if (_op(t1, t2)) { return new J(label); }
+    counter++;
+    return new Label("invalid_branch_" + std::to_string(counter));
+}
+
+#define RegisterArithFactory(name, op) \
+struct name##Factory : ArithFactory { \
+    name##Factory(void) : ArithFactory([](int a, int b) { return a op b; }) {} \
+    virtual const ObjCode* produce(const Reg t0, const Reg t1, const Reg t2) const { \
+        return new name(t0, t1, t2); \
+    } \
+    virtual const ObjCode* produce(const Reg t0, const Reg t1, const int t2) const { \
+        return new Pseudo##name(t0, t1, t2); \
+    } \
+    virtual const ObjCode* produce(const Reg t0, const int t1, const Reg t2) const { \
+        return new Pseudo##name(t0, t1, t2); \
+    } \
+};
+
+RegisterArithFactory(Add, +)
+RegisterArithFactory(Sub, -)
+RegisterArithFactory(Mul, *)
+RegisterArithFactory(Div, /)
+
+const ArithFactory
+    *addFactory = new AddFactory(),
+    *subFactory = new SubFactory(),
+    *mulFactory = new MulFactory(),
+    *divFactory = new DivFactory();
+
+// TODO: use generics and use bgtz, etc.
+
+#define RegisterBranchFactory(name, op) \
+struct name##Factory : BranchFactory { \
+    name##Factory(void) : BranchFactory([](int a, int b) { return a op b; }) {} \
+    virtual const ObjCode* produce(const Reg t1, const Reg t2, const std::string& label) const { \
+        return new name(t1, t2, label); \
+    } \
+    virtual const ObjCode* produce(const Reg t1, const int t2, const std::string& label) const { \
+        return new Pseudo##name(t1, t2, label); \
+    } \
+    virtual const ObjCode* produce(const int t1, const Reg t2, const std::string& label) const { \
+        return new Pseudo##name(t1, t2, label); \
+    } \
+};
+
+RegisterBranchFactory(Bgt, >)
+RegisterBranchFactory(Bge, >=)
+RegisterBranchFactory(Blt, <)
+RegisterBranchFactory(Ble, <=)
+RegisterBranchFactory(Beq, ==)
+RegisterBranchFactory(Bne, !=)
+
+const BranchFactory
+    *bgtFactory = new BgtFactory(),
+    *bgeFactory = new BgeFactory(),
+    *bltFactory = new BltFactory(),
+    *bleFactory = new BleFactory(),
+    *beqFactory = new BeqFactory(),
+    *bneFactory = new BneFactory();
