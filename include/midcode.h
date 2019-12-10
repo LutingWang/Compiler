@@ -151,10 +151,10 @@ public:
 	static const symtable::Entry* genConst(const bool, const int);
 	static std::string genLabel(void);
 
-private:
-    // print this piece of midcode
-	void _print(void) const;
 public:
+    // print this piece of midcode
+	std::string to_string(void) const;
+
     // print all the midcodes in symtable, grouped by functions
 	static void output(void);
 };

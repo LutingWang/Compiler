@@ -300,8 +300,11 @@ void Translator::compile(const BasicBlock* const basicblock) {
     UsageQueue usagequeue(basicblock, _regpool);
     
     if (basicblock->isFuncCall()) {
+        _output(new objcode::Label("\n# <!-- call block begin -->"));
         _compileCallBlock(basicblock, usagequeue);
+        _output(new objcode::Label("# <!-- call block end -->"));
     } else for (auto midcode : basicblock->midcodes()) {
+        _output(new objcode::Label("\n# " + midcode->to_string()));
         _compileCode(midcode, usagequeue);
     }
     _regpool.clear();

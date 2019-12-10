@@ -9,6 +9,7 @@
 #include <cassert>
 #include <fstream>
 #include <map>
+#include <sstream>
 #include "compilerConfig.h"
 #include "error.h"
 #include "symtable.h"
@@ -191,13 +192,11 @@ std::string MidCode::genLabel(void) {
 	return "label$" + std::to_string(counter++);
 }
 
-#if !judge
-extern std::ofstream midcode_output;
-
-void MidCode::_print(void) const {
+std::string MidCode::to_string(void) const {
+    std::stringstream ss;
 	switch (_instr) {
 #define CASE(id, op) case Instr::id:	\
-		midcode_output << t0()->name() << " = "	\
+		ss << t0()->name() << " = "	\
 			<< t1()->name() << " " #op " "		\
 			<< t2()->name();						\
 		break
@@ -205,64 +204,64 @@ void MidCode::_print(void) const {
 #undef CASE
 
 	case Instr::LOAD_IND:
-		midcode_output << t0()->name() << " = " 
+		ss << t0()->name() << " = " 
 			<< t1()->name() 
 			<< '[' << t2()->name() << ']';
 		break;
 	case Instr::STORE_IND:
-		midcode_output << t0()->name() << '[' << t2()->name() << "] = " 
+		ss << t0()->name() << '[' << t2()->name() << "] = " 
 			<< t1()->name();
 		break;
 	case Instr::ASSIGN:
-		midcode_output << t0()->name() << " = " 
+		ss << t0()->name() << " = " 
 			<< t1()->name();
 		break;
 	case Instr::PUSH_ARG:
-		midcode_output << "push " << t1()->name();
+		ss << "push " << t1()->name();
 		break;
 	case Instr::CALL:
 #if judge
-		midcode_output << "call " << labelName();
+		ss << "call " << labelName();
 		if (_t0 != nullptr) {
-			midcode_output << std::endl << t0()->name() << " = RET";
+			ss << std::endl << t0()->name() << " = RET";
 		}
 #else
 		if (_t0 != nullptr) {
-			midcode_output << t0()->name() << " = ";
+			ss << t0()->name() << " = ";
 		}
-		midcode_output << "call " << labelName();
+		ss << "call " << labelName();
 #endif /* judge */
 		break;
 	case Instr::RET:
 #if judeg
-		midcode_output << "ret";
+		ss << "ret";
 #else
-		midcode_output << "return";
+		ss << "return";
 #endif /* judge */
 		if (_t1 != nullptr) {
-			midcode_output << ' ' << t1()->name();
+			ss << ' ' << t1()->name();
 		}
 		break;
 	case Instr::INPUT:
-		midcode_output << "input " << t0()->name();
+		ss << "input " << t0()->name();
 		break;
 	case Instr::OUTPUT_STR:
-		midcode_output << "output " << '"' << labelName() << "\" ";
+		ss << "output " << '"' << labelName() << "\" ";
         break;
     case Instr::OUTPUT_INT:
     case Instr::OUTPUT_CHAR:
-        midcode_output << "output " << t1()->name();
+        ss << "output " << t1()->name();
         break;
 
 #if judge
 	#define CASE(id, op) case Instr::id:		\
-		midcode_output << t1()->name() << " " #op " "		\
+		ss << t1()->name() << " " #op " "		\
 			<< t2()->name() << " BNZ "			\
 			<< labelName();					\
 		break
 #else
 	#define CASE(id, op) case Instr::id:		\
-		midcode_output << "if " << t1()->name()			\
+		ss << "if " << t1()->name()			\
 			<< " " #op " " << t2()->name()		\
 			<< " branch to \"" << labelName()			\
 			<< '"';						\
@@ -273,16 +272,19 @@ void MidCode::_print(void) const {
 #undef CASE
 
 	case Instr::GOTO:
-		midcode_output << "goto " << labelName();
+		ss << "goto " << labelName();
 		break;
 	case Instr::LABEL:
-		midcode_output << labelName() << ':';
+		ss << labelName() << ':';
 		break;
 	default:
 		assert(0);
 	}
-	midcode_output << std::endl;
+    return ss.str();
 }
+
+#if !judge
+extern std::ofstream midcode_output;
 
 void print(const symtable::Entry* const entry) {
 #if judge
@@ -345,7 +347,7 @@ void MidCode::output(void) {
 	for (auto functable : funcs) {
 		print(functable);
         for (auto midcode : functable->midcodes()) {
-            midcode->_print();
+            midcode_output << midcode->to_string() << std::endl;
         }
         midcode_output << std::endl;
 	}
