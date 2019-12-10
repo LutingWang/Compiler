@@ -10,7 +10,6 @@
 
 #include <fstream>
 #include <functional>
-#include <iostream>
 #include <string>
 
 #include "./Reg.h"
@@ -30,6 +29,8 @@ namespace objcode {
         const bool _flipped;
         PseudoCode(const bool);
     };
+
+    /* RCode */
 
     template<const char instr[]>
     struct RCode : ObjCode {
@@ -55,6 +56,7 @@ namespace objcode {
     RegIns(Div, div);
     RegIns(Move, move);
     RegIns(Syscall, syscall);
+    RegIns(Nop, nop);
 #undef RegIns
 
     template<>
@@ -71,6 +73,16 @@ namespace objcode {
         RCode(void) {}
         virtual void output(void) const;
     };
+
+    template<>
+    struct RCode<nop> : ObjCode {
+        static int _counter;
+        const int _num;
+        RCode(void) : _num(++_counter) {}
+        virtual void output(void) const;
+    };
+
+    /* PseudoRCode */
 
     template<const char instr[]>
     struct PseudoRCode : PseudoCode {
@@ -97,6 +109,8 @@ namespace objcode {
     RegIns(PseudoDiv, div);
 #undef RegIns
 
+    /* ICode */
+
     template<const char instr[]>
     struct ICode : ObjCode {
         const Reg _t0;
@@ -121,6 +135,8 @@ namespace objcode {
     RegIns(Li, li);
 #undef RegIns
 
+    /* ICode */
+
     template<>
     struct ICode<li> : ObjCode {
         const Reg _t0;
@@ -129,6 +145,8 @@ namespace objcode {
         ICode(const Reg t0, const int imm) : _t0(t0), _imm(imm) {}
         virtual void output(void) const;
     };
+
+    /* JCode */
 
     template<const char instr[]>
     struct JCode : ObjCode {
@@ -156,6 +174,8 @@ namespace objcode {
         virtual void output(void) const;
     };
 
+    /* BCode */
+
     template<const char instr[]>
     struct BCode : ObjCode {
         const Reg _t1;
@@ -182,6 +202,8 @@ namespace objcode {
     RegIns(Bne, bne);
 #undef RegIns
 
+    /* BZCode*/
+
     template<const char instr[]>
     struct BZCode : ObjCode {
         const Reg _t1;
@@ -199,10 +221,16 @@ namespace objcode {
     extern const char ins[]; \
     using cls = BZCode<ins>
 
+    RegIns(Bgtz, bgtz);
+    RegIns(Bgez, bgez);
+    RegIns(Bltz, bltz);
+    RegIns(Blez, blez);
     RegIns(Beqz, beqz);
     RegIns(Bnez, bnez);
     RegIns(La, la);
 #undef RegIns
+
+    /* PseudoBCode */
 
     template<const char instr[], const char oppo[]>
     struct PseudoBCode : PseudoCode {
@@ -232,43 +260,69 @@ namespace objcode {
     RegIns(PseudoBne, bne, bne);
 #undef RegIns
 
+    /* Factory */
+
+    using ArithOp = const std::function<int(int, int)>;
+    using CondOp = const std::function<bool(int, int)>;
+
+    template<typename cls, typename pseudo, const ArithOp& oper>
     struct ArithFactory {
-        using Oper = std::function<int(int, int)>;
-        const Oper _op;
+        static const ObjCode* produce(const Reg t0, const Reg t1, const Reg t2) {
+            return new cls(t0, t1, t2);
+        }
         
-        ArithFactory(const Oper& op) : _op(op) {}
+        static const ObjCode* produce(const Reg t0, const Reg t1, const int t2) {
+            return new pseudo(t0, t1, t2);
+        }
         
-        virtual const ObjCode* produce(const Reg, const Reg, const Reg) const = 0;
-        virtual const ObjCode* produce(const Reg, const Reg, const int) const = 0;
-        virtual const ObjCode* produce(const Reg, const int, const Reg) const = 0;
-        virtual const ObjCode* produce(const Reg, const int, const int) const;
+        static const ObjCode* produce(const Reg t0, const int t1, const Reg t2) {
+            return new pseudo(t0, t1, t2);
+        }
+        
+        static const ObjCode* produce(const Reg t0, const int t1, const int t2) {
+            return new Li(t0, oper(t1, t2));
+        }
     };
 
+    template<typename cls, typename pseudo, typename zero, typename invzero, const CondOp& oper>
     struct BranchFactory {
-        using Oper = std::function<bool(int, int)>;
-        const Oper _op;
+        static const ObjCode* produce(const Reg t1, const Reg t2, const std::string& label) {
+            if (t1 == Reg::zero && t2 == Reg::zero) { return produce(0, 0, label); }
+            else if (t1 == Reg::zero) { return new invzero(t2, label); }
+            else if (t2 == Reg::zero) { return new zero(t1, label); }
+            return new cls(t1, t2, label);
+        }
         
-        BranchFactory(const Oper& op) : _op(op) {}
+        static const ObjCode* produce(const Reg t1, const int t2, const std::string& label) {
+            if (t1 == Reg::zero) { return produce(0, t2, label); }
+            return new pseudo(t1, t2, label);
+        }
         
-        virtual const ObjCode* produce(const Reg, const Reg, const std::string&) const = 0;
-        virtual const ObjCode* produce(const Reg, const int, const std::string&) const = 0;
-        virtual const ObjCode* produce(const int, const Reg, const std::string&) const = 0;
-        virtual const ObjCode* produce(const int, const int, const std::string&) const;
+        static const ObjCode* produce(const int t1, const Reg t2, const std::string& label) {
+            if (t2 == Reg::zero) { return produce(t1, 0, label); }
+            return new pseudo(t1, t2, label);
+        }
+        
+        static const ObjCode* produce(const int t1, const int t2, const std::string& label) {
+            if (oper(t1, t2)) { return new J(label); }
+            else { return new Nop(); }
+        }
     };
 
-    extern const ArithFactory
-        *addFactory,
-        *subFactory,
-        *mulFactory,
-        *divFactory;
+    extern const ArithOp plus, minus, times, frac;
+    extern const CondOp gt, ge, lt, le, eq, ne;
 
-    extern const BranchFactory
-        *bgtFactory,
-        *bgeFactory,
-        *bltFactory,
-        *bleFactory,
-        *beqFactory,
-        *bneFactory;
+    using AddFactory = ArithFactory<Add, PseudoAdd, plus>;
+    using SubFactory = ArithFactory<Sub, PseudoSub, minus>;
+    using MulFactory = ArithFactory<Mul, PseudoMul, times>;
+    using DivFactory = ArithFactory<Div, PseudoDiv, frac>;
+
+    using BgtFactory = BranchFactory<Bgt, PseudoBgt, Bgtz, Bltz, gt>;
+    using BgeFactory = BranchFactory<Bge, PseudoBge, Bgez, Blez, ge>;
+    using BltFactory = BranchFactory<Blt, PseudoBlt, Bltz, Bgtz, lt>;
+    using BleFactory = BranchFactory<Ble, PseudoBle, Blez, Bgez, le>;
+    using BeqFactory = BranchFactory<Beq, PseudoBeq, Beqz, Beqz, eq>;
+    using BneFactory = BranchFactory<Bne, PseudoBne, Bnez, Bnez, ne>;
 
     using CodeGen = std::function<void(const ObjCode* const)>;
 }

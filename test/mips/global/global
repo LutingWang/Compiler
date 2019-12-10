@@ -22,7 +22,7 @@ void assignGlobal(int a, char b, int c, char d) {
 		global_array_3[num5 - 100] = const_char_1;
 	}
 	for (num5 = 0; num5 < 100; num5 = num5 + 1) {
-		global_array_4[num5] = const_int_3;
+		global_array_4[num5] = const_char_2;
 	}
     return;
 }

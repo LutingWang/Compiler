@@ -6,7 +6,6 @@
  **********************************************/
 
 #include <cassert>
-#include <fstream>
 
 #include "./include/ObjCode.h"
 
@@ -16,27 +15,27 @@ namespace objcode {
     RegIns(add); RegIns(sub);
     RegIns(mul); RegIns(div);
     RegIns(move); RegIns(syscall);
-    RegIns(neg); RegIns(mflo);
+    RegIns(neg); RegIns(mflo); RegIns(nop);
 
     // ICode
     RegIns(lw); RegIns(sw);
     RegIns(sll); RegIns(li);
 
     // JCode
-    RegIns(j); RegIns(jal);
-    RegIns(jr); RegIns(label);
+    RegIns(j); RegIns(jal); RegIns(jr);
+    RegIns(label);
 
     // BCode, BZCode, and pseudoBCode
     RegIns(bgt); RegIns(bge);
     RegIns(blt); RegIns(ble);
     RegIns(beq); RegIns(bne);
+    RegIns(bgtz); RegIns(bgez);
+    RegIns(bltz); RegIns(blez);
     RegIns(beqz); RegIns(bnez);
     RegIns(la);
 }
 
 using namespace objcode;
-
-extern std::ofstream mips_output;
 
 ObjCode::~ObjCode(void) {}
 
@@ -56,6 +55,12 @@ void Move::output(void) const {
 
 void Syscall::output(void) const {
     mips_output << syscall << std::endl;
+}
+
+int Nop::_counter = 0;
+
+void Nop::output(void) const {
+    mips_output << "invalid_instr_" << _num << ':' << std::endl;
 }
 
 /* PseudoRCode */
@@ -99,73 +104,17 @@ void Label::output(void) const {
 
 /* Factory */
 
-const ObjCode* ArithFactory::produce(const Reg t0, const int t1, const int t2) const {
-    return new Li(t0, _op(t1, t2));
-}
-
-const ObjCode* BranchFactory::produce(const int t1, const int t2, const std::string& label) const {
-    static int counter = 0;
-    if (_op(t1, t2)) { return new J(label); }
-    counter++;
-    return new Label("invalid_branch_" + std::to_string(counter));
-}
-
-#define RegisterArithFactory(name, op) \
-struct name##Factory : ArithFactory { \
-    name##Factory(void) : ArithFactory([](int a, int b) { return a op b; }) {} \
-    virtual const ObjCode* produce(const Reg t0, const Reg t1, const Reg t2) const { \
-        return new name(t0, t1, t2); \
-    } \
-    virtual const ObjCode* produce(const Reg t0, const Reg t1, const int t2) const { \
-        return new Pseudo##name(t0, t1, t2); \
-    } \
-    virtual const ObjCode* produce(const Reg t0, const int t1, const Reg t2) const { \
-        return new Pseudo##name(t0, t1, t2); \
-    } \
-};
-
-RegisterArithFactory(Add, +)
-RegisterArithFactory(Sub, -)
-RegisterArithFactory(Mul, *)
-RegisterArithFactory(Div, /)
-
 namespace objcode {
-    const ArithFactory
-        *addFactory = new AddFactory(),
-        *subFactory = new SubFactory(),
-        *mulFactory = new MulFactory(),
-        *divFactory = new DivFactory();
+    const ArithOp plus = [](int a, int b) { return a + b; };
+    const ArithOp minus = [](int a, int b) { return a - b; };
+    const ArithOp times = [](int a, int b) { return a * b; };
+    const ArithOp frac = [](int a, int b) { return a / b; };
+
+    const CondOp gt = [](int a, int b) { return a > b; };
+    const CondOp ge = [](int a, int b) { return a >= b; };
+    const CondOp lt = [](int a, int b) { return a < b; };
+    const CondOp le = [](int a, int b) { return a <= b; };
+    const CondOp eq = [](int a, int b) { return a == b; };
+    const CondOp ne = [](int a, int b) { return a != b; };
 }
 
-// TODO: use generics and use bgtz, etc.
-
-#define RegisterBranchFactory(name, op) \
-struct name##Factory : BranchFactory { \
-    name##Factory(void) : BranchFactory([](int a, int b) { return a op b; }) {} \
-    virtual const ObjCode* produce(const Reg t1, const Reg t2, const std::string& label) const { \
-        return new name(t1, t2, label); \
-    } \
-    virtual const ObjCode* produce(const Reg t1, const int t2, const std::string& label) const { \
-        return new Pseudo##name(t1, t2, label); \
-    } \
-    virtual const ObjCode* produce(const int t1, const Reg t2, const std::string& label) const { \
-        return new Pseudo##name(t1, t2, label); \
-    } \
-};
-
-RegisterBranchFactory(Bgt, >)
-RegisterBranchFactory(Bge, >=)
-RegisterBranchFactory(Blt, <)
-RegisterBranchFactory(Ble, <=)
-RegisterBranchFactory(Beq, ==)
-RegisterBranchFactory(Bne, !=)
-
-namespace objcode {
-    const BranchFactory
-        *bgtFactory = new BgtFactory(),
-        *bgeFactory = new BgeFactory(),
-        *bltFactory = new BltFactory(),
-        *bleFactory = new BleFactory(),
-        *beqFactory = new BeqFactory(),
-        *bneFactory = new BneFactory();
-}

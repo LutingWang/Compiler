@@ -105,40 +105,42 @@ const UsageQueue::Usage UsageQueue::pop(const bool write, const bool mask) {
     return usage;
 }
 
-void Translator::_compileArith(const objcode::ArithFactory* const factory, UsageQueue& usagequeue) {
+template<typename factory>
+void Translator::_compileArith(UsageQueue& usagequeue) {
     auto t1 = usagequeue.pop(false, false);
     auto t2 = usagequeue.pop(false, t1.useReg());
     auto t0 = usagequeue.pop(true, false);
     assert(t0.useReg());
     if (t1.useReg()) {
-        if (t2.useReg()) { _output(factory->produce(t0.getReg(), t1.getReg(), t2.getReg())); }
-        else { _output(factory->produce(t0.getReg(), t1.getReg(), t2.getImm())); }
+        if (t2.useReg()) { _output(factory::produce(t0.getReg(), t1.getReg(), t2.getReg())); }
+        else { _output(factory::produce(t0.getReg(), t1.getReg(), t2.getImm())); }
     } else {
-        if (t2.useReg()) { _output(factory->produce(t0.getReg(), t1.getImm(), t2.getReg())); }
-        else { _output(factory->produce(t0.getReg(), t1.getImm(), t2.getImm())); }
+        if (t2.useReg()) { _output(factory::produce(t0.getReg(), t1.getImm(), t2.getReg())); }
+        else { _output(factory::produce(t0.getReg(), t1.getImm(), t2.getImm())); }
     }
 }
 
-void Translator::_compileBranch(const objcode::BranchFactory* const factory, UsageQueue& usagequeue, const std::string& label) {
+template<typename factory>
+void Translator::_compileBranch(UsageQueue& usagequeue, const std::string& label) {
     auto t1 = usagequeue.pop(false, false);
     auto t2 = usagequeue.pop(false, t1.useReg());
     _regpool.clear();
     if (t1.useReg()) {
-        if (t2.useReg()) { _output(factory->produce(t1.getReg(), t2.getReg(), label)); }
-        else { _output(factory->produce(t1.getReg(), t2.getImm(), label)); }
+        if (t2.useReg()) { _output(factory::produce(t1.getReg(), t2.getReg(), label)); }
+        else { _output(factory::produce(t1.getReg(), t2.getImm(), label)); }
     } else {
-        if (t2.useReg()) { _output(factory->produce(t1.getImm(), t2.getReg(), label)); }
-        else { _output(factory->produce(t1.getImm(), t2.getImm(), label)); }
+        if (t2.useReg()) { _output(factory::produce(t1.getImm(), t2.getReg(), label)); }
+        else { _output(factory::produce(t1.getImm(), t2.getImm(), label)); }
     }
 }
 
 // NOTE: clear regpool right before ret, branch, or jump
 void Translator::_compileCode(const MidCode* const midcode, UsageQueue& usagequeue) {
     switch (midcode->instr()) {
-    case Instr::ADD: _compileArith(objcode::addFactory, usagequeue); break;
-    case Instr::SUB: _compileArith(objcode::subFactory, usagequeue); break;
-    case Instr::MULT: _compileArith(objcode::mulFactory, usagequeue); break;
-    case Instr::DIV: _compileArith(objcode::divFactory, usagequeue); break;
+    case Instr::ADD: _compileArith<objcode::AddFactory>(usagequeue); break;
+    case Instr::SUB: _compileArith<objcode::SubFactory>(usagequeue); break;
+    case Instr::MULT: _compileArith<objcode::MulFactory>(usagequeue); break;
+    case Instr::DIV: _compileArith<objcode::DivFactory>(usagequeue); break;
     case Instr::LOAD_IND: {
         // TODO: simplify
         auto t2 = usagequeue.pop(false, false);
@@ -205,7 +207,7 @@ void Translator::_compileCode(const MidCode* const midcode, UsageQueue& usageque
         }
         _regpool.clear();
         _regpool.genEpilogue();
-            _output(objcode::addFactory->produce(Reg::sp, Reg::sp, _stackframe.size()));
+            _output(objcode::AddFactory::produce(Reg::sp, Reg::sp, _stackframe.size()));
             _output(new objcode::Jr());
         break;
     case Instr::INPUT: {
@@ -232,12 +234,12 @@ void Translator::_compileCode(const MidCode* const midcode, UsageQueue& usageque
         _output(new objcode::Move(Reg::a0, reg::compiler_tmp));
         break;
     }
-    case Instr::BGT: _compileBranch(objcode::bgtFactory, usagequeue, midcode->labelName()); break;
-    case Instr::BGE: _compileBranch(objcode::bgeFactory, usagequeue, midcode->labelName()); break;
-    case Instr::BLT: _compileBranch(objcode::bltFactory, usagequeue, midcode->labelName()); break;
-    case Instr::BLE: _compileBranch(objcode::bleFactory, usagequeue, midcode->labelName()); break;
-    case Instr::BEQ: _compileBranch(objcode::beqFactory, usagequeue, midcode->labelName()); break;
-    case Instr::BNE: _compileBranch(objcode::bneFactory, usagequeue, midcode->labelName()); break;
+    case Instr::BGT: _compileBranch<objcode::BgtFactory>(usagequeue, midcode->labelName()); break;
+    case Instr::BGE: _compileBranch<objcode::BgeFactory>(usagequeue, midcode->labelName()); break;
+    case Instr::BLT: _compileBranch<objcode::BltFactory>(usagequeue, midcode->labelName()); break;
+    case Instr::BLE: _compileBranch<objcode::BleFactory>(usagequeue, midcode->labelName()); break;
+    case Instr::BEQ: _compileBranch<objcode::BeqFactory>(usagequeue, midcode->labelName()); break;
+    case Instr::BNE: _compileBranch<objcode::BneFactory>(usagequeue, midcode->labelName()); break;
     case MidCode::Instr::GOTO:
         _regpool.clear();
             _output(new objcode::J(midcode->labelName()));

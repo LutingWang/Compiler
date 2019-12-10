@@ -70,7 +70,7 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
     RegPool regpool(functable, stackframe);
     
     // prologue
-    output(objcode::subFactory->produce(Reg::sp, Reg::sp, stackframe.size()));
+    output(objcode::SubFactory::produce(Reg::sp, Reg::sp, stackframe.size()));
     regpool.genPrologue();
 
     // start translation
