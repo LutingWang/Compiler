@@ -9,6 +9,7 @@
 #define OBJ_FUNC_H
 
 #include <map>
+#include <string>
 #include "symtable.h"
 
 namespace objcode {
@@ -25,6 +26,7 @@ public:
 	static void deinit(void);
 
 private:
+    std::vector<std::string> _comments;
 	std::vector<const objcode::ObjCode*> _objcodes;
     
 public:

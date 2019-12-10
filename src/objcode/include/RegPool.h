@@ -12,6 +12,7 @@
 #include <map>
 #include <queue>
 #include <set>
+#include <string>
 #include <vector>
 #include "midcode.h"
 #include "symtable.h"
@@ -32,6 +33,8 @@ public:
     
     void backup(void) const;
     void restore(void) const;
+    
+    void genComments(std::vector<std::string>&) const;
 };
 
 class TPool {
@@ -59,6 +62,8 @@ private:
 public:
     void backup(void) const;
     void restore(void) const;
+    
+    void genComments(std::vector<std::string>&) const;
 };
 
 class RegPool {
@@ -83,6 +88,8 @@ public:
 
 	Reg request(const bool write, const bool mask);
 	void clear(void);
+    
+    void genComments(std::vector<std::string>&) const;
 };
 
 #endif /* REGPOOL_H */

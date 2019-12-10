@@ -9,7 +9,6 @@
 #include <cassert>
 #include <fstream>
 #include <set>
-#include <string>
 #include "midcode.h"
 #include "symtable.h"
 
@@ -37,6 +36,9 @@ void ObjFunc::output(void) {
 	for (auto& /* <funcName, objfunc> */ pair : _func) {
 		mips_output << std::endl
 			<< pair.first << ':' << std::endl;
+        for (auto& comment : pair.second->_comments) {
+            mips_output << "# " << comment << std::endl;
+        }
         for (auto& objcode : pair.second->_objcodes) {
             objcode->output();
         }
@@ -68,6 +70,7 @@ ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
 
 	// initialize register pool
     RegPool regpool(functable, stackframe);
+    regpool.genComments(_comments);
     
     // prologue
     output(objcode::SubFactory::produce(Reg::sp, Reg::sp, stackframe.size()));

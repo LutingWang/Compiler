@@ -10,6 +10,7 @@
 #include <climits>
 #include <map>
 #include <set>
+#include <sstream>
 #include <stack>
 #include "datastream.h"
 #include "midcode.h"
@@ -47,6 +48,14 @@ void APool::backup() const {
 void APool::restore(void) const {
     for (int i = 0; i < _regs.size(); i++) {
         _stackframe.loadReg(reg::a[i]);
+    }
+}
+
+void APool::genComments(std::vector<std::string>& output) const {
+    for (int i = 0; i < _regs.size(); i++) {
+        std::stringstream comment;
+        comment << reg::a[i] << " : " << _regs[i]->name();
+        output.push_back(comment.str());
     }
 }
 
@@ -258,6 +267,14 @@ void SPool::restore(void) const {
     }
 }
 
+void SPool::genComments(std::vector<std::string>& output) const {
+    for (auto& pair : _regs) {
+        std::stringstream comment;
+        comment << pair.second << " : " << pair.first->name();
+        output.push_back(comment.str());
+    }
+}
+
 /* RegPool */
 
 RegPool::RegPool(const symtable::FuncTable* const functable, const StackFrame& stackframe) :
@@ -308,4 +325,9 @@ void RegPool::clear(void) {
     assert(_seq.empty());
     _reg_t.writeback();
     _maskCache = NO_MASK;
+}
+
+void RegPool::genComments(std::vector<std::string>& output) const {
+    _reg_a.genComments(output);
+    _reg_s.genComments(output);
 }

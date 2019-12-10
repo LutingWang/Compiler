@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <functional>
 #include <map>
 
 #include "../include/ObjCode.h"
@@ -16,9 +15,9 @@
 #include "./Translator.h"
 using Instr = MidCode::Instr;
 
-Translator::Translator(const objcode::CodeGen& output, RegPool& regpool, const StackFrame& stackframe) :
-    _output(output), _regpool(regpool), _stackframe(stackframe) {}
+/* UsageQueue */
 
+// The usage sequence of variables.
 class UsageQueue {
 public:
     class Usage {
@@ -105,6 +104,11 @@ const UsageQueue::Usage UsageQueue::pop(const bool write, const bool mask) {
     return usage;
 }
 
+/* Translator */
+
+Translator::Translator(const objcode::CodeGen& output, RegPool& regpool, const StackFrame& stackframe) :
+    _output(output), _regpool(regpool), _stackframe(stackframe) {}
+
 template<typename factory>
 void Translator::_compileArith(UsageQueue& usagequeue) {
     auto t1 = usagequeue.pop(false, false);
@@ -142,24 +146,20 @@ void Translator::_compileCode(const MidCode* const midcode, UsageQueue& usageque
     case Instr::MULT: _compileArith<objcode::MulFactory>(usagequeue); break;
     case Instr::DIV: _compileArith<objcode::DivFactory>(usagequeue); break;
     case Instr::LOAD_IND: {
-        // TODO: simplify
+        int offset = midcode->t1()->isGlobal() ?
+                _stackframe.locateGlobal(midcode->t1()) :
+                _stackframe.locate(midcode->t1());
+        const Reg base = midcode->t1()->isGlobal() ? Reg::gp : Reg::sp;
+        
         auto t2 = usagequeue.pop(false, false);
         auto t0 = usagequeue.pop(true, false);
         if (t2.useReg()) {
             _output(new objcode::Sll(reg::compiler_tmp, t2.getReg(), LOG_WORD_SIZE));
-            if (midcode->t1()->isGlobal()) {
-                _output(new objcode::Add(reg::compiler_tmp, reg::compiler_tmp, Reg::gp));
-                _output(new objcode::Lw(t0.getReg(), reg::compiler_tmp, _stackframe.locateGlobal(midcode->t1())));
-            } else {
-                _output(new objcode::Add(reg::compiler_tmp, reg::compiler_tmp, Reg::sp));
-                _output(new objcode::Lw(t0.getReg(), reg::compiler_tmp, _stackframe.locate(midcode->t1())));
-            }
+            _output(new objcode::Add(reg::compiler_tmp, reg::compiler_tmp, base));
+            _output(new objcode::Lw(t0.getReg(), reg::compiler_tmp, offset));
         } else {
-            if (midcode->t1()->isGlobal()) {
-                _output(new objcode::Lw(t0.getReg(), Reg::gp, (t2.getImm() << LOG_WORD_SIZE) + _stackframe.locateGlobal(midcode->t1())));
-            } else {
-                _output(new objcode::Lw(t0.getReg(), Reg::sp, (t2.getImm() << LOG_WORD_SIZE) + _stackframe.locate(midcode->t1())));
-            }
+            offset += t2.getImm() << LOG_WORD_SIZE;
+            _output(new objcode::Lw(t0.getReg(), base, offset));
         }
         break;
     }
@@ -170,8 +170,9 @@ void Translator::_compileCode(const MidCode* const midcode, UsageQueue& usageque
         const Reg base = midcode->t0()->isGlobal() ? Reg::gp : Reg::sp;
         
         auto t2 = usagequeue.pop(false, false);
-        if (!t2.useReg()) { offset += t2.getImm() << LOG_WORD_SIZE; } // offset directly to gp or sp
-        else { _output(new objcode::Sll(reg::compiler_tmp, t2.getReg(), LOG_WORD_SIZE)); } // offset to t0
+        if (t2.useReg()) { // store offset to t0 temporarily
+            _output(new objcode::Sll(reg::compiler_tmp, t2.getReg(), LOG_WORD_SIZE));
+        }
         
         auto t1 = usagequeue.pop(false, false);
         Reg data = reg::stackframe_tmp; // holding data to store
@@ -182,6 +183,7 @@ void Translator::_compileCode(const MidCode* const midcode, UsageQueue& usageque
             _output(new objcode::Add(reg::compiler_tmp, reg::compiler_tmp, base));
             _output(new objcode::Sw(data, reg::compiler_tmp, offset));
         } else {
+            offset += t2.getImm() << LOG_WORD_SIZE;
             _output(new objcode::Sw(data, base, offset));
         }
         break;
