@@ -101,6 +101,7 @@ void complete_flower_num()
     k2 = m / 2;
     for(i=2; i<=k2; i=i+1){
       x2 = (m/i)*i ;
+	  printf("mod = ", mod(m, i));
       if( mod(m,i) == 0)
       {
         leap=0;

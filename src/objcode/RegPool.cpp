@@ -134,7 +134,20 @@ ConflictGraph::ConflictGraph(const FlowChart& flowchart, const std::vector<Node*
     for (auto basicblock : flowchart.blocks()) {
         std::vector<Vars> varsList;
         livevar.backProp(varsList, basicblock);
-        for (auto& vars : varsList) {
+        assert(varsList.size() == basicblock->midcodes().size());
+        
+        // live vars plus `def` are conflict to each other
+        for (int i = 0; i < varsList.size(); i++) {
+            const MidCode* const midcode = basicblock->midcodes()[i];
+            auto& vars = varsList[i];
+            
+            if (midcode->t0IsValid() &&
+                !midcode->t0()->isArray() &&
+                !midcode->t0()->isConst() &&
+                !midcode->t0()->isGlobal()) {
+                vars.insert(midcode->t0());
+            }
+            
             for (auto entry : vars) {
                 _graph[entry].insert(vars.begin(), vars.end());
             }
