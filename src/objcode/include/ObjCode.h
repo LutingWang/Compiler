@@ -324,7 +324,7 @@ namespace objcode {
     using BeqFactory = BranchFactory<Beq, PseudoBeq, Beqz, Beqz, eq>;
     using BneFactory = BranchFactory<Bne, PseudoBne, Bnez, Bnez, ne>;
 
-    using CodeGen = std::function<void(const ObjCode* const)>;
+    using Gen = std::function<void(const ObjCode* const)>;
 }
 
 #endif /* OBJ_CODE_H */

@@ -60,7 +60,7 @@ public:
 // Each of the functionalities are supported by one of the `_visit` functions. Check
 // their comment for more info.
 class StackFrame : protected Sbss {
-    const objcode::CodeGen& _output; // call back function to generate objcode
+    const objcode::Gen& _output; // call back function to generate objcode
 	std::map<const symtable::Entry*, int> _args; // first 4 args are not mapped
 	int _regBase;
 	int _size;
@@ -69,7 +69,7 @@ public:
 
     // Since args are stored away from the other variables, `syms` cannot
     // have intersections with `argList`.
-    StackFrame(const objcode::CodeGen&, std::vector<const symtable::Entry*> argList,
+    StackFrame(const objcode::Gen&, std::vector<const symtable::Entry*> argList,
 			const std::set<const symtable::Entry*>& syms);
     virtual ~StackFrame(void) {}
 

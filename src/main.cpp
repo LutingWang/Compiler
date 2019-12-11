@@ -9,7 +9,6 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <vector>
 #include "compilerConfig.h"
 #include "error.h"
 #include "frontend.h"
@@ -17,9 +16,6 @@
 #include "mips.h"
 #include "Optim.h"
 using namespace std;
-
-// TODO: change midcode naming to avoid conflict
-// TODO: scan iterations, add comment of type
 
 // Latent streams for corresponding classes to use.
 // Do not expose in the headers!

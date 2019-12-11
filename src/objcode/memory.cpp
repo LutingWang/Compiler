@@ -63,7 +63,7 @@ const std::vector<Reg> regs = {
     Reg::a0, Reg::a1, Reg::a2, Reg::a3
 };
 
-StackFrame::StackFrame(const objcode::CodeGen& output, std::vector<const symtable::Entry*> argList,
+StackFrame::StackFrame(const objcode::Gen& output, std::vector<const symtable::Entry*> argList,
 		const std::set<const symtable::Entry*>& syms) : Sbss(syms), _output(output) {
     // args should be eliminated from `syms` before hand
 	for (auto& entry : syms) {

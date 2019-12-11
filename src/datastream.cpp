@@ -110,7 +110,7 @@ void ReachDef::gen(DefMap& output, const BasicBlock* const basicblock) {
 void ReachDef::kill(Defs& output, const DefMap& blockGen,
         const std::map<const symtable::Entry*, Defs>& funcGen) {
     assert(output.empty());
-    for (auto& pair : blockGen) {
+    for (auto& /* <entry, midcode> */ pair : blockGen) {
         auto& killList = funcGen.at(pair.first);
         output.insert(killList.begin(), killList.end());
     }
@@ -127,7 +127,7 @@ void ReachDef::analyze(std::vector<Defs>& genList, std::vector<Defs>& killList,
     // initialize funcGen and genList (the set version of gen) in the same loop
     std::map<const symtable::Entry*, Defs> funcGen;
     for (int i = 0; i < blocks.size(); i++) {
-        for (auto& pair : blockGens[i]) {
+        for (auto& /* <entry, midcode> */ pair : blockGens[i]) {
             funcGen[pair.first].insert(pair.second);
             genList[i].insert(pair.second);
         }

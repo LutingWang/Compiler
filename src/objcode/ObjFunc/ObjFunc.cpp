@@ -53,7 +53,7 @@ void ObjFunc::deinit(void) {
 
 ObjFunc::ObjFunc(const symtable::FuncTable* const functable) {
     // call back function to insert objcode
-    const objcode::CodeGen output =
+    const objcode::Gen output =
         [this](const objcode::ObjCode* const objcode) {
             this->_objcodes.push_back(objcode);
         };

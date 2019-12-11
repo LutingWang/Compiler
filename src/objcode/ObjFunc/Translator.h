@@ -131,11 +131,11 @@
 class UsageQueue;
 
 class Translator {
-    const objcode::CodeGen& _output;
+    const objcode::Gen& _output;
     RegPool& _regpool;
     const StackFrame& _stackframe;
 public:
-    Translator(const objcode::CodeGen&, RegPool&, const StackFrame&);
+    Translator(const objcode::Gen&, RegPool&, const StackFrame&);
     
 private:
     // Translate midcodes but `push` and `call`.

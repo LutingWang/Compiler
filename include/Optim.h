@@ -32,9 +32,7 @@ private:
     static const symtable::FuncTable* _repaceBlock(BasicBlock* const);
 public:
 	static void inlineExpan(bool&);
-    
-	static void commonExprElim(bool&);
-    
+        
 private:
     static bool _constProp(const MidCode*&);
     static bool _varProp(const MidCode*&, VarMatch&);

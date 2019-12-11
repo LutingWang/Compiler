@@ -106,7 +106,7 @@ const UsageQueue::Usage UsageQueue::pop(const bool write, const bool mask) {
 
 /* Translator */
 
-Translator::Translator(const objcode::CodeGen& output, RegPool& regpool, const StackFrame& stackframe) :
+Translator::Translator(const objcode::Gen& output, RegPool& regpool, const StackFrame& stackframe) :
     _output(output), _regpool(regpool), _stackframe(stackframe) {}
 
 template<typename factory>

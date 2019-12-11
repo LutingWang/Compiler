@@ -15,7 +15,6 @@
 #include "symtable.h"
 
 #include "midcode.h"
-
 using Instr = MidCode::Instr;
 
 /* MidCode */
@@ -128,7 +127,6 @@ bool MidCode::is(const Instr instr) const {
     return this->instr() == instr;
 }
 
-// TODO: delete these two functions
 bool MidCode::isCalc(void) const {
     switch (this->instr()) {
     case Instr::ADD:

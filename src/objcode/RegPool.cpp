@@ -164,7 +164,7 @@ ConflictGraph::ConflictGraph(const FlowChart& flowchart, const std::vector<Node*
     }
     
     // erase self loop
-    for (auto& pair : _graph) {
+    for (auto& /* <entry, set<entry>> */ pair : _graph) {
         pair.second.erase(pair.first);
     }
     
@@ -192,7 +192,7 @@ void ConflictGraph::color(std::map<Node*, Reg>& output) const {
     std::stack<Node*> nodes;
     while (graph.size() > 0) {
         Node* candidate = nullptr;
-        for (auto& pair : graph) {
+        for (auto& /* <entry, set<entry>> */ pair : graph) {
             if (pair.second.size() >= K) { continue; }
             candidate = pair.first;
             break;
@@ -200,7 +200,7 @@ void ConflictGraph::color(std::map<Node*, Reg>& output) const {
         
         if (candidate == nullptr) {
             int maxDegree = K - 1;
-            for (auto& pair : graph) {
+            for (auto& /* <entry, set<entry>> */ pair : graph) {
                 if (pair.second.size() <= maxDegree) { continue; }
                 maxDegree = pair.second.size();
                 candidate = pair.first;
@@ -244,7 +244,7 @@ Reg SPool::at(const symtable::Entry* const entry) const {
 
 void SPool::_usage(std::set<Reg>& usage) const {
     assert(usage.empty());
-    for (auto& pair : _regs) {
+    for (auto& /* <entry, reg> */ pair : _regs) {
         usage.insert(pair.second);
     }
 }
@@ -268,7 +268,7 @@ void SPool::restore(void) const {
 }
 
 void SPool::genComments(std::vector<std::string>& output) const {
-    for (auto& pair : _regs) {
+    for (auto& /* <entry, reg> */ pair : _regs) {
         std::stringstream comment;
         comment << pair.second << " : " << pair.first->name();
         output.push_back(comment.str());

@@ -122,8 +122,8 @@ public:
     // Other instructions that is not categorized should be judged
     // by user though `is`.
     bool is(const Instr) const;
-	bool isCalc(void) const; // TODO: delete
-	bool isBranch(void) const; // TODO: delete
+	bool isCalc(void) const;
+	bool isBranch(void) const;
 
 private:
     // If error happened or the current function being parsed has
