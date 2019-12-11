@@ -22,10 +22,132 @@ int mean(int n) {
 	return(result);
 }
 
-void main() {
+void testmean() {
 	int n;
-	scanf(n);
-	printf("please input numbers to calc mean");
-	n = mean(n);
-	printf("mean value is ", n);
+	while (1) {
+		scanf(n);
+		if (n == 0) {
+			return;
+		}
+		printf("please input numbers to calc mean");
+		n = mean(n);
+		printf("mean value is ", n);
+	}
+	return;
+}
+
+int isOdd(int num) {
+	const int TWO = 2;
+	int half;
+	half = num / TWO;
+	return (num - half * 2);
+}
+
+int isEven(int num) {
+	const int TWO = 2;
+	int half;
+	half = num / TWO;
+	return (1 - (num - half * 2));
+}
+
+int pick(int num, int odd) {
+	if (num == 1) {
+		return (1);
+	}
+	if (num <= 1) {
+		printf("unexpected error happened");
+		return (-1);
+	}
+	if (odd) {
+		return (pick(num / 2, isEven(num)) * 2);
+	} else {
+		return (pick((num + 1) / 2, isOdd(num)) * 2 - 1);
+	}
+}
+
+int pick2(int num) {
+	int i, j;
+	i = 1;
+	for (j = i * 2; j <= num; j = j + 0) {
+		i = j;
+		j = i * 2;
+	}
+	return ((num - i) * 2 + 1);
+}
+
+void testpick() {
+	int base, exp, tmp;
+	while (2) {
+		scanf(base);
+		scanf(exp);
+		if (base == 0) {
+			if (exp == 0) {
+				return;
+			}
+		}
+		for (tmp = 0; exp > 0; exp = exp - 1) {
+			base = base * 10;
+		}
+		printf(pick(base, 0));
+		printf(pick2(base));
+	}
+	return;
+}
+
+void test1() {
+    int i,j,k;
+    printf("");
+    for(i=1;i<5;i=i+1) {
+        for(j=1;j<5;j=j+1) {
+            for (k=1;k<5;k=k+1) {
+                if (i!=k) { 
+					if (i!=j) {
+						if (j!=k) {
+							printf(i);
+							printf(j);
+							printf(k);
+						}
+					}
+                }
+            }
+        }
+    }
+}
+
+int mod(int a, int b) {
+	return (a - a / b * b);
+}
+
+void test2()
+{
+    int n, reversedInteger, remainder, originalInteger;
+	while (1) {
+		reversedInteger = 0;
+ 
+    	printf("input an integer please:");
+		scanf(n);
+		if (n == 0) {
+			return;
+		}
+ 
+    	originalInteger = n;
+ 
+    	while( n!=0 ) {
+    	    remainder = mod(n, 10);
+    	    reversedInteger = reversedInteger*10 + remainder;
+    	    n = n / 10;
+    	}
+ 
+    	if (originalInteger == reversedInteger)
+    	    printf("is palindrome", originalInteger);
+    	else
+    	    printf("not palindrome", originalInteger);
+	}
+}
+
+void main() {
+	testmean();
+	testpick();
+	test1();
+	test2();
 }

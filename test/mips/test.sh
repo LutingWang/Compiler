@@ -6,20 +6,13 @@
 ###############################################
 #!/bin/zsh
 
-this=$(dirname $0)
-cd $this
-
-for tname in `ls`
-do
-	if [ ! -d $tname ]; then
-		continue
-	fi
-	dir="./"${tname}
-	file=${dir}"/"${tname}
+function test_case() {
+	dir="./"$1
+	file=${dir}"/"$1
 	if [ ! -f ${file}".std" ]; then
 		python3 compiler.py ${file} ${file}".cpp"
 		clang++ -o ${file}".exe" ${file}".cpp" -w
-		cat $dir"/input" | ./${file}".exe" > ${file}".std"
+		cat ${dir}"/input" | ./${file}".exe" > ${file}".std"
 	fi
 	
 	cat $dir"/input" | java -jar ./mars.jar ic nc 10000000 ${file}".mips" > ${file}".out"
@@ -30,6 +23,21 @@ do
 	
 	diff ${file}".std" ${file}".out"
 	if [ $? -eq 0 ]; then
-		echo $tname" passed"
+		echo $1" passed"
 	fi
-done
+}
+
+this=$(dirname $0)
+cd $this
+
+if [ $# -eq 1 ]; then
+	test_case $1
+else
+	for tname in `ls`
+	do
+		if [ ! -d $tname ]; then
+			continue
+		fi
+		test_case $tname
+	done
+fi
