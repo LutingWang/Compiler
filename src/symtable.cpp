@@ -179,7 +179,6 @@ const std::vector<const Entry*>& FuncTable::argList(void) const {
 }
 
 const std::vector<const MidCode*>& FuncTable::midcodes(void) const {
-    assert(_const);
     return _midcodes;
 }
 

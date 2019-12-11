@@ -407,14 +407,19 @@ void Stat::Cond::_while(void) {
     Lexer::getsym();
     assert(sym.is(symbol::Type::DELIM, symbol::LPARENT));
     Lexer::getsym();
-    std::string labelBegin = MidCode::genLabel();
-    MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelBegin);
-    std::string labelEnd = MidCode::genLabel();
-    cond(true, labelEnd);
+    std::string firstBranch = MidCode::genLabel();
+    std::string secondBranch = MidCode::genLabel();
+    MidCode::createAnchor();
+    cond(true, firstBranch);
+    std::vector<const MidCode*> condcodes;
+    MidCode::retrieveFromAnchor(condcodes, secondBranch);
+    MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, secondBranch);
     error::assertSymIsRPARENT();
+
     stat();
-    MidCode::gen(MidCode::Instr::GOTO, nullptr, nullptr, nullptr, labelBegin);
-    MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelEnd);
+    
+    MidCode::pasteCodes(condcodes);
+    MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, firstBranch);
 }
 
 // <do stat> ::= do<stat>while'('<cond>')'
@@ -457,10 +462,13 @@ void Stat::Cond::_for(void) {
     error::assertSymIsSEMICN();
 
     // <cond>;
-    std::string labelBegin = MidCode::genLabel();
-    MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelBegin);
-    std::string labelEnd = MidCode::genLabel();
-    cond(true, labelEnd);
+    std::string firstBranch = MidCode::genLabel();
+    std::string secondBranch = MidCode::genLabel();
+    MidCode::createAnchor();
+    cond(true, firstBranch);
+    std::vector<const MidCode*> condcodes;
+    MidCode::retrieveFromAnchor(condcodes, secondBranch);
+    MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, secondBranch);
     error::assertSymIsSEMICN();
 
     // <iden>=<iden><add op><unsigned int>')'
@@ -485,8 +493,8 @@ void Stat::Cond::_for(void) {
     stat();
 
     MidCode::gen(minus ? MidCode::Instr::SUB : MidCode::Instr::ADD, t0, t1, stepSize);
-    MidCode::gen(MidCode::Instr::GOTO, nullptr, nullptr, nullptr, labelBegin);
-    MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, labelEnd);
+    MidCode::pasteCodes(condcodes);
+    MidCode::gen(MidCode::Instr::LABEL, nullptr, nullptr, nullptr, firstBranch);
 }
 
 // <read stat> ::= scanf'('<iden>{,<iden>}')'

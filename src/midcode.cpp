@@ -190,6 +190,40 @@ std::string MidCode::genLabel(void) {
 	return "label$" + std::to_string(counter++);
 }
 
+const int* MidCode::_anchor = nullptr;
+
+void MidCode::createAnchor(void) {
+    assert(_anchor == nullptr);
+    _anchor = new int(SymTable::getTable()._cur->_midcodes.size());
+}
+
+void MidCode::retrieveFromAnchor(std::vector<const MidCode*>& output, const std::string& newLabel) {
+    assert(output.empty());
+    auto& midcodes = SymTable::getTable().curFunc().midcodes();
+    for (int i = *_anchor; i < midcodes.size() - 1; i++) {
+        output.push_back(new MidCode(*(midcodes[i])));
+    }
+    Instr oppo;
+    switch (midcodes.back()->instr()) {
+    case Instr::BGT: oppo = Instr::BLE; break;
+    case Instr::BGE: oppo = Instr::BLT; break;
+    case Instr::BLT: oppo = Instr::BGE; break;
+    case Instr::BLE: oppo = Instr::BGT; break;
+    case Instr::BEQ: oppo = Instr::BNE; break;
+    case Instr::BNE: oppo = Instr::BEQ; break;
+    default: assert(0);
+    }
+    output.push_back(new MidCode(oppo, nullptr, midcodes.back()->t1(),
+            midcodes.back()->t2(), new std::string(newLabel)));
+    delete _anchor;
+    _anchor = nullptr;
+}
+
+void MidCode::pasteCodes(const std::vector<const MidCode*>& midcodes) {
+    auto& target = SymTable::getTable()._cur->_midcodes;
+    target.insert(target.end(), midcodes.begin(), midcodes.end());
+}
+
 std::string MidCode::to_string(void) const {
     std::stringstream ss;
 	switch (_instr) {

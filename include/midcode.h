@@ -151,6 +151,14 @@ public:
 	static const symtable::Entry* genConst(const bool, const int);
 	static std::string genLabel(void);
 
+private:
+    // anchor of midcode
+    static const int* _anchor;
+public:
+    static void createAnchor(void);
+    static void retrieveFromAnchor(std::vector<const MidCode*>&, const std::string& newLabel);
+    static void pasteCodes(const std::vector<const MidCode*>&);
+    
 public:
     // print this piece of midcode
 	std::string to_string(void) const;

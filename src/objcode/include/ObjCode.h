@@ -135,8 +135,6 @@ namespace objcode {
     RegIns(Li, li);
 #undef RegIns
 
-    /* ICode */
-
     template<>
     struct ICode<li> : ObjCode {
         const Reg _t0;
@@ -252,10 +250,10 @@ namespace objcode {
     extern const char ins[]; \
     using cls = PseudoBCode<ins, oppo>;
 
-    RegIns(PseudoBgt, bgt, ble);
-    RegIns(PseudoBge, bge, blt);
-    RegIns(PseudoBlt, blt, bge);
-    RegIns(PseudoBle, ble, bgt);
+    RegIns(PseudoBgt, bgt, blt);
+    RegIns(PseudoBge, bge, ble);
+    RegIns(PseudoBlt, blt, bgt);
+    RegIns(PseudoBle, ble, bge);
     RegIns(PseudoBeq, beq, beq);
     RegIns(PseudoBne, bne, bne);
 #undef RegIns

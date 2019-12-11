@@ -162,6 +162,7 @@ namespace symtable {
 }
 
 class SymTable {
+    friend class MidCode;
 	friend class Optim;
 
 	symtable::Table* const _global;

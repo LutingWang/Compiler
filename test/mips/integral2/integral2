@@ -145,9 +145,36 @@ void test2()
 	}
 }
 
+void test3() {
+    int n, i, flag;
+	while (1) {
+	    flag = 0;
+ 
+        printf("input a positive integer please:");
+	    scanf(n);
+		if (n == 0) {
+			return;
+		}
+ 
+        for(i=2; i<=n/2; i = i + 1) {
+            if(mod(n, i)==0) {
+                flag=1;
+                i = n;
+            }
+        }
+ 
+        if (flag==0)
+            printf("is prime",n);
+        else
+            printf("not prime",n);
+	}
+	return;
+}
+
 void main() {
 	testmean();
 	testpick();
 	test1();
 	test2();
+	test3();
 }
