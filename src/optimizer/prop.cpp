@@ -108,14 +108,18 @@ const symtable::Entry* VarMatch::map(const symtable::Entry* const entry) const {
 
 void VarMatch::erase(const symtable::Entry* const entry) {
     assert(entry == nullptr || (!entry->isConst() && !entry->isInvalid()));
-    _matches.erase(entry);
     for (auto it = _matches.begin(); it != _matches.end(); ) {
         if (it->second == entry) {
-            it = _matches.erase(it);
+			if (_matches.count(entry) != 0) {
+				it->second = _matches.at(entry);
+			} else {
+				it = _matches.erase(it);
+			}
         } else {
             it++;
         }
     }
+    _matches.erase(entry);
 }
 
 void VarMatch::eraseGlobal(void) {
