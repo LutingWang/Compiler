@@ -121,7 +121,7 @@ namespace symtable {
         bool _const = false;
         
         // Seal the table after parsing the corresponding code
-        // segmentation. Only friend classes could modify this
+        // segment. Only friend classes could modify this
         // table by then. A `Table` cannot be sealed twice.
         void _makeConst(void);
     };
