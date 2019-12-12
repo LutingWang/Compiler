@@ -198,6 +198,11 @@ void MidCode::createAnchor(void) {
 }
 
 void MidCode::retrieveFromAnchor(std::vector<const MidCode*>& output, const std::string& newLabel) {
+    if (error::happened) {
+        delete _anchor;
+        _anchor = nullptr;
+        return;
+    }
     assert(output.empty());
     auto& midcodes = SymTable::getTable().curFunc().midcodes();
     for (int i = *_anchor; i < midcodes.size() - 1; i++) {
@@ -220,6 +225,7 @@ void MidCode::retrieveFromAnchor(std::vector<const MidCode*>& output, const std:
 }
 
 void MidCode::pasteCodes(const std::vector<const MidCode*>& midcodes) {
+    if (error::happened) { return; }
     auto& target = SymTable::getTable()._cur->_midcodes;
     target.insert(target.end(), midcodes.begin(), midcodes.end());
 }

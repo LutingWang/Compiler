@@ -6,6 +6,7 @@
  **********************************************/
 
 #include <fstream>
+#include "compilerConfig.h"
 
 #include "./Lexer.h"
 #include "./InputFile.h"

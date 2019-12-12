@@ -55,10 +55,9 @@ public:
 //
 //     1. restore/backup a reg
 //     2. load/store a reg from/to a variable
-//     3. load/store a reg from/to an array element
 //
-// Each of the functionalities are supported by one of the `_visit` functions. Check
-// their comment for more info.
+// Other functionalities should be accomplished by caller using `locate`.
+
 class StackFrame : protected Sbss {
     const objcode::Gen& _output; // call back function to generate objcode
 	std::map<const symtable::Entry*, int> _args; // first 4 args are not mapped
