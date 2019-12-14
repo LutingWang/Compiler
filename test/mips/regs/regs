@@ -1,0 +1,111 @@
+int gi0, gi1, gi2, gi3, gi4, gi5, gi6, gi7, gi8, gi9;
+char gc0, gc1, gc2, gc3, gc4, gc5, gc6, gc7, gc8, gc9;
+
+void func(int counter, int argi1, int argi2, int argi3, int argi4, int argi5,
+        int argi6, int argi7, int argi8, int argi9, int argi10,
+        int argi11, int argi12, int argi13, int argi14, int argi15,
+        int argi16, int argi17, int argi18, int argi19, int argi20,
+        char argc1, char argc2, char argc3, char argc4, char argc5,
+        char argc6, char argc7, char argc8, char argc9, char argc10,
+        char argc11, char argc12, char argc13, char argc14, char argc15,
+        char argc16, char argc17, char argc18, char argc19, char argc20) {
+	if (counter == 0) { return; }
+	else if (counter < 0) { printf("error"); return; }
+	else { counter = counter - 1; }
+
+	func(counter, argi16, argi17, argi18, argi19, argi20, argi11, argi12, argi13, argi14, argi15, 
+		    argi6, argi7, argi8, argi9, argi10, argi1, argi2, argi3, argi4, argi5,
+            argc16, argc17, argc18, argc19, argc20, argc11, argc12, argc13, argc14, argc15,
+            argc6, argc7, argc8, argc9, argc10, argc1, argc2, argc3, argc4, argc5);
+
+	counter = argi1 + argi2 - argi3 * argi4 / argi5 + (argi6 + argi7 - argi8 * argi9 / argi10);
+	printf(counter + counter - counter * argi11 / argi12);
+
+	if (argi1 > argi2) {
+		argi1 = 1; argi2 = 2; argi3 = 3; argi4 = 4; argi5 = 5;
+		argi6 = 6; argi7 = 7; argi8 = 8; argi9 = 9; argi10 = 10;
+		argi11 = 11; argi12 = 12; argi13 = 13; argi14 = 14; argi15 = 15;
+		argi16 = 16; argi17 = 17; argi18 = 18; argi19 = 19; argi20 = 20;
+		argc1 = '1'; argc2 = '2'; argc3 = '3'; argc4 = '4'; argc5 = '5';
+		argc6 = '6'; argc7 = '7'; argc8 = '8'; argc9 = '9'; argc10 = '0';
+		argc11 = '1'; argc12 = '2'; argc13 = '3'; argc14 = '4'; argc15 = '5';
+		argc16 = '6'; argc17 = '7'; argc18 = '8'; argc19 = '9'; argc20 = '0';
+		printf(argi1); printf(argc1);
+		printf(argi2); printf(argc2);
+		printf(argi3); printf(argc3);
+		printf(argi4); printf(argc4);
+		printf(argi5); printf(argc5);
+		printf(argi6); printf(argc6);
+		printf(argi7); printf(argc7);
+		printf(argi8); printf(argc8);
+		printf(argi9); printf(argc9);
+		printf(argi10); printf(argc10);
+		printf(argi11); printf(argc11);
+		printf(argi12); printf(argc12);
+		printf(argi13); printf(argc13);
+		printf(argi14); printf(argc14);
+		printf(argi15); printf(argc15);
+		printf(argi16); printf(argc16);
+		printf(argi17); printf(argc17);
+		printf(argi18); printf(argc18);
+		printf(argi19); printf(argc19);
+		printf(argi20); printf(argc20);
+	} else {
+		argi11 = 11; argi12 = 12; argi13 = 13; argi14 = 14; argi15 = 15;
+		argi16 = 16; argi17 = 17; argi18 = 18; argi19 = 19; argi20 = 20;
+		argi1 = 1; argi2 = 8; argi3 = 2; argi4 = 4; argi5 = 5;
+		argc11 = '1'; argc12 = '2'; argc13 = '3'; argc14 = '4'; argc15 = '5';
+		argc16 = 'd'; argc17 = '7'; argc18 = '8'; argc19 = '9'; argc20 = '0';
+		argi6 = 6; argi7 = 7; argi8 = 8; argi9 = 9; argi10 = 10;
+		argc1 = '1'; argc2 = '2'; argc3 = '3'; argc4 = '4'; argc5 = '5';
+		argc6 = '6'; argc7 = '7'; argc8 = '8'; argc9 = '9'; argc10 = '0';
+		printf(argi2); printf(argc2);
+		printf(argi1); printf(argc1);
+		printf(argi3); printf(argc3);
+		printf(argi4); printf(argc4);
+		printf(argi5); printf(argc5);
+		printf(argi7); printf(argc7);
+		printf(argi6); printf(argc6);
+		printf(argi8); printf(argc8);
+		printf(argi9); printf(argc9);
+		printf(argi11); printf(argc11);
+		printf(argi10); printf(argc10);
+		printf(argi10); printf(argc10);
+		printf(argi12); printf(argc12);
+		printf(argi13); printf(argc13);
+		printf(argi14); printf(argc14);
+		printf(argi15); printf(argc15);
+		printf(argi16); printf(argc16);
+		printf(argi17); printf(argc17);
+		printf(argi18); printf(argc18);
+		printf(argi19); printf(argc19);
+		printf(argi20); printf(argc20);
+	}
+}
+
+void main() {
+	int li0, li1, li2, li3, li4, li5, li6, li7, li8, li9;
+	char lc0, lc1, lc2, lc3, lc4, lc5, lc6, lc7, lc8, lc9;
+	scanf(gi0); scanf(gi1); scanf(gi2); scanf(gi3); scanf(gi4);
+	scanf(gi5); scanf(gi6); scanf(gi7); scanf(gi8); scanf(gi9);
+	scanf(gc0); scanf(gc1); scanf(gc2); scanf(gc3); scanf(gc4);
+	scanf(gc5); scanf(gc6); scanf(gc7); scanf(gc8); scanf(gc9);
+	scanf(li0); scanf(li1); scanf(li2); scanf(li3); scanf(li4);
+	scanf(li5); scanf(li6); scanf(li7); scanf(li8); scanf(li9);
+	scanf(lc0); scanf(lc1); scanf(lc2); scanf(lc3); scanf(lc4);
+	scanf(lc5); scanf(lc6); scanf(lc7); scanf(lc8); scanf(lc9);
+
+	func(2, gi0, gi1, gi2, gi3, gi4, gi5, gi6, gi7, gi8, gi9,
+	        li0, li1, li2, li3, li4, li5, li6, li7, li8, li9,
+	        gc0, gc1, gc2, gc3, gc4, gc5, gc6, gc7, gc8, gc9,
+	        lc0, lc1, lc2, lc3, lc4, lc5, lc6, lc7, lc8, lc9);
+
+	printf(gi0); printf(gi1); printf(gi2); printf(gi3); printf(gi4);
+	printf(gi5); printf(gi6); printf(gi7); printf(gi8); printf(gi9);
+	printf(gc0); printf(gc1); printf(gc2); printf(gc3); printf(gc4);
+	printf(gc5); printf(gc6); printf(gc7); printf(gc8); printf(gc9);
+	printf(li0); printf(li1); printf(li2); printf(li3); printf(li4);
+	printf(li5); printf(li6); printf(li7); printf(li8); printf(li9);
+	printf(lc0); printf(lc1); printf(lc2); printf(lc3); printf(lc4);
+	printf(lc5); printf(lc6); printf(lc7); printf(lc8); printf(lc9);
+}
