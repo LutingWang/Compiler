@@ -428,6 +428,7 @@ void main()
 		if (a == 0) {
 			if (b == 0) {
 				if (c == 0) {
+					test_zero();
 					return;
 				}
 			}
@@ -435,6 +436,5 @@ void main()
 		compare(a, b, c);
 		compare_to_num(a, b, c);
 	}
-	test_zero();
 	return;
 }

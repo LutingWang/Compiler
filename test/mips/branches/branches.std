@@ -286,3 +286,41 @@ a + c != 15
 c - a > -8
 56 >= a + c + b
  
+not z > z
+z >= z
+not z < z
+z <= z
+z == z
+not z != z
+not z
+not a > a
+a >= a
+not a < a
+a <= a
+a == a
+not a != a
+not a
+not a > b
+not a >= b
+a < b
+a <= b
+not a == b
+a != b
+not a
+b
+b > a
+b >= a
+not b < a
+not b <= a
+not b == a
+b != a
+b
+not a
+3 > b
+3 >= b
+not 3 < b
+not 3 <= b
+not 3 == b
+3 != b
+3
+b

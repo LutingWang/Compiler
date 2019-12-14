@@ -105,7 +105,6 @@ int main(int argc, char* argv[]) {
     for (bool updated = true; updated; ) {
         updated = false;
         Optim::inlineExpan(updated);
-        // Optim::commonExprElim(updated);
         Optim::symProp(updated);
         Optim::deadCodeDel(updated);
         Optim::peephole(updated);
