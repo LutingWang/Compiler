@@ -1,0 +1,440 @@
+int distance(int x, int y)
+{
+	int res;
+	res = x - y;
+	if (res < 0)
+	{
+		res = - res;
+	}
+	return (res);
+}
+
+int ads(int x)
+{
+	if (x < 0)
+		return (-x);
+	else
+		return (x);
+}
+
+void compare(int a, int b, int c)
+{
+	int edage1, edage2, edage3;
+	
+	edage1 = distance(a, b);
+	edage2 = distance(b, c);
+	edage3 = distance(a, c);
+	
+	if (edage1 + edage3 >= edage2)
+	{
+		printf("assumption1 confirmed 1");
+		if (edage1 + edage3 > edage2){
+			printf("situation 1");
+		}
+		else
+		{
+			printf("no situation 1");
+		} 
+		if (edage1 + edage3 == edage2)
+		{
+			printf("situation 2");
+		}
+		else
+		{
+			printf("no situation 2");
+		}
+	}
+	
+	if (edage1 <= edage2 + edage3)
+	{
+		printf("assumption1 confirmed 2");
+		if (edage1 != edage2 + edage3){
+			printf("situation 1");
+		}
+		else
+		{
+			printf("no situation 1");
+		}
+		
+		if (edage2 + edage3 == edage1){
+			printf("situation 2");
+		}
+		else
+		{
+			printf("no situation 2");
+		}
+	}
+	
+	if (edage1 - edage2 <= edage3)
+	{
+		printf("assumption2 confirmed 1");
+		if (edage3 > edage1 - edage2){
+			printf("situation 1");
+		}
+		else
+		{
+			printf("no situation 1");
+		}
+		
+		if (edage1 - edage2 == edage1){
+			printf("situation 2");
+		}
+		else
+		{
+			printf("no situation 2");
+		}
+	}
+	
+	if (edage1 >= edage3 - edage2)
+	{
+		printf("assumption2 confirmed 2");
+		if (edage2 + edage3 < edage1){
+			printf("situation 1");
+		}
+		else
+		{
+			printf("no situation 1");
+		}
+		
+		if (edage2 - edage3 == edage1){
+			printf("situation 2");
+		}
+		else
+		{
+			printf("no situation 2");
+		}
+	}
+}
+
+void compare_to_num(int a, int b, int c)
+{
+	if (a < 10)
+	{
+		printf("a < 10");
+	}
+	else
+	{
+		printf(" ");
+	}
+	
+	if (85 < b)
+	{
+		printf("85 < b");
+	}
+	else
+	{
+		printf(" ");
+	}
+	
+	if (b <= 5)
+	{
+		printf("b <= 5");
+	}
+	else
+	{
+		printf(" ");
+	}
+	
+	if (1 <= b)
+	{
+		printf("1 <= b");
+	}
+	else
+	{
+		printf(" ");
+	}
+	
+	if (8 == c)
+	{
+		printf("8 == c");
+	}
+	else
+	{
+		printf(" ");
+	}
+	
+	if (a == 7)
+	{
+		printf("a == 7");
+	}
+	else
+	{
+		printf(" ");
+	}
+	
+	if(9 != b)
+	{
+		printf("9 != b");
+	}
+	else
+	{
+		printf(" ");
+	}
+	
+	if (a + c != 15)
+	{
+		printf("a + c != 15");
+	}
+	else
+	{
+		printf(" ");
+	}
+	
+	if (-1 > a - c)
+	{
+		printf("-1 > a - c");
+	}
+	else
+	{
+		printf(" ");
+	}
+	
+	if (c - a > -8)
+	{
+		printf("c - a > -8");
+	}
+	else
+	{
+		printf(" ");
+	}
+	
+	if (56 >= a + c + b)
+	{
+		printf("56 >= a + c + b");
+	}
+	else
+	{
+		printf(" ");
+	}
+	
+	if (a + b - c >= 5)
+	{
+		printf("a + b - c >= 5");
+	}
+	else
+	{
+		printf(" ");
+	}
+}
+
+void test_zero() {
+	const int z = 0;
+	int a, b;
+	a = 0;
+	b = 1;
+	if (z > z) {
+		printf("z > z");
+	} else {
+		printf("not z > z");
+	}
+	if (z >= z) {
+		printf("z >= z");
+	} else {
+		printf("not z >= z");
+	}
+	if (z < z) {
+		printf("z < z");
+	} else {
+		printf("not z < z");
+	}
+	if (z <= z) {
+		printf("z <= z");
+	} else {
+		printf("not z <= z");
+	}
+	if (z == z) {
+		printf("z == z");
+	} else {
+		printf("not z == z");
+	}
+	if (z != z) {
+		printf("z != z");
+	} else {
+		printf("not z != z");
+	}
+	if (z) {
+		printf("z");
+	} else {
+		printf("not z");
+	}
+
+	if (a > a) {
+		printf("a > a");
+	} else {
+		printf("not a > a");
+	}
+	if (a >= a) {
+		printf("a >= a");
+	} else {
+		printf("not a >= a");
+	}
+	if (a < a) {
+		printf("a < a");
+	} else {
+		printf("not a < a");
+	}
+	if (a <= a) {
+		printf("a <= a");
+	} else {
+		printf("not a <= a");
+	}
+	if (a == a) {
+		printf("a == a");
+	} else {
+		printf("not a == a");
+	}
+	if (a != a) {
+		printf("a != a");
+	} else {
+		printf("not a != a");
+	}
+	if (a) {
+		printf("a");
+	} else {
+		printf("not a");
+	}
+
+	if (a > b) {
+		printf("a > b");
+	} else {
+		printf("not a > b");
+	}
+	if (a >= b) {
+		printf("a >= b");
+	} else {
+		printf("not a >= b");
+	}
+	if (a < b) {
+		printf("a < b");
+	} else {
+		printf("not a < b");
+	}
+	if (a <= b) {
+		printf("a <= b");
+	} else {
+		printf("not a <= b");
+	}
+	if (a == b) {
+		printf("a == b");
+	} else {
+		printf("not a == b");
+	}
+	if (a != b) {
+		printf("a != b");
+	} else {
+		printf("not a != b");
+	}
+	if (a) {
+		printf("a");
+	} else {
+		printf("not a");
+	}
+	if (b) {
+		printf("b");
+	} else {
+		printf("not b");
+	}
+
+	if (b > a) {
+		printf("b > a");
+	} else {
+		printf("not b > a");
+	}
+	if (b >= a) {
+		printf("b >= a");
+	} else {
+		printf("not b >= a");
+	}
+	if (b < a) {
+		printf("b < a");
+	} else {
+		printf("not b < a");
+	}
+	if (b <= a) {
+		printf("b <= a");
+	} else {
+		printf("not b <= a");
+	}
+	if (b == a) {
+		printf("b == a");
+	} else {
+		printf("not b == a");
+	}
+	if (b != a) {
+		printf("b != a");
+	} else {
+		printf("not b != a");
+	}
+	if (b) {
+		printf("b");
+	} else {
+		printf("not b");
+	}
+	if (a) {
+		printf("a");
+	} else {
+		printf("not a");
+	}
+
+	if (3 > b) {
+		printf("3 > b");
+	} else {
+		printf("not 3 > b");
+	}
+	if (3 >= b) {
+		printf("3 >= b");
+	} else {
+		printf("not 3 >= b");
+	}
+	if (3 < b) {
+		printf("3 < b");
+	} else {
+		printf("not 3 < b");
+	}
+	if (3 <= b) {
+		printf("3 <= b");
+	} else {
+		printf("not 3 <= b");
+	}
+	if (3 == b) {
+		printf("3 == b");
+	} else {
+		printf("not 3 == b");
+	}
+	if (3 != b) {
+		printf("3 != b");
+	} else {
+		printf("not 3 != b");
+	}
+	if (3) {
+		printf("3");
+	} else {
+		printf("not 3");
+	}
+	if (b) {
+		printf("b");
+	} else {
+		printf("not b");
+	}
+}
+
+void main()
+{
+	int a, b, c;
+	while (1) {
+		scanf(a);
+		scanf(b);
+		scanf(c);
+		if (a == 0) {
+			if (b == 0) {
+				if (c == 0) {
+					return;
+				}
+			}
+		}
+		compare(a, b, c);
+		compare_to_num(a, b, c);
+	}
+	test_zero();
+	return;
+}

@@ -14,7 +14,8 @@ run:
 	./test.sh mips
 
 clean:
-	-rm -r ./build/* ./include/compilerConfig.h ./judge/*
+	-rm -r ./build/* ./include/compilerConfig.h 
+	-rm ./judge/*
 
 xcode:
 	cd ./Xcode && cmake -G "Xcode" ..

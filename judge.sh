@@ -21,7 +21,7 @@ function copy_dir() {
 cur_dir=$(dirname $0)
 jud_dir=${cur_dir}/judge
 
-rm -r ${jud_dir}/*
+rm ${jud_dir}/*
 copy_dir ${cur_dir}/include
 copy_dir ${cur_dir}/src
 rm ${jud_dir}/CMakeLists.txt
