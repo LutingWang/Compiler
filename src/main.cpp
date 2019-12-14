@@ -104,10 +104,10 @@ int main(int argc, char* argv[]) {
 #endif /* judge */
     for (bool updated = true; updated; ) {
         updated = false;
+        Optim::peephole(updated); // peephole before prop
         Optim::inlineExpan(updated);
         Optim::symProp(updated);
         Optim::deadCodeDel(updated);
-        Optim::peephole(updated);
         Optim::clean();
 #if !judge
         midcode_output << "<!--anchor-->" << endl;

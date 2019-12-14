@@ -275,6 +275,7 @@ const symtable::Entry* Expr::factor(void) {
             Lexer::getsym();
             if (sym.is(symbol::Type::DELIM, symbol::LPARENT)) {
                 t0 = Func::argValues(SymTable::getTable().findFunc(name));
+                if (t0 == nullptr) { t0 = MidCode::genVar(true); }
             } else if (sym.is(symbol::Type::DELIM, symbol::LBRACK)) {
                 const symtable::Entry* const t1 = SymTable::getTable().findSym(name);
                 assert(t1->isInvalid() || t1->isArray());
