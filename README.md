@@ -1,5 +1,7 @@
 # 2019 年北航编译原理课程设计申优文档
 
+[toc]
+
 本项目实现了一个给定文法的一遍扫描编译程序，并同步开源到 [github](https://github.com/LutingWang/Compiler) 。项目包括 $7$ 个逻辑部分
 
 ```mermaid
@@ -78,3 +80,27 @@ end
 - [optimizer](./docs/optimizer.md) 
 - [mips](./docs/mips.md) 
 
+## 项目下载与安装
+
+本项目使用 Cmake 进行自动化编译，支持跨平台。下载时请访问 github 项目地址
+
+```shell
+git clone git@github.com:LutingWang/Compiler.git
+```
+
+下载完成后，需要手动执行下述脚本进行配置
+
+```shell
+mkdir build
+mkdir judge
+mkdir xcode
+```
+
+这三个文件夹会被根目录下的 Makefile 访问，并分别生成项目二进制文件、自动测试 judge 平台提交文件、跨平台 Xcode 支持。如果不需要某个功能可以选择不执行。最后可以通过
+
+```shell
+make
+make run
+```
+
+来启动项目。
