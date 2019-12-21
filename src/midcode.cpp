@@ -321,7 +321,6 @@ std::string MidCode::to_string(void) const {
     return ss.str();
 }
 
-#if !judge
 extern std::ofstream midcode_output;
 
 void print(const symtable::Entry* const entry) {
@@ -390,7 +389,6 @@ void MidCode::output(void) {
         midcode_output << std::endl;
 	}
 }
-#endif /* judge */
 
 /* BasicBlock */
 

@@ -23,6 +23,7 @@ using namespace std;
 
 #if judge
     std::ofstream OUTPUT_STREAM(error),
+        OUTPUT_STREAM(midcode),
         OUTPUT_STREAM(mips);
 
     #define OUTPUT_PATH(id) #id ".txt"
@@ -31,6 +32,7 @@ using namespace std;
         OUTPUT_STREAM(id) << std::left;
     void open(void) {
         OPEN(error);
+        OPEN(midcode);
         OPEN(mips);
     }
 #else
@@ -93,11 +95,9 @@ int main(int argc, char* argv[]) {
 		goto exit; 
 	}
 
-#if !judge
     cout << "midcode generating ... ";
     MidCode::output();
     cout << "finished" << endl;
-#endif /* judge */
 
 #if !judge
     cout << "optimization processing ... ";
@@ -109,10 +109,9 @@ int main(int argc, char* argv[]) {
         Optim::symProp(updated);
         Optim::deadCodeDel(updated);
         Optim::clean();
-#if !judge
+
         midcode_output << "<!--anchor-->" << endl;
         MidCode::output();
-#endif /* judge */
     }
 #if !judge
     cout << "finished" << endl;

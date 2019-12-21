@@ -20,6 +20,31 @@
 extern std::ofstream mips_output;
 
 namespace objcode {
+#define RegIns(id) extern const char id[]
+    // RCode and PseudoRCode
+    RegIns(add); RegIns(sub);
+    RegIns(mul); RegIns(div);
+    RegIns(move); RegIns(syscall);
+    RegIns(neg); RegIns(mflo); RegIns(nop);
+
+    // ICode
+    RegIns(lw); RegIns(sw);
+    RegIns(sll); RegIns(li);
+
+    // JCode
+    RegIns(j); RegIns(jal); RegIns(jr);
+    RegIns(label);
+
+    // BCode, BZCode, and pseudoBCode
+    RegIns(bgt); RegIns(bge);
+    RegIns(blt); RegIns(ble);
+    RegIns(beq); RegIns(bne);
+    RegIns(bgtz); RegIns(bgez);
+    RegIns(bltz); RegIns(blez);
+    RegIns(beqz); RegIns(bnez);
+    RegIns(la);
+#undef RegIns
+
     struct ObjCode {
         virtual void output(void) const = 0;
         virtual ~ObjCode(void);
@@ -40,24 +65,25 @@ namespace objcode {
 
         RCode(const Reg t0, const Reg t1, const Reg t2) :
             _t0(t0), _t1(t1), _t2(t2) {}
+
         virtual void output(void) const {
+			if (instr == div) {
+				mips_output << div << ' ' << _t1 << ", " << _t2 << std::endl;
+    			mips_output << mflo << ' ' << _t0 << std::endl;
+				return;
+			}
             mips_output << instr << ' ' << _t0
                 << ", " << _t1 << ", " << _t2 << std::endl;
         }
     };
 
-#define RegIns(cls, ins) \
-    extern const char ins[]; \
-    using cls = RCode<ins>;
-
-    RegIns(Add, add);
-    RegIns(Sub, sub);
-    RegIns(Mul, mul);
-    RegIns(Div, div);
-    RegIns(Move, move);
-    RegIns(Syscall, syscall);
-    RegIns(Nop, nop);
-#undef RegIns
+    using Add = RCode<add>;
+    using Sub = RCode<sub>;
+    using Mul = RCode<mul>;
+    using Div = RCode<div>;
+    using Move = RCode<move>;
+    using Syscall = RCode<syscall>;
+    using Nop = RCode<nop>;
 
     template<>
     struct RCode<move> : ObjCode {
@@ -94,20 +120,29 @@ namespace objcode {
             PseudoCode(false), _t0(t0), _t1(t1), _imm(imm) {}
         PseudoRCode(const Reg t0, const int imm, const Reg t2) :
             PseudoCode(true), _t0(t0), _t1(t2), _imm(imm) {}
+
         virtual void output(void) const {
+			if (instr == sub) {
+				mips_output << sub << ' ' << _t0 << ", " << _t1 << ", " << _imm << std::endl;
+    			if (_flipped) { mips_output << neg << ' ' << _t0 << ", " << _t0 << std::endl; }
+				return;
+			}
+			if (instr == div) {
+				mips_output << li << ' ' << reg::compiler_tmp << ", " << _imm << std::endl;
+    			mips_output << div << ' ';
+    			if (_flipped) { mips_output << reg::compiler_tmp << ", " << _t1; }
+    			else { mips_output << _t1 << ", " << reg::compiler_tmp; }
+    			mips_output << std::endl << mflo << ' ' << _t0 << std::endl;
+				return;
+			}
             mips_output << instr << ' ' << _t0 << ", " << _t1 << ", " << _imm << std::endl;
         }
     };
 
-#define RegIns(cls, ins) \
-    extern const char ins[]; \
-    using cls = PseudoRCode<ins>
-
-    RegIns(PseudoAdd, add);
-    RegIns(PseudoSub, sub);
-    RegIns(PseudoMul, mul);
-    RegIns(PseudoDiv, div);
-#undef RegIns
+    using PseudoAdd = PseudoRCode<add>;
+    using PseudoSub = PseudoRCode<sub>;
+    using PseudoMul = PseudoRCode<mul>;
+    using PseudoDiv = PseudoRCode<div>;
 
     /* ICode */
 
@@ -119,21 +154,21 @@ namespace objcode {
 
         ICode(const Reg t0, const Reg t1, const int imm) :
             _t0(t0), _t1(t1), _imm(imm) {}
+
         virtual void output(void) const {
+			if (instr == sll) {
+				mips_output << sll << ' ' << _t0 << ", " << _t1 << ", " << _imm << std::endl;
+				return;
+			}
             mips_output << instr << ' ' << _t0
                     << ", " << _imm << '(' << _t1 << ')' << std::endl;
         }
     };
 
-#define RegIns(cls, ins) \
-    extern const char ins[]; \
-    using cls = ICode<ins>
-
-    RegIns(Lw, lw);
-    RegIns(Sw, sw);
-    RegIns(Sll, sll);
-    RegIns(Li, li);
-#undef RegIns
+    using Lw = ICode<lw>;
+    using Sw = ICode<sw>;
+    using Sll = ICode<sll>;
+    using Li = ICode<li>;
 
     template<>
     struct ICode<li> : ObjCode {
@@ -151,20 +186,20 @@ namespace objcode {
         const std::string _label;
         
         JCode(const std::string& label) : _label(label) {}
+
         virtual void output(void) const {
+			if (instr == label) {
+				mips_output << _label << ':' << std::endl;
+				return;
+			}
             mips_output << instr << ' ' << _label << std::endl;
         }
     };
 
-#define RegIns(cls, ins) \
-    extern const char ins[]; \
-    using cls = JCode<ins>
-
-    RegIns(J, j);
-    RegIns(Jal, jal);
-    RegIns(Jr, jr);
-    RegIns(Label, label);
-#undef RegIns
+    using J = JCode<j>;
+    using Jal = JCode<jal>;
+    using Jr = JCode<jr>;
+    using Label = JCode<label>;
 
     template<>
     struct JCode<jr> : ObjCode {
@@ -182,23 +217,19 @@ namespace objcode {
         
         BCode(const Reg t1, const Reg t2, const std::string& label) :
             _t1(t1), _t2(t2), _label(label) {}
+
         virtual void output(void) const {
             mips_output << instr << ' ' << _t1
                     << ", " << _t2 << ", " << _label << std::endl;
         }
     };
 
-#define RegIns(cls, ins) \
-    extern const char ins[]; \
-    using cls = BCode<ins>
-
-    RegIns(Bgt, bgt);
-    RegIns(Bge, bge);
-    RegIns(Blt, blt);
-    RegIns(Ble, ble);
-    RegIns(Beq, beq);
-    RegIns(Bne, bne);
-#undef RegIns
+    using Bgt = BCode<bgt>;
+    using Bge = BCode<bge>;
+    using Blt = BCode<blt>;
+    using Ble = BCode<ble>;
+    using Beq = BCode<beq>;
+    using Bne = BCode<bne>;
 
     /* BZCode*/
 
@@ -209,24 +240,20 @@ namespace objcode {
         
         BZCode(const Reg t1, const std::string& label) :
             _t1(t1), _label(label) {}
+
         virtual void output(void) const {
             mips_output << instr << ' ' << _t1 << ", " << _label << std::endl;
         }
 
     };
 
-#define RegIns(cls, ins) \
-    extern const char ins[]; \
-    using cls = BZCode<ins>
-
-    RegIns(Bgtz, bgtz);
-    RegIns(Bgez, bgez);
-    RegIns(Bltz, bltz);
-    RegIns(Blez, blez);
-    RegIns(Beqz, beqz);
-    RegIns(Bnez, bnez);
-    RegIns(La, la);
-#undef RegIns
+    using Bgtz = BZCode<bgtz>;
+    using Bgez = BZCode<bgez>;
+    using Bltz = BZCode<bltz>;
+    using Blez = BZCode<blez>;
+    using Beqz = BZCode<beqz>;
+    using Bnez = BZCode<bnez>;
+    using La = BZCode<la>;
 
     /* PseudoBCode */
 
@@ -240,23 +267,19 @@ namespace objcode {
             PseudoCode(false), _t1(t1), _imm(imm), _label(label) {}
         PseudoBCode(const int imm, const Reg t2, const std::string& label) :
             PseudoCode(true), _t1(t2), _imm(imm), _label(label) {}
+
         virtual void output(void) const {
             mips_output << (_flipped ? oppo : instr) << ' ' << _t1
                     << ", " << _imm << ", " << _label << std::endl;
         }
     };
 
-#define RegIns(cls, ins, oppo) \
-    extern const char ins[]; \
-    using cls = PseudoBCode<ins, oppo>;
-
-    RegIns(PseudoBgt, bgt, blt);
-    RegIns(PseudoBge, bge, ble);
-    RegIns(PseudoBlt, blt, bgt);
-    RegIns(PseudoBle, ble, bge);
-    RegIns(PseudoBeq, beq, beq);
-    RegIns(PseudoBne, bne, bne);
-#undef RegIns
+    using PseudoBgt = PseudoBCode<bgt, blt>;
+    using PseudoBge = PseudoBCode<bge, ble>;
+    using PseudoBlt = PseudoBCode<blt, bgt>;
+    using PseudoBle = PseudoBCode<ble, bge>;
+    using PseudoBeq = PseudoBCode<beq, beq>;
+    using PseudoBne = PseudoBCode<bne, bne>;
 
     /* Factory */
 

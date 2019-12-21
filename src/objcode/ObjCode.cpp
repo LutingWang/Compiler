@@ -43,12 +43,6 @@ PseudoCode::PseudoCode(const bool flipped) : _flipped(flipped) {}
 
 /* RCode */
 
-template<>
-void Div::output(void) const {
-    mips_output << div << ' ' << _t1 << ", " << _t2 << std::endl;
-    mips_output << mflo << ' ' << _t0 << std::endl;
-}
-
 void Move::output(void) const {
     mips_output << move << ' ' << _t0 << ", " << _t1 << std::endl;
 }
@@ -63,29 +57,7 @@ void Nop::output(void) const {
     mips_output << "invalid_instr_" << _num << ':' << std::endl;
 }
 
-/* PseudoRCode */
-
-template<>
-void PseudoSub::output(void) const {
-    mips_output << sub << ' ' << _t0 << ", " << _t1 << ", " << _imm << std::endl;
-    if (_flipped) { mips_output << neg << ' ' << _t0 << ", " << _t0 << std::endl; }
-}
-
-template<>
-void PseudoDiv::output(void) const {
-    mips_output << li << ' ' << reg::compiler_tmp << ", " << _imm << std::endl;
-    mips_output << div << ' ';
-    if (_flipped) { mips_output << reg::compiler_tmp << ", " << _t1; }
-    else { mips_output << _t1 << ", " << reg::compiler_tmp; }
-    mips_output << std::endl << mflo << ' ' << _t0 << std::endl;
-}
-
 /* ICode */
-
-template<>
-void Sll::output(void) const {
-    mips_output << sll << ' ' << _t0 << ", " << _t1 << ", " << _imm << std::endl;
-}
 
 void Li::output(void) const {
     mips_output << "li " << _t0 << ", " << _imm << std::endl;
@@ -95,11 +67,6 @@ void Li::output(void) const {
 
 void Jr::output(void) const {
     mips_output << "jr " << Reg::ra << std::endl;
-}
-
-template<>
-void Label::output(void) const {
-    mips_output << _label << ':' << std::endl;
 }
 
 /* Factory */
